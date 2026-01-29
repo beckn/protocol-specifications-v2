@@ -1,26 +1,19 @@
 openapi: 3.1.1
 info:
-  title: Beckn Protocol API
+  title: Beckn Protocol V2 API
   description: |
-    A unified OpenAPI specification for the Beckn Protocol covering:
-    - Discovery: Search and discover items across multiple schemas
-    - Transaction: Order lifecycle (select, init, confirm, update, cancel, status, track, support, rating)
-    - Catalog Publish: Asynchronous catalog ingestion for Discovery Service
-
-    This specification combines the Discovery API, Transaction API, and Catalog Publish API into a single comprehensive document.
+    The API specification of Beckn Protocol covering the four stages of an order lifecycle:
+    - Discovery: Discovery of catalogs
+    - Ordering: Price negotiation, terms negotiation, and order creation
+    - Fulfillment: Order tracking, status updates, order 
+    - Post-fulfillment: Rating, feedback, and customer support
   version: 2.0.0
   contact:
     name: Beckn Protocol
-    url: https://becknprotocol.io
+    url: https://beckn.io
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-
-servers:
-  - url: https://staging-api.becknprotocol.io
-    description: Staging server
-  - url: http://localhost:8080
-    description: Local development server
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 paths:
   /beckn/discover:
