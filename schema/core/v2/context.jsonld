@@ -101,7 +101,7 @@
     "errorCode": "beckn:errorCode",
     "errorDetails": "beckn:errorDetails",
     "errorMessage": "beckn:errorMessage",
-    "expiresAt": "beckn:expiresAt",
+    "expires_at": "beckn:expires_at",
     "feedback": "beckn:feedback",
     "form": "beckn:form",
     "fulfillment": "beckn:fulfillment",
@@ -206,7 +206,7 @@
     "supportInfo": "beckn:supportInfo",
     "taxID": "beckn:taxID",
     "telephone": "schema:telephone",
-    "tlMethod": "beckn:tlMethod",
+    "tl_method": "beckn:tl_method",
     "trackingStatus": {
       "@id": "beckn:trackingStatus",
       "@type": "@id",

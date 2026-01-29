@@ -7,10 +7,10 @@ info:
   version: 2.0.0
   contact:
     name: Beckn Protocol
-    url: https://beckn.io
+    url: https://becknprotocol.io
   license:
-    name: CC-BY-NC-SA 4.0 International
-    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
 components:
   schemas:
@@ -212,7 +212,7 @@ components:
       items:
         type: string
         enum: ["UPI", "CREDIT_CARD", "DEBIT_CARD", "WALLET", "BANK_TRANSFER", "CASH", "APPLE_PAY"]
-      example: ["UPI", "CREDIT_CARD", "WALLET"]
+      example: ["UPI", "Card", "Wallet"]
       x-jsonld: { "@id": "beckn:acceptedPaymentMethod" }
 
     Provider:
@@ -434,30 +434,30 @@ components:
       type: object
       additionalProperties: false
       properties:
-        transactionId:
+        transaction_id:
           type: string
         timestamp:
           type: string
           format: date-time
-        ackStatus:
+        ack_status:
           type: string
           enum: [ACK, NACK]
         error:
           $ref: '#/components/schemas/Error'
-      required: [transactionId, timestamp, ackStatus]
+      required: [transaction_id, timestamp, ack_status]
       allOf:
         - if:
             properties:
-              ackStatus:
+              ack_status:
                 const: NACK
-            required: [ackStatus]
+            required: [ack_status]
           then:
             required: [error]
         - if:
             properties:
-              ackStatus:
+              ack_status:
                 const: ACK
-            required: [ackStatus]
+            required: [ack_status]
           then:
             not:
               required: [error]
@@ -483,11 +483,11 @@ components:
       required: [geo]
       additionalProperties: false
       examples:
-        sitePoint:
+        site_point:
           value:
             geo: { type: Point, coordinates: [77.5946, 12.9716] }
             address: "MG Road, Bengaluru"
-        serviceArea:
+        service_area:
           value:
             geo:
               type: Polygon
@@ -543,7 +543,7 @@ components:
         - For rectangles, use a Polygon with a single linear ring where the first
           and last positions are identical.
         - Circles are **not native** to GeoJSON. For circular searches, use
-          `SpatialConstraint` with `op: S_DWITHIN` and a Point + `distanceMeters`,
+          `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,
           or approximate the circle as a Polygon.
         - Optional `bbox` is `[west, south, east, north]` in degrees.
 
@@ -582,12 +582,12 @@ components:
           value:
             type: Point
             coordinates: [77.5946, 12.9716]
-        polygonRectangle:
+        polygon_rectangle:
           value:
             type: Polygon
             coordinates:
               - [[77.6100, 12.9200], [77.6400, 12.9200], [77.6400, 12.9500], [77.6100, 12.9500], [77.6100, 12.9200]]
-        geometryCollection:
+        geometry_collection:
           value:
             type: GeometryCollection
             geometries:
@@ -858,7 +858,7 @@ components:
           type: string
           format: uri
           description: URL for payment processing/redirection
-          example: "https://payments.example.com/pay?transactionId=123&amount=100"
+          example: "https://payments.example.com/pay?transaction_id=123&amount=100"
           x-jsonld: { "@id": "schema:url" }
         beckn:txnRef:
           type: string
@@ -980,7 +980,7 @@ components:
         email: "support@acme.example"
         url: "https://acme.example/support"
         hours: "Mon–Sat 09:00–20:00 IST"
-        channels: ["WEB", "PHONE", "EMAIL"]
+        channels: ["web", "phone", "email"]
       x-jsonld:
         '@type': 'schema:ContactPoint'
         'schema:contactType': '"Customer Support"'
@@ -995,7 +995,7 @@ components:
       description: >
         Non-streaming tracking handle per legacy semantics (url/transport/status).
       additionalProperties: false
-      required: ["@context", "@type", "tlMethod", "url", "trackingStatus"]
+      required: ["@context", "@type", "tl_method", "url", "trackingStatus"]
       properties:
         "@context":
           type: string
@@ -1005,10 +1005,10 @@ components:
           type: string
           enum: ["beckn:Tracking"]
           x-jsonld: { "@id": "beckn:Tracking" }
-        tlMethod:
+        tl_method:
           type: string
-          enum: [HTTP_GET, HTTP_POST, HTTP_REDIRECT, WS_HANDLE, CUSTOM]
-          description: Transport/method used to access the tracking handle.  # mirrors legacy tlMethod concept
+          enum: [http/get, http/post, http/redirect, ws/handle, custom]
+          description: Transport/method used to access the tracking handle.  # mirrors legacy tl_method concept
         url:
           type: string
           format: uri
@@ -1016,19 +1016,19 @@ components:
         trackingStatus:
           type: string
           enum: [ACTIVE, DISABLED, COMPLETED]
-        expiresAt:
+        expires_at:
           type: string
           format: date-time
           description: ISO 8601 expiry timestamp for the tracking handle.
       example:
-        tlMethod: "HTTP_GET"
+        tl_method: "http/get"
         url: "https://track.bpp.example?order_id=ORD-123"
-        trackingStatus: "ACTIVE"
-        expiresAt: "2025-10-16T18:30:00Z"
+        trackingStatus: "active"
+        expires_at: "2025-10-16T18:30:00Z"
       x-jsonld:
         '@type': 'schema:TrackAction'
         'schema:target':    '$.url'           # URL to track → EntryPoint(target)
-        'schema:deliveryMethod': '$.tlMethod'
+        'schema:deliveryMethod': '$.tl_method'
         'beckn:trackingStatus': '$.trackingStatus'
 
     RatingInput:
@@ -1090,7 +1090,7 @@ components:
           enum: ["beckn:Form"]
           x-jsonld: { "@id": "beckn:Form" }
         url:
-          description: The URL from where the form can be fetched. The content fetched from the url must be processed as per the mimeType specified in this object. Once fetched, the rendering platform can choose to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the render can process the form data and reproduce it as per the standard specified in the form.
+          description: The URL from where the form can be fetched. The content fetched from the url must be processed as per the mime_type specified in this object. Once fetched, the rendering platform can choosed to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the the render can process the form data and reproduce it as per the standard specified in the form.
           type: string
           format: uri
         data:
@@ -1098,12 +1098,12 @@ components:
           type: object
           additionalProperties:
             type: string
-        mimeType:
+        mime_type:
           description: This field indicates the nature and format of the form received by querying the url. MIME types are defined and standardized in IETF's RFC 6838.
           type: string
           enum:
             - text/html
             - application/xml
-        submissionId:
+        submission_id:
           type: string
           format: uuid
