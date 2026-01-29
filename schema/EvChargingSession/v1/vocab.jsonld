@@ -9,7 +9,7 @@
   },
   "@graph": [
     {
-      "@id": "beckn:EvChargingSession",
+      "@id": "beckn:ChargingSession",
       "@type": "rdfs:Class",
       "rdfs:label": "EV Charging Session",
       "rdfs:comment": "A charging session for an electric vehicle"
@@ -19,7 +19,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Session status",
       "rdfs:comment": "High-level charging session state (PENDING, ACTIVE, COMPLETED, INTERRUPTED).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "beckn:SessionStatus",
       "owl:equivalentProperty": "beckn:fulfillmentStatus"
     },
@@ -28,7 +28,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Connector status",
       "rdfs:comment": "Charging connector status (from OCPP status codes).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "beckn:ConnectorStatus"
     },
     {
@@ -36,7 +36,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Buyer finder fee",
       "rdfs:comment": "Commission payable by provider to the BAP for this offer.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:PriceSpecification"
     },
     {
@@ -44,7 +44,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Connector type",
       "rdfs:comment": "Physical connector type supported by the EVSE/charger (e.g., CCS2, Type2, CHAdeMO, GB/T).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "beckn:ConnectorType"
     },
     {
@@ -52,15 +52,15 @@
       "@type": "rdf:Property",
       "rdfs:label": "Maximum power (kW)",
       "rdfs:comment": "Maximum charging power supported by the EVSE in kilowatts.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Number"
     },
     {
-      "@id": "beckn:meteredEnergyKWH",
+      "@id": "beckn:meteredEnergyKWh",
       "@type": "rdf:Property",
       "rdfs:label": "Metered energy (kWh)",
       "rdfs:comment": "Energy dispensed during a charging session, in kilowatt-hours.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -68,7 +68,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Metered duration (minutes)",
       "rdfs:comment": "Duration of the charging session, in minutes.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -76,7 +76,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Charging telemetry",
       "rdfs:comment": "List of charging intervals with telemetry metrics (OCPI-style).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:ItemList"
     },
     {
@@ -84,7 +84,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Event time",
       "rdfs:comment": "Telemetry event timestamp (UTC).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:DateTime"
     },
     {
@@ -92,7 +92,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Metrics",
       "rdfs:comment": "Array of telemetry metrics using schema.org QuantitativeValue (name, value, unitCode).",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": ["schema:QuantitativeValue", "schema:ItemList"]
     },
     {
@@ -100,7 +100,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Total cost",
       "rdfs:comment": "Total session cost as a price specification.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:PriceSpecification"
     },
     {
@@ -108,7 +108,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Excl. VAT amount",
       "rdfs:comment": "Total amount excluding VAT.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -116,7 +116,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Incl. VAT amount",
       "rdfs:comment": "Total amount including VAT.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -124,7 +124,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Reservation ID",
       "rdfs:comment": "Server-assigned reservation identifier for a scheduled session.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -132,7 +132,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Grace period (minutes)",
       "rdfs:comment": "Minutes allowed after scheduled start before releasing the slot.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Integer"
     },
     {
@@ -140,7 +140,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Vehicle make",
       "rdfs:comment": "Vehicle make/brand recorded for the session.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": ["schema:Brand", "schema:Text"]
     },
     {
@@ -148,7 +148,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Vehicle model",
       "rdfs:comment": "Vehicle model recorded for the session.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -156,7 +156,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Preferences",
       "rdfs:comment": "Charging session preferences including time windows.",
-      "rdfs:domain": "beckn:EvChargingSession",
+      "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Thing"
     },
 
@@ -168,7 +168,6 @@
       "schema:hasEnumerationMember": [
         { "@id": "beckn:SessionStatusPending" },
         { "@id": "beckn:SessionStatusActive" },
-        { "@id": "beckn:SessionStatusStopped" },
         { "@id": "beckn:SessionStatusCompleted" },
         { "@id": "beckn:SessionStatusInterrupted" }
       ]
@@ -190,15 +189,6 @@
       ],
       "schema:name": "ACTIVE",
       "schema:identifier": "ACTIVE"
-    },
-    {
-      "@id": "beckn:SessionStatusStopped",
-      "@type": [
-        "beckn:SessionStatus",
-        "schema:Enumeration"
-      ],
-      "schema:name": "STOPPED",
-      "schema:identifier": "STOPPED"
     },
     {
       "@id": "beckn:SessionStatusCompleted",

@@ -12,20 +12,20 @@ info:
 components:
   schemas:
     ########################################################################
-    # ORDER/FULFILLMENT.ATTRIBUTES — EvChargingSession (pruned)
+    # ORDER/FULFILLMENT.ATTRIBUTES — ChargingSession (pruned)
     ########################################################################
-    EvChargingSession:
+    ChargingSession:
       type: object
       additionalProperties: false
       x-jsonld:
         "@context": ./context.jsonld
-        "@type": EvChargingSession
+        "@type": ChargingSession
       properties:
 
         # Session state & authorization (EV-specific)
         sessionStatus:
           type: string
-          enum: [PENDING, ACTIVE, STOPPED, COMPLETED, INTERRUPTED]
+          enum: [PENDING, ACTIVE, STOP, COMPLETED, INTERRUPTED]
           description: High-level session state (order.state carries overall state).
           example: "ACTIVE"
           x-jsonld: { "@id": sessionStatus }
@@ -70,13 +70,13 @@ components:
           example: 60
           x-jsonld: { "@id": maxPowerKW }
 
-        # Metered outputs (use meteredEnergyKWH as single source of truth)
-        meteredEnergyKWH:
+        # Metered outputs (use meteredEnergyKWh as single source of truth)
+        meteredEnergyKWh:
           type: number
           minimum: 0
           description: Total metered energy delivered (kWh).
           example: 13.6
-          x-jsonld: { "@id": meteredEnergyKWH }
+          x-jsonld: { "@id": meteredEnergyKWh }
         meteredDurationMinutes:
           type: number
           minimum: 0

@@ -6,7 +6,7 @@ Attach these schemas as follows:
 
 | **Attribute Schema** | **Attach To** | **Purpose** |
 | --- | --- | --- |
-| EvChargingPointOperator | Provider.attributes | Operator identifiers, statutory registrations, extended contact details, and network information. |
+| ChargingPointOperator | Provider.attributes | Operator identifiers, statutory registrations, extended contact details, and network information. |
 | --- | --- | --- |
 
 ## **🧭 Role and Design**
@@ -38,12 +38,12 @@ This supports both local development and public hosting.
 
 | **File / Folder** | **Purpose** |
 | --- | --- |
-| **attributes.yaml** | OpenAPI 3.1.1 attribute schema for EvChargingPointOperator (Provider.attributes), annotated with x-jsonld. |
-| **context.jsonld** | Maps properties to schema.org and local beckn: IRIs for EvChargingPointOperator. |
+| **attributes.yaml** | OpenAPI 3.1.1 attribute schema for ChargingPointOperator (Provider.attributes), annotated with x-jsonld. |
+| **context.jsonld** | Maps properties to schema.org and local beckn: IRIs for ChargingPointOperator. |
 | **vocab.jsonld** | Local vocabulary for CPO domain terms (operatorId, registrations, contacts, networks). |
 | **profile.json** | Lists included schemas, operational/index hints, and guidance for implementers. |
 | **renderer.json** | Templates for rendering provider profile UI elements. |
-| **examples/** | Working examples showing how EvChargingPointOperator attaches to Beckn Provider. |
+| **examples/** | Working examples showing how ChargingPointOperator attaches to Beckn Provider. |
 | --- | --- |
 
 ## 🏷️ Tags

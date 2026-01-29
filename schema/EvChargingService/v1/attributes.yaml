@@ -19,9 +19,9 @@ info:
 components:
   schemas:
     ########################################################################
-    # ITEM.ATTRIBUTES — EvChargingService (pruned; EV-specific only)
+    # ITEM.ATTRIBUTES — ChargingService (pruned; EV-specific only)
     ########################################################################
-    EvChargingService:
+    ChargingService:
       type: object
       additionalProperties: false
       required:
@@ -29,7 +29,7 @@ components:
         - maxPowerKW
       x-jsonld:
         "@context": ./context.jsonld
-        "@type": EvChargingService
+        "@type": ChargingService
       properties:
 
         evseId:
@@ -112,9 +112,9 @@ components:
 
         amenityFeature:
           type: array
-          items:
-            type: string
-            enum: ["RESTAURANT", "RESTROOM", "WI_FI", "PARKING"]
+        items:
+          type: string
+          enum: ["RESTAURANT", "RESTROOM", "WI-FI", "PARKING"]
           description: Nearby amenities (e.g., Restaurant, Restroom, Wi-Fi).
           example: ["RESTAURANT", "RESTROOM"]
           x-jsonld: { "@id": amenityFeature }
@@ -127,9 +127,9 @@ components:
 
         parkingType:
           type: string
-          enum: [ON_STREET, OFF_STREET, BASEMENT, MALL, FUEL_STATION, OFFICE, HOTEL]
+          enum: [OnStreet, OffStreet, Basement, Mall, FuelStation, Office, Hotel]
           description: Parking context of the station.
-          example: "MALL"
+          example: "Mall"
           x-jsonld: { "@id": parkingType }
 
         powerType:
@@ -155,7 +155,7 @@ components:
 
         vehicleType:
           type: string
-          enum: ["2_WHEELER", "3_WHEELER", "4_WHEELER"]
+          enum: ["2-WHEELER", "3-WHEELER", "4-WHEELER"]
           description: Type of vehicle that can use this charging service.
-          example: "4_WHEELER"
+          example: "4-WHEELER"
           x-jsonld: { "@id": vehicleType }

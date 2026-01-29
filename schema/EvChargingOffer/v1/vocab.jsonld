@@ -9,7 +9,7 @@
   },
   "@graph": [
     {
-      "@id": "beckn:EvChargingOffer",
+      "@id": "beckn:ChargingOffer",
       "@type": "rdfs:Class",
       "rdfs:label": "EV Charging Offer",
       "rdfs:comment": "An offer specification for electric vehicle charging"
@@ -19,7 +19,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Tariff model",
       "rdfs:comment": "Charging tariff basis: PER_KWH, PER_MINUTE, SUBSCRIPTION, TIME_OF_DAY.",
-      "rdfs:domain": "beckn:EvChargingOffer",
+      "rdfs:domain": "beckn:ChargingOffer",
       "schema:rangeIncludes": "beckn:TariffModel"
     },
     {
@@ -27,7 +27,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Idle fee policy",
       "rdfs:comment": "Idle fee policy specification for post-charge idle fees associated with an offer (reuses Beckn PriceSpecification).",
-      "rdfs:domain": "beckn:EvChargingOffer",
+      "rdfs:domain": "beckn:ChargingOffer",
       "schema:rangeIncludes": "schema:PriceSpecification"
     },
     {

@@ -2,27 +2,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.example.org/profiles/ev-charging/ev_charging/v1/profile.json",
   "title": "EV Charging — Charging Service Attribute Pack (v1)",
-  "description": "Bundle of attribute schemas for EV charging: Item (EvChargingService), Offer, Session (Order/Fulfillment), and Provider. Uses ./context.jsonld for JSON-LD mappings and ./vocab.jsonld for EV terms.",
+  "description": "Bundle of attribute schemas for EV charging: Item (ChargingService), Offer, Session (Order/Fulfillment), and Provider. Uses ./context.jsonld for JSON-LD mappings and ./vocab.jsonld for EV terms.",
   "type": "object",
   "additionalProperties": false,
   "$comment": "JSON-LD context: ./context.jsonld ; EV vocab: ./vocab.jsonld",
   "properties": {
-    "EvChargingService": {
-      "$ref": "./attributes.yaml#/components/schemas/EvChargingService"
+    "ChargingService": {
+      "$ref": "./attributes.yaml#/components/schemas/ChargingService"
     },
-    "EvChargingOffer": {
-      "$ref": "../../EvChargingOffer/v1/attributes.yaml#/components/schemas/EvChargingOffer"
+    "ChargingOffer": {
+      "$ref": "../../EvChargingOffer/v1/attributes.yaml#/components/schemas/ChargingOffer"
     },
-    "EvChargingSession": {
-      "$ref": "../../EvChargingSession/v1/attributes.yaml#/components/schemas/EvChargingSession"
+    "ChargingSession": {
+      "$ref": "../../EvChargingSession/v1/attributes.yaml#/components/schemas/ChargingSession"
     },
-    "EvChargingPointOperator": {
-      "$ref": "../../EvChargingPointOperator/v1/attributes.yaml#/components/schemas/EvChargingPointOperator"
+    "ChargingProvider": {
+      "$ref": "../../EvChargingPointOperator/v1/attributes.yaml#/components/schemas/ChargingPointOperator"
     }
   },
-  "required": ["EvChargingService"],
+  "required": ["ChargingService"],
 
-  "operationalHints": {
+  "operational_hints": {
     "indexHints": [
       "beckn:id",
       "beckn:descriptor.schema:name",
@@ -46,7 +46,7 @@
       "beckn:offerAttributes.idleFeePolicy",
       "beckn:orderAttributes.sessionStatus",
       "beckn:orderAttributes.reservationId",
-      "beckn:orderAttributes.meteredEnergyKWH",
+      "beckn:orderAttributes.meteredEnergyKWh",
       "beckn:orderAttributes.totalCost.inclVat",
       "beckn:providerAttributes.operatorName"
     ],
@@ -69,12 +69,12 @@
       "notes": "EV Charging PII includes authorization hints, vehicle information, and provider contact details. Discovery and catalog payloads generally contain no PII; PII appears post-transaction (confirm/status)."
     },
 
-    "apiResponseConfig": {
+    "api_response_config": {
       "description": "Configuration for API response field sets - defines what fields to return for different use cases",
-      "maxItemsPerPage": 1000,
-      "maxOffersPerItem": 1,
-      "minimalFields": {
-        "itemAttributes": [
+      "max_items_per_page": 1000,
+      "max_offers_per_item": 1,
+      "minimal_fields": {
+        "item_attributes": [
           "beckn:id",
           "beckn:descriptor.schema:name",
           "beckn:descriptor.beckn:shortDesc",
@@ -87,7 +87,7 @@
           "beckn:itemAttributes.parkingType",
           "beckn:itemAttributes.chargingSpeed"
         ],
-        "offerAttributes": [
+        "offer_attributes": [
           "beckn:id",
           "beckn:price.currency",
           "beckn:price.value",
@@ -104,11 +104,11 @@
     },
 
     "discover": {
-      "supportedFilters": [
-        "textSearch",
-        "jsonpathFilters"
+      "supported_filters": [
+        "text_search",
+        "jsonpath_filters"
       ],
-      "defaultSort": [
+      "default_sort": [
         "distance.asc",
         "beckn:offerAttributes.priceSpecification.price.asc",
         "beckn:itemAttributes.maxPowerKW.desc"

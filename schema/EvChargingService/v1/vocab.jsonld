@@ -9,7 +9,7 @@
   },
   "@graph": [
     {
-      "@id": "beckn:EvChargingService",
+      "@id": "beckn:ChargingService",
       "@type": "rdfs:Class",
       "rdfs:label": "EV Charging Service",
       "rdfs:comment": "A service that provides electric vehicle charging capabilities"
@@ -25,7 +25,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Connector type",
       "rdfs:comment": "Physical connector type supported by the EVSE/charger (e.g., CCS2, Type2, CHAdeMO, GB/T).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:ConnectorType"
     },
     {
@@ -33,7 +33,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Maximum power (kW)",
       "rdfs:comment": "Maximum charging power supported by the EVSE in kilowatts.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -41,7 +41,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Minimum power (kW)",
       "rdfs:comment": "Minimum controllable charging power in kilowatts.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "schema:Number"
     },
     {
@@ -49,7 +49,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Reservation supported",
       "rdfs:comment": "Whether advance reservations are supported for this connector/site.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "schema:Boolean"
     },
     {
@@ -57,7 +57,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Amenity feature",
       "rdfs:comment": "Nearby amenities such as Restaurant, Restroom, Wi-Fi, Parking.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:AmenityFeature"
     },
     {
@@ -65,7 +65,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "EVSE identifier",
       "rdfs:comment": "Public EVSE identifier (e.g., OCPI/Hubject style).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -73,7 +73,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Roaming network",
       "rdfs:comment": "Roaming federation or network name, if any.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -81,7 +81,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Parking type",
       "rdfs:comment": "Type of parking facility (e.g., Mall, Office, FuelStation).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:ParkingType"
     },
     {
@@ -89,7 +89,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Power type",
       "rdfs:comment": "Electrical power type (AC_SINGLE_PHASE, AC_3_PHASE, DC).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:PowerType"
     },
     {
@@ -97,7 +97,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Connector format",
       "rdfs:comment": "Physical presentation of the connector (SOCKET or CABLE).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:ConnectorFormat"
     },
     {
@@ -105,15 +105,15 @@
       "@type": "rdf:Property",
       "rdfs:label": "Charging speed band",
       "rdfs:comment": "Marketing speed band (SLOW, NORMAL, FAST, ULTRAFAST).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:ChargingSpeed"
     },
     {
       "@id": "beckn:vehicleType",
       "@type": "rdf:Property",
       "rdfs:label": "Vehicle type",
-      "rdfs:comment": "Type of vehicle that can use this charging service (2_WHEELER, 3_WHEELER, 4_WHEELER).",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:comment": "Type of vehicle that can use this charging service (2-WHEELER, 3-WHEELER, 4-WHEELER).",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:VehicleType"
     },
     {
@@ -121,7 +121,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Charging station",
       "rdfs:comment": "Charging station information including station ID and location.",
-      "rdfs:domain": "beckn:EvChargingService",
+      "rdfs:domain": "beckn:ChargingService",
       "schema:rangeIncludes": "beckn:ChargingStation"
     },
     {
@@ -178,9 +178,9 @@
         "beckn:AmenityFeature",
         "schema:Enumeration"
       ],
-      "schema:name": "WI_FI",
-      "schema:identifier": "WI_FI",
-      "schema:alternateName": ["Wi-Fi", "WiFi", "WI-FI"]
+      "schema:name": "WI-FI",
+      "schema:identifier": "WI-FI",
+      "schema:alternateName": ["Wi-Fi", "WiFi"]
     },
     {
       "@id": "beckn:AmenityParking",
@@ -378,8 +378,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "ON_STREET",
-      "schema:identifier": "ON_STREET",
+      "schema:name": "OnStreet",
+      "schema:identifier": "OnStreet",
       "schema:alternateName": "On Street"
     },
     {
@@ -388,8 +388,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "OFF_STREET",
-      "schema:identifier": "OFF_STREET",
+      "schema:name": "OffStreet",
+      "schema:identifier": "OffStreet",
       "schema:alternateName": "Off Street"
     },
     {
@@ -398,8 +398,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "BASEMENT",
-      "schema:identifier": "BASEMENT"
+      "schema:name": "Basement",
+      "schema:identifier": "Basement"
     },
     {
       "@id": "beckn:ParkingTypeMall",
@@ -407,8 +407,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "MALL",
-      "schema:identifier": "MALL"
+      "schema:name": "Mall",
+      "schema:identifier": "Mall"
     },
     {
       "@id": "beckn:ParkingTypeFuelStation",
@@ -416,8 +416,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "FUEL_STATION",
-      "schema:identifier": "FUEL_STATION",
+      "schema:name": "FuelStation",
+      "schema:identifier": "FuelStation",
       "schema:alternateName": "Fuel Station"
     },
     {
@@ -426,8 +426,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "OFFICE",
-      "schema:identifier": "OFFICE"
+      "schema:name": "Office",
+      "schema:identifier": "Office"
     },
     {
       "@id": "beckn:ParkingTypeHotel",
@@ -435,8 +435,8 @@
         "beckn:ParkingType",
         "schema:Enumeration"
       ],
-      "schema:name": "HOTEL",
-      "schema:identifier": "HOTEL"
+      "schema:name": "Hotel",
+      "schema:identifier": "Hotel"
     },
     {
       "@id": "beckn:VehicleType",
@@ -455,9 +455,8 @@
         "beckn:VehicleType",
         "schema:Enumeration"
       ],
-      "schema:name": "2_WHEELER",
-      "schema:identifier": "2_WHEELER",
-      "schema:alternateName": "2-WHEELER"
+      "schema:name": "2-WHEELER",
+      "schema:identifier": "2-WHEELER"
     },
     {
       "@id": "beckn:VehicleType3Wheeler",
@@ -465,9 +464,8 @@
         "beckn:VehicleType",
         "schema:Enumeration"
       ],
-      "schema:name": "3_WHEELER",
-      "schema:identifier": "3_WHEELER",
-      "schema:alternateName": "3-WHEELER"
+      "schema:name": "3-WHEELER",
+      "schema:identifier": "3-WHEELER"
     },
     {
       "@id": "beckn:VehicleType4Wheeler",
@@ -475,9 +473,8 @@
         "beckn:VehicleType",
         "schema:Enumeration"
       ],
-      "schema:name": "4_WHEELER",
-      "schema:identifier": "4_WHEELER",
-      "schema:alternateName": "4-WHEELER"
+      "schema:name": "4-WHEELER",
+      "schema:identifier": "4-WHEELER"
     }
   ]
 }

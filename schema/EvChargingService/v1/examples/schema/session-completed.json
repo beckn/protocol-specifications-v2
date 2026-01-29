@@ -3,7 +3,7 @@
   "authorizationMode": "APP_QR",
   "connectorType": "CCS2",
   "maxPowerKW": 60,
-  "meteredEnergyKWH": 18.9,
+  "meteredEnergyKWh": 18.9,
   "meteredDurationMinutes": 42,
   "chargingPeriods": [
     {
@@ -36,5 +36,5 @@
   "vehicleModel": "Nexon EV",
   "trackingId": "TRK-984532",
   "trackingUrl": "https://cpo.example.org/session/RESV-984532",
-  "trackingStatus": "COMPLETED"
+  "trackingStatus": "INACTIVE"
 }

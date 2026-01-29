@@ -7,7 +7,7 @@
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "beckn": "./vocab.jsonld#",
     
-    "EvChargingService": "beckn:EvChargingService",
+    "ChargingService": "beckn:ChargingService",
     "ChargingStation": "beckn:ChargingStation",
 
     "name": "schema:name",
@@ -63,7 +63,6 @@
     "Restaurant": "beckn:AmenityRestaurant",
     "RESTROOM": "beckn:AmenityRestroom",
     "Restroom": "beckn:AmenityRestroom",
-    "WI_FI": "beckn:AmenityWiFi",
     "WI-FI": "beckn:AmenityWiFi",
     "Wi-Fi": "beckn:AmenityWiFi",
     "WiFi": "beckn:AmenityWiFi",
@@ -90,13 +89,6 @@
     "FAST": "beckn:ChargingSpeedFast",
     "ULTRAFAST": "beckn:ChargingSpeedUltraFast",
 
-    "ON_STREET": "beckn:ParkingTypeOnStreet",
-    "OFF_STREET": "beckn:ParkingTypeOffStreet",
-    "BASEMENT": "beckn:ParkingTypeBasement",
-    "MALL": "beckn:ParkingTypeMall",
-    "FUEL_STATION": "beckn:ParkingTypeFuelStation",
-    "OFFICE": "beckn:ParkingTypeOffice",
-    "HOTEL": "beckn:ParkingTypeHotel",
     "OnStreet": "beckn:ParkingTypeOnStreet",
     "OffStreet": "beckn:ParkingTypeOffStreet",
     "Basement": "beckn:ParkingTypeBasement",
@@ -106,9 +98,6 @@
     "Office": "beckn:ParkingTypeOffice",
     "Hotel": "beckn:ParkingTypeHotel",
 
-    "2_WHEELER": "beckn:VehicleType2Wheeler",
-    "3_WHEELER": "beckn:VehicleType3Wheeler",
-    "4_WHEELER": "beckn:VehicleType4Wheeler",
     "2-WHEELER": "beckn:VehicleType2Wheeler",
     "3-WHEELER": "beckn:VehicleType3Wheeler",
     "4-WHEELER": "beckn:VehicleType4Wheeler"

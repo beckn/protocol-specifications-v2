@@ -9,7 +9,7 @@
   },
   "@graph": [
     {
-      "@id": "beckn:EvChargingPointOperator",
+      "@id": "beckn:ChargingPointOperator",
       "@type": "rdfs:Class",
       "rdfs:label": "EV Charging Point Operator",
       "rdfs:comment": "A charging point operator providing electric vehicle charging services"
@@ -19,7 +19,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Operator name",
       "rdfs:comment": "Operating company name (display).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -27,7 +27,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Operator code",
       "rdfs:comment": "Short operator code used in roaming/indexes.",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -35,7 +35,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Identifier",
       "rdfs:comment": "Provider identifier (URN/URL/code).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -43,7 +43,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Same as",
       "rdfs:comment": "Canonical reference (e.g., website, registry entry).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:URL"
     },
     {
@@ -51,7 +51,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Support email",
       "rdfs:comment": "Support email (if not provided in core Provider).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:EmailAddress"
     },
     {
@@ -59,7 +59,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Support phone",
       "rdfs:comment": "Support phone (if not provided in core Provider).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -67,7 +67,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "GST Number",
       "rdfs:comment": "Tax identifier (India).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -75,7 +75,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "CIN",
       "rdfs:comment": "Corporate Identification Number (India).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:Text"
     },
     {
@@ -83,7 +83,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "MSME ID",
       "rdfs:comment": "MSME registration identifier (India).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "rdfs:rangeIncludes": "schema:Text"
     },
     {
@@ -91,7 +91,7 @@
       "@type": "rdf:Property",
       "rdfs:label": "Operator contact",
       "rdfs:comment": "Free-form contact blob for ops (last resort).",
-      "rdfs:domain": "beckn:EvChargingPointOperator",
+      "rdfs:domain": "beckn:ChargingPointOperator",
       "schema:rangeIncludes": "schema:ContactPoint"
     }
   ]

@@ -6,7 +6,7 @@ Attach these schemas as follows:
 
 | **Attribute Schema** | **Attach To** | **Purpose** |
 | --- | --- | --- |
-| EvChargingOffer | Offer.attributes | Tariff details beyond core price fields – e.g., eligibleQuantity, idle fee policies and offer-specific rules. |
+| ChargingOffer | Offer.attributes | Tariff details beyond core price fields – e.g., eligibleQuantity, idle fee policies and offer-specific rules. |
 | --- | --- | --- |
 
 ## **🧭 Role and Design**
@@ -38,12 +38,12 @@ This supports both local development and public hosting.
 
 | **File / Folder** | **Purpose** |
 | --- | --- |
-| **attributes.yaml** | OpenAPI 3.1.1 attribute schema for EvChargingOffer (Offer.attributes), annotated with x-jsonld. |
-| **context.jsonld** | Maps properties to schema.org and local beckn: IRIs for EvChargingOffer. |
-| **vocab.jsonld** | Local vocabulary for EvChargingOffer domain terms (buyerFinderFee, idleFeePolicy, etc.). |
+| **attributes.yaml** | OpenAPI 3.1.1 attribute schema for ChargingOffer (Offer.attributes), annotated with x-jsonld. |
+| **context.jsonld** | Maps properties to schema.org and local beckn: IRIs for ChargingOffer. |
+| **vocab.jsonld** | Local vocabulary for ChargingOffer domain terms (buyerFinderFee, idleFeePolicy, etc.). |
 | **profile.json** | Lists included schemas, operational/index hints, and guidance for implementers. |
 | **renderer.json** | Templates for rendering offer chips and pricing detail UI. |
-| **examples/** | Working examples showing how EvChargingOffer attaches to Beckn Offer. |
+| **examples/** | Working examples showing how ChargingOffer attaches to Beckn Offer. |
 | --- | --- |
 
 ## 🏷️ Tags

@@ -3,7 +3,7 @@
   "authorizationMode": "APP_QR",
   "connectorType": "CCS2",
   "maxPowerKW": 60,
-  "meteredEnergyKWH": 12.4,
+  "meteredEnergyKWh": 12.4,
   "meteredDurationMinutes": 28,
   "chargingPeriods": [
     {

@@ -4,7 +4,7 @@
   "authorizationOtpHint": "Enter last 4 digits",
   "connectorType": "CCS2",
   "maxPowerKW": 60,
-  "meteredEnergyKWH": 0,
+  "meteredEnergyKWh": 0,
   "meteredDurationMinutes": 0,
   "chargingPeriods": [],
   "totalCost": {
