@@ -252,8 +252,7 @@ components:
         "@type": EnergyResource
       description: >
         Item attributes for energy resources. Attached to Item.itemAttributes to provide
-        energy-specific characteristics including source type, delivery mode,
-        certification status, meter identifiers, and availability details.
+        energy-specific characteristics including source type and meter identifiers.
       properties:
 
         sourceType:
@@ -263,74 +262,11 @@ components:
           example: "SOLAR"
           x-jsonld: { "@id": sourceType }
 
-        deliveryMode:
-          type: string
-          enum: [EV_CHARGING, BATTERY_SWAP, V2G, GRID_INJECTION]
-          description: Mode of energy delivery. Used as discovery filter to match consumer requirements.
-          example: "GRID_INJECTION"
-          x-jsonld: { "@id": deliveryMode }
-
-        certificationStatus:
-          type: string
-          description: Carbon offset or green energy certification status (e.g., "Carbon Offset Certified", "Green Energy Certified").
-          example: "Carbon Offset Certified"
-          x-jsonld: { "@id": certificationStatus }
-
         meterId:
           type: string
           description: Source meter identifier in DER address format (der://meter/{id}). Used for discovery and fulfillment tracking.
           example: "der://meter/100200300"
           x-jsonld: { "@id": meterId }
-
-        availableQuantity:
-          type: number
-          minimum: 0
-          description: Available energy quantity in kilowatt-hours (kWh).
-          example: 30.5
-          x-jsonld: { "@id": availableQuantity }
-
-        productionWindow:
-          type: array
-          description: Array of time windows when energy is produced or available for trading.
-          x-jsonld: { "@id": productionWindow }
-          items: { $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/TimePeriod' }
-          example:
-            - "@type": "beckn:TimePeriod"
-              "schema:startTime": "10:00:00"
-              "schema:endTime": "18:00:00"
-
-        sourceVerification:
-          type: object
-          description: Source verification details including certificates and verification status.
-          x-jsonld: { "@id": sourceVerification }
-          additionalProperties: false
-          properties:
-            verified:
-              type: boolean
-              description: Whether the source has been verified.
-              example: true
-              x-jsonld: { "@id": verified }
-            verificationDate:
-              type: string
-              format: date-time
-              description: Date when source was last verified.
-              example: "2024-09-01T00:00:00Z"
-              x-jsonld: { "@id": verificationDate }
-            certificates:
-              type: array
-              description: Array of certificate references (URLs or identifiers).
-              items:
-                type: string
-                format: uri
-              example: ["https://example.com/certs/solar-panel-cert.pdf"]
-              x-jsonld: { "@id": certificates }
-
-        productionAsynchronous:
-          type: boolean
-          description: Whether production and trade may be asynchronous (before, during, or after the transaction).
-          example: true
-          default: false
-          x-jsonld: { "@id": productionAsynchronous }
 
     ########################################################################
     # CUSTOMER.ATTRIBUTES — EnergyCustomer (P2P Energy Trading & Enrollment)

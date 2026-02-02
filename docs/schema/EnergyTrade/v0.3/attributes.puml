@@ -1,0 +1,58 @@
+@startuml
+hide empty members
+set namespaceSeparator none
+
+
+class EnergyTradeOffer {
+    {field} string <b>pricingModel</b> {"PER_KWH", "TIME_OF_DAY", "SUBSCRIPTION", "FIXED"}
+    {field} TimePeriod validityWindow
+    {field} TimePeriod deliveryWindow
+}
+
+EnergyTradeOffer ..> TimePeriod
+
+
+class EnergyTradeOrder {
+    {field} string <b>bap_id</b>
+    {field} string <b>bpp_id</b>
+    {field} Quantity total_quantity
+}
+
+EnergyTradeOrder ..> Quantity
+
+
+class EnergyTradeDelivery {
+    {field} string deliveryStatus {"PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"}
+    {field} string deliveryMode {"EV_CHARGING", "BATTERY_SWAP", "V2G", "GRID_INJECTION"}
+    {field} number deliveredQuantity
+    {field} object[] meterReadings
+    {field} number curtailedQuantity
+    {field} string curtailmentReason {"GRID_OUTAGE", "EMERGENCY", "CONGESTION", "MAINTENANCE", "OTHER"}
+    {field} string (date-time) lastUpdated
+}
+
+
+
+class EnergyResource {
+    {field} string sourceType {"SOLAR", "BATTERY", "GRID", "HYBRID", "RENEWABLE"}
+    {field} string meterId
+}
+
+
+
+class EnergyCustomer {
+    {field} string <b>meterId</b>
+    {field} number sanctionedLoad
+    {field} string utilityCustomerId
+    {field} string utilityId
+}
+
+
+
+class EnergyOrderItem {
+    {field} object <b>providerAttributes</b>
+    {field} object fulfillmentAttributes
+}
+
+
+@enduml

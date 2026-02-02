@@ -59,15 +59,7 @@
       "@id": "beckn:sourceType",
       "@type": "@id"
     },
-    "certificationStatus": "beckn:certificationStatus",
     "meterId": "beckn:meterId",
-    "availableQuantity": "beckn:availableQuantity",
-    "productionWindow": "beckn:productionWindow",
-    "sourceVerification": "beckn:sourceVerification",
-    "verified": "beckn:verified",
-    "verificationDate": "beckn:verificationDate",
-    "certificates": "beckn:certificates",
-    "productionAsynchronous": "beckn:productionAsynchronous",
 
     "sanctionedLoad": "beckn:sanctionedLoad",
     "utilityCustomerId": "beckn:utilityCustomerId",

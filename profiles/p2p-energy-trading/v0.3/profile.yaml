@@ -207,7 +207,7 @@ components:
             beckn:itemAttributes:
               description: |
                 EnergyResource attributes for energy source characteristics.
-                Includes sourceType, deliveryMode, certificationStatus, etc.
+                Includes sourceType and meterId.
               $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyResource'
 
     ########################################################################

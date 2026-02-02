@@ -192,50 +192,11 @@
       "schema:rangeIncludes": "beckn:SourceType"
     },
     {
-      "@id": "beckn:certificationStatus",
-      "@type": "rdf:Property",
-      "rdfs:label": "Certification status",
-      "rdfs:comment": "Carbon offset or green energy certification status.",
-      "rdfs:domain": "beckn:EnergyResource",
-      "rdfs:range": "xsd:string"
-    },
-    {
       "@id": "beckn:meterId",
       "@type": "rdf:Property",
       "rdfs:label": "Meter ID",
       "rdfs:comment": "Meter identifier in DER address format (der://meter/{id}).",
       "rdfs:range": "xsd:string"
-    },
-    {
-      "@id": "beckn:availableQuantity",
-      "@type": "rdf:Property",
-      "rdfs:label": "Available quantity",
-      "rdfs:comment": "Available energy quantity in kilowatt-hours (kWh).",
-      "rdfs:domain": "beckn:EnergyResource",
-      "schema:rangeIncludes": "schema:Number"
-    },
-    {
-      "@id": "beckn:productionWindow",
-      "@type": "rdf:Property",
-      "rdfs:label": "Production window",
-      "rdfs:comment": "Array of time windows when energy is produced or available.",
-      "rdfs:domain": "beckn:EnergyResource",
-      "schema:rangeIncludes": "schema:ItemList"
-    },
-    {
-      "@id": "beckn:sourceVerification",
-      "@type": "rdf:Property",
-      "rdfs:label": "Source verification",
-      "rdfs:comment": "Source verification details including certificates.",
-      "rdfs:domain": "beckn:EnergyResource"
-    },
-    {
-      "@id": "beckn:productionAsynchronous",
-      "@type": "rdf:Property",
-      "rdfs:label": "Production asynchronous",
-      "rdfs:comment": "Whether production and trade may be asynchronous.",
-      "rdfs:domain": "beckn:EnergyResource",
-      "rdfs:range": "xsd:boolean"
     },
     {
       "@id": "beckn:sanctionedLoad",

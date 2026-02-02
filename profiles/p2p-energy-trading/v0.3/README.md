@@ -15,7 +15,7 @@ This profile defines how domain-specific Energy Trade schemas slot into core Bec
 | `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | **REQUIRED:** BAP/BPP IDs, total_quantity |
 | `Order` | `beckn:buyer` | `P2PEnergyBuyer` | **REQUIRED:** Buyer with EnergyCustomer attributes |
 | `Item` | `beckn:provider` | `P2PEnergyProvider` | **REQUIRED:** Provider with EnergyCustomer attributes |
-| `Item` | `beckn:itemAttributes` | `EnergyResource` | Source type, delivery mode |
+| `Item` | `beckn:itemAttributes` | `EnergyResource` | Source type, meterId |
 | `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | **REQUIRED:** meterId, utilityId |
 | `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | **REQUIRED:** meterId, utilityId |
 | `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | **REQUIRED:** providerAttributes, fulfillmentAttributes |
