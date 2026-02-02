@@ -14,34 +14,37 @@ info:
 
     | Core Entity | Attribute Slot | Domain Schema | Description |
     |-------------|----------------|---------------|-------------|
-    | `Offer` | `beckn:offerAttributes` | `EnergyTradeOffer` | Pricing (beckn:price + applicableQuantity), delivery window |
-    | `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | BAP/BPP IDs, total quantity |
-    | `Order` | `beckn:orderAttributes` | `EnergyTradeOrderInterUtility` | Extended with utility IDs for inter-discom |
+    | `Offer` | `beckn:price` | `PriceSpecification` | REQUIRED: Price with applicableQuantity (max kWh) |
+    | `Offer` | `beckn:offerAttributes` | `EnergyTradeOffer` | REQUIRED: pricingModel, deliveryWindow |
+    | `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | REQUIRED: BAP/BPP IDs, total_quantity |
     | `Order` | `beckn:buyer` | `P2PEnergyBuyer` | REQUIRED: Buyer with EnergyCustomer attributes |
     | `Item` | `beckn:provider` | `P2PEnergyProvider` | REQUIRED: Provider with EnergyCustomer attributes |
     | `Item` | `beckn:itemAttributes` | `EnergyResource` | Source type, delivery mode |
-    | `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | REQUIRED: Provider/prosumer meterId, utilityId |
-    | `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | REQUIRED: Buyer/consumer meterId, utilityId |
-    | `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | Wrapper for provider/fulfillment attrs |
-    | `EnergyOrderItem` | `providerAttributes` | `EnergyCustomer` | Delivery destination meter |
-    | `EnergyOrderItem` | `fulfillmentAttributes` | `EnergyTradeDelivery` | Meter readings, delivery status |
+    | `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | REQUIRED: meterId, utilityId |
+    | `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | REQUIRED: meterId, utilityId |
+    | `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | REQUIRED: providerAttributes, fulfillmentAttributes |
+    | `EnergyOrderItem` | `providerAttributes` | `EnergyCustomer` | REQUIRED: Delivery destination meter |
+    | `EnergyOrderItem` | `fulfillmentAttributes` | `EnergyTradeDelivery` | REQUIRED: Meter readings, delivery status |
 
     ## Required Core Fields
 
     When using this profile, the following core Beckn fields are REQUIRED:
 
     ### On Offer (discover response, select response)
-    - `beckn:offerAttributes` - Must be EnergyTradeOffer
-      - `beckn:price` with `applicableQuantity` - REQUIRED within EnergyTradeOffer
+    - `beckn:price` - REQUIRED on parent Offer, with `applicableQuantity` specifying max kWh
+    - `beckn:offerAttributes` - Must be EnergyTradeOffer with pricingModel
 
     ### On Order (init, confirm, status)
-    - `beckn:orderAttributes` - Must be EnergyTradeOrder or EnergyTradeOrderInterUtility
+    - `beckn:buyer` - Must be P2PEnergyBuyer with buyerAttributes (EnergyCustomer)
+    - `beckn:orderAttributes` - Must be EnergyTradeOrder
     - `beckn:orderItems` - At least one order item required
 
     ### On OrderItem
     - `beckn:quantity` - Requested energy quantity
     - `beckn:acceptedOffer` - Reference to the accepted offer
-    - `beckn:orderItemAttributes` - Must be EnergyOrderItem
+    - `beckn:orderItemAttributes` - Must be EnergyOrderItem with:
+      - `providerAttributes` - EnergyCustomer (delivery destination)
+      - `fulfillmentAttributes` - EnergyTradeDelivery (in status responses)
 
     ## Schema URLs
 
@@ -65,16 +68,30 @@ components:
       description: |
         Offer profile for P2P energy trading.
         Extends core Offer with required fields for energy trading.
+        - beckn:price (on Offer) with applicableQuantity is REQUIRED
+        - beckn:offerAttributes (EnergyTradeOffer) is REQUIRED
       allOf:
         - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Offer'
         - type: object
           required:
+            - "beckn:price"
             - "beckn:offerAttributes"
           properties:
+            beckn:price:
+              description: |
+                REQUIRED. Price specification with applicableQuantity.
+                applicableQuantity specifies the max energy (kWh) for this delivery window.
+              allOf:
+                - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/PriceSpecification'
+                - type: object
+                  required: [applicableQuantity]
+                  properties:
+                    applicableQuantity:
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Quantity'
             beckn:offerAttributes:
               description: |
-                Must be EnergyTradeOffer for P2P energy trading.
-                EnergyTradeOffer.beckn:price with applicableQuantity is REQUIRED.
+                REQUIRED. Must be EnergyTradeOffer for P2P energy trading.
+                Contains pricingModel, deliveryWindow, and validityWindow.
               $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeOffer'
 
     ########################################################################
@@ -106,40 +123,15 @@ components:
                 $ref: '#/components/schemas/P2PEnergyOrderItem'
 
     ########################################################################
-    # PROFILE: Order with EnergyTradeOrderInterUtility attributes
-    ########################################################################
-    P2PEnergyOrderInterUtility:
-      description: |
-        Order profile for inter-utility (inter-discom) P2P energy trading.
-        Extends core Order with utility identifiers for cross-discom transactions.
-      allOf:
-        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order'
-        - type: object
-          required:
-            - "beckn:orderAttributes"
-            - "beckn:orderItems"
-          properties:
-            beckn:buyer:
-              description: |
-                REQUIRED. Must be P2PEnergyBuyer for P2P energy trading.
-                Contains EnergyCustomer in buyerAttributes with meterId.
-              $ref: '#/components/schemas/P2PEnergyBuyer'
-            beckn:orderAttributes:
-              description: Must be EnergyTradeOrderInterUtility for inter-discom trading.
-              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeOrderInterUtility'
-            beckn:orderItems:
-              type: array
-              minItems: 1
-              items:
-                $ref: '#/components/schemas/P2PEnergyOrderItem'
-
-    ########################################################################
     # PROFILE: OrderItem with EnergyOrderItem attributes
     ########################################################################
     P2PEnergyOrderItem:
       description: |
         OrderItem profile for P2P energy trading.
         Extends core OrderItem with energy-specific attributes.
+        - beckn:orderItemAttributes must be EnergyOrderItem with:
+          - providerAttributes (EnergyCustomer) - REQUIRED
+          - fulfillmentAttributes (EnergyTradeDelivery) - REQUIRED in status responses
       allOf:
         - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
         - type: object
@@ -155,8 +147,25 @@ components:
               description: Reference to the accepted EnergyTradeOffer.
               $ref: '#/components/schemas/P2PEnergyOffer'
             beckn:orderItemAttributes:
-              description: Must be EnergyOrderItem for P2P energy trading.
-              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyOrderItem'
+              description: |
+                REQUIRED. Must be EnergyOrderItem for P2P energy trading.
+                Contains providerAttributes (EnergyCustomer) and fulfillmentAttributes (EnergyTradeDelivery).
+              allOf:
+                - $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyOrderItem'
+                - type: object
+                  required:
+                    - providerAttributes
+                  properties:
+                    providerAttributes:
+                      description: |
+                        REQUIRED. EnergyCustomer identifying the delivery destination.
+                        Contains meterId, utilityId for the receiving meter.
+                      $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyCustomer'
+                    fulfillmentAttributes:
+                      description: |
+                        EnergyTradeDelivery with meter readings and delivery status.
+                        REQUIRED in status responses (on_status, on_confirm).
+                      $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeDelivery'
 
     ########################################################################
     # PROFILE: Provider with EnergyCustomer attributes (for prosumers)

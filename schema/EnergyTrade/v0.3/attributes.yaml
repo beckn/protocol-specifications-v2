@@ -23,13 +23,15 @@ components:
     EnergyTradeOffer:
       type: object
       additionalProperties: false
-      required: [pricingModel, "beckn:price"]
+      required: [pricingModel]
       x-jsonld:
         "@context": ./context.jsonld
         "@type": EnergyTradeOffer
       description: >
         Offer attributes for P2P energy trading. Attached to Offer.offerAttributes
-        to provide pricing models, availability windows, and quantity details.
+        to provide pricing models, availability windows, and delivery details.
+        NOTE: Price (beckn:price) is specified on the parent Offer object, not here.
+        The price.applicableQuantity specifies the max energy quantity for this delivery window.
       properties:
 
         pricingModel:
@@ -50,23 +52,6 @@ components:
                 the offer is no longer available for selection.
               required: ["schema:startTime", "schema:endTime"]
           x-jsonld: { "@id": validityWindow }
-
-        beckn:price:
-          allOf:
-            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/PriceSpecification'
-            - type: object
-              required: [applicableQuantity]
-              description: >
-                Price per unit for this specific time window. MUST include applicableQuantity
-                to specify the maximum energy quantity available in this delivery window.
-                User's requested quantity is specified in OrderItem.beckn:quantity and must
-                be ≤ applicableQuantity.
-              properties:
-                applicableQuantity:
-                  description: >
-                    Maximum energy quantity available in this delivery window (e.g., hourly slot).
-                    Units should be in kWh.
-          x-jsonld: { "@id": "schema:priceSpecification" }
 
         deliveryWindow:
           allOf:
@@ -98,8 +83,7 @@ components:
     ########################################################################
     EnergyTradeOrder:
       type: object
-      # Note: additionalProperties not set to false to allow allOf composition
-      # with EnergyTradeOrderInterUtility and future extensions
+      additionalProperties: false
       required: [bap_id, bpp_id]
       x-jsonld:
         "@context": ./context.jsonld
@@ -107,6 +91,8 @@ components:
       description: >
         Order attributes for P2P energy trading. Attached to Order.orderAttributes
         to identify BAP and BPP participants involved in a trade.
+        NOTE: Utility IDs for inter-discom trading are captured in EnergyCustomer
+        (buyerAttributes.utilityId and providerAttributes.utilityId).
       properties:
 
         bap_id:
@@ -122,46 +108,21 @@ components:
           x-jsonld: { "@id": bpp_id }
 
         total_quantity:
-          type: number
-          minimum: 0
-          description: Total quantity of energy in kilowatt-hours (kWh) for this trade order.
-          example: 50.0
+          allOf:
+            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Quantity'
+            - type: object
+              description: >
+                Total quantity of energy for this trade order. Units should be in kWh.
+              properties:
+                unitText:
+                  default: "kWh"
+                unitCode:
+                  default: "KWH"
+          example:
+            unitQuantity: 50.0
+            unitText: "kWh"
+            unitCode: "KWH"
           x-jsonld: { "@id": total_quantity }
-
-    ########################################################################
-    # ORDER.ATTRIBUTES — EnergyTradeOrderInterUtility (Inter-Discom P2P Trading)
-    ########################################################################
-    EnergyTradeOrderInterUtility:
-      description: >
-        Extended energy trade order attributes for inter-utility (inter-discom) P2P trading.
-        Inherits all properties from EnergyTradeOrder and adds utility/discom identifiers
-        for both buyer and seller sides. These IDs identify the distribution companies
-        (discoms) that the buyer and seller are connected to, NOT the customer IDs.
-      allOf:
-        - $ref: '#/components/schemas/EnergyTradeOrder'
-        - type: object
-          required: [utilityIdBuyer, utilityIdSeller]
-          properties:
-            utilityIdBuyer:
-              type: string
-              description: >
-                Identifier of the buyer-side utility/distribution company (discom).
-                This is the discom that the energy buyer is connected to for grid access.
-                NOT the buyer's customer ID - use orderItemAttributes.utilityCustomerId for that.
-              example: "BESCOM-KA"
-              x-jsonld: { "@id": utilityIdBuyer }
-
-            utilityIdSeller:
-              type: string
-              description: >
-                Identifier of the seller-side utility/distribution company (discom).
-                This is the discom that the energy seller/prosumer is connected to for grid injection.
-                NOT the seller's customer ID - this identifies the distribution company.
-              example: "TPDDL-DL"
-              x-jsonld: { "@id": utilityIdSeller }
-      x-jsonld:
-        "@context": ./context.jsonld
-        "@type": EnergyTradeOrderInterUtility
 
     ########################################################################
     # FULFILLMENT.ATTRIBUTES — EnergyTradeDelivery (P2P Energy Trading)

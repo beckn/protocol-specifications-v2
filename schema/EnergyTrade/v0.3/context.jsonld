@@ -20,7 +20,6 @@
 
     "EnergyTradeOffer": "beckn:EnergyTradeOffer",
     "EnergyTradeOrder": "beckn:EnergyTradeOrder",
-    "EnergyTradeOrderInterUtility": "beckn:EnergyTradeOrderInterUtility",
     "EnergyTradeDelivery": "beckn:EnergyTradeDelivery",
     "EnergyResource": "beckn:EnergyResource",
     "EnergyCustomer": "beckn:EnergyCustomer",
@@ -32,13 +31,10 @@
     },
     "validityWindow": "beckn:validityWindow",
     "deliveryWindow": "beckn:deliveryWindow",
-    "beckn:price": "schema:priceSpecification",
 
     "bap_id": "beckn:bap_id",
     "bpp_id": "beckn:bpp_id",
     "total_quantity": "beckn:total_quantity",
-    "utilityIdBuyer": "beckn:utilityIdBuyer",
-    "utilityIdSeller": "beckn:utilityIdSeller",
 
     "deliveryStatus": {
       "@id": "beckn:deliveryStatus",

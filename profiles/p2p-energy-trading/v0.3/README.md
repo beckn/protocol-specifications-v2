@@ -4,23 +4,23 @@ Profile schema for P2P Energy Trading on Beckn Protocol v2.
 
 ## Overview
 
-This profile defines how domain-specific Energy Trade schemas slot into core Beckn entities for P2P energy trading use cases, including inter-utility (inter-discom) transactions.
+This profile defines how domain-specific Energy Trade schemas slot into core Beckn entities for P2P energy trading use cases. Utility IDs for inter-discom trading are captured in EnergyCustomer (buyerAttributes.utilityId and providerAttributes.utilityId).
 
 ## Attribute Slot Mappings
 
 | Core Entity | Attribute Slot | Domain Schema | Description |
 |-------------|----------------|---------------|-------------|
-| `Offer` | `beckn:offerAttributes` | `EnergyTradeOffer` | Pricing (beckn:price + applicableQuantity), delivery window |
-| `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | BAP/BPP IDs, total quantity |
-| `Order` | `beckn:orderAttributes` | `EnergyTradeOrderInterUtility` | Extended with utility IDs for inter-discom |
+| `Offer` | `beckn:price` | `PriceSpecification` | **REQUIRED:** Price with applicableQuantity (max kWh) |
+| `Offer` | `beckn:offerAttributes` | `EnergyTradeOffer` | **REQUIRED:** pricingModel, deliveryWindow |
+| `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | **REQUIRED:** BAP/BPP IDs, total_quantity |
 | `Order` | `beckn:buyer` | `P2PEnergyBuyer` | **REQUIRED:** Buyer with EnergyCustomer attributes |
 | `Item` | `beckn:provider` | `P2PEnergyProvider` | **REQUIRED:** Provider with EnergyCustomer attributes |
 | `Item` | `beckn:itemAttributes` | `EnergyResource` | Source type, delivery mode |
-| `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | **REQUIRED:** Provider/prosumer meterId, utilityId |
-| `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | **REQUIRED:** Buyer/consumer meterId, utilityId |
-| `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | Wrapper for provider/fulfillment attrs |
-| `EnergyOrderItem` | `providerAttributes` | `EnergyCustomer` | Delivery destination meter |
-| `EnergyOrderItem` | `fulfillmentAttributes` | `EnergyTradeDelivery` | Meter readings, delivery status |
+| `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | **REQUIRED:** meterId, utilityId |
+| `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | **REQUIRED:** meterId, utilityId |
+| `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | **REQUIRED:** providerAttributes, fulfillmentAttributes |
+| `EnergyOrderItem` | `providerAttributes` | `EnergyCustomer` | **REQUIRED:** Delivery destination meter |
+| `EnergyOrderItem` | `fulfillmentAttributes` | `EnergyTradeDelivery` | **REQUIRED:** Meter readings, delivery status |
 
 ## Required Core Fields
 
@@ -29,30 +29,45 @@ When using this profile, the following core Beckn fields are REQUIRED beyond bas
 ### On Offer (discover response, select response)
 
 ```yaml
-beckn:offerAttributes:  # REQUIRED - Must be EnergyTradeOffer
+beckn:price:              # REQUIRED - On parent Offer object
+  "@type": "schema:PriceSpecification"
+  schema:price: 4.50
+  schema:priceCurrency: "INR"
+  applicableQuantity:     # REQUIRED - Max quantity for this delivery window
+    unitQuantity: 10
+    unitText: "kWh"
+beckn:offerAttributes:    # REQUIRED - Must be EnergyTradeOffer
   "@type": "EnergyTradeOffer"
   pricingModel: "PER_KWH"
   deliveryWindow: { ... }
-  beckn:price:          # REQUIRED - Price with applicableQuantity
-    schema:price: 4.50
-    schema:priceCurrency: "INR"
-    applicableQuantity:   # REQUIRED - Max quantity for this delivery window
-      schema:value: 10
-      schema:unitText: "kWh"
 ```
 
 ### On Order (init, confirm, status)
 
 ```yaml
-beckn:orderAttributes:  # REQUIRED - Must be EnergyTradeOrder[InterUtility]
-  "@type": "EnergyTradeOrderInterUtility"
+beckn:buyer:              # REQUIRED - Must include buyerAttributes
+  "@type": "beckn:Buyer"
+  beckn:buyerAttributes:
+    "@type": "EnergyCustomer"
+    meterId: "der://meter/123456"
+    utilityId: "BESCOM-KA"
+beckn:orderAttributes:    # REQUIRED - Must be EnergyTradeOrder
+  "@type": "EnergyTradeOrder"
   bap_id: "buyer-platform.example.com"
   bpp_id: "seller-platform.example.com"
-  utilityIdBuyer: "BESCOM-KA"
-  utilityIdSeller: "TPDDL-DL"
-beckn:orderItems:       # REQUIRED - At least one
+  total_quantity:
+    unitQuantity: 25.0
+    unitText: "kWh"
+beckn:orderItems:         # REQUIRED - At least one
   - beckn:quantity: { ... }
-    beckn:orderItemAttributes: { ... }
+    beckn:orderItemAttributes:
+      "@type": "EnergyOrderItem"
+      providerAttributes:   # REQUIRED
+        "@type": "EnergyCustomer"
+        meterId: "..."
+      fulfillmentAttributes:  # REQUIRED in status responses
+        "@type": "EnergyTradeDelivery"
+        deliveryStatus: "IN_PROGRESS"
 ```
 
 ## Schema URLs
@@ -113,7 +128,7 @@ Your JSON payloads should reference the EnergyTrade schemas:
       "@type": "beckn:Order",
       "beckn:orderAttributes": {
         "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/.../EnergyTrade/v0.3/context.jsonld",
-        "@type": "EnergyTradeOrderInterUtility",
+        "@type": "EnergyTradeOrder",
         ...
       }
     }
@@ -133,7 +148,7 @@ with open('profile.yaml') as f:
     profile = yaml.safe_load(f)
 
 # Get the P2PEnergyOrder schema
-order_schema = profile['components']['schemas']['P2PEnergyOrderInterUtility']
+order_schema = profile['components']['schemas']['P2PEnergyOrder']
 
 # Validate an order
 jsonschema.validate(order_payload, order_schema)
@@ -149,19 +164,10 @@ const ajv = new Ajv({ allErrors: true });
 
 // Load and compile profile schema
 const profile = yaml.load(fs.readFileSync('profile.yaml'));
-const validate = ajv.compile(profile.components.schemas.P2PEnergyOrderInterUtility);
+const validate = ajv.compile(profile.components.schemas.P2PEnergyOrder);
 
 // Validate
 if (!validate(orderPayload)) {
   console.log(validate.errors);
 }
 ```
-
-## Inter-Discom Trading
-
-For inter-utility transactions, use `EnergyTradeOrderInterUtility` which adds:
-
-- `utilityIdBuyer`: Discom serving the buyer (e.g., "BESCOM-KA")
-- `utilityIdSeller`: Discom serving the seller (e.g., "TPDDL-DL")
-
-These IDs identify distribution companies, NOT customer IDs.
