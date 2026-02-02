@@ -1,7 +1,7 @@
 # Beckn Protocol Governance Model (2.x)
 
 **Status:** Draft  
-**Applies to:** Beckn Protocol (Core), Domain Specifications, and Network Profiles built on Beckn
+**Applies to:** Beckn Protocol (Core), Domain Specifications, and Open Networks built using Beckn
 
 ---
 
@@ -29,11 +29,10 @@ This governance model does not aim to:
 
 - create membership structures, gatekeeping, or bureaucracy;
 - force every network to move at the pace of core/domain;
-- mandate a single reference implementation as “the” Beckn.
 
 ## 2. The Beckn credo (constitutional intent)
 
-Beckn is an open protocol designed to expand interoperable digital commerce and coordination across diverse actors and ecosystems—globally, across domains, and across regions—while preserving agency, choice, and competition.
+Beckn is an open protocol designed to create an interoperable value exchange layer on the internet across diverse actors and ecosystems—globally, across domains, and across regions—while preserving agency, choice, and competition.
 
 Governance exists to protect:
 - interoperability,
@@ -121,11 +120,11 @@ Network-specific constraints and additions: regional policy requirements, identi
 If two artifacts conflict:
 1) follow precedence order;  
 2) if still ambiguous, apply **constitutional principles**;  
-3) final interpretation authority lies with the **Core Stewardship Council** (Section 6).
+3) final interpretation authority lies with the **Core Working Group** (Section 6).
 
 ## 6. Roles (minimal and accountable)
 
-### 6.1 Core Stewardship Council (CSC)
+### 6.1 Core Working Group (CWG)
 
 **Mandate:** protect constitutional principles and decide final interpretations.
 
@@ -167,14 +166,14 @@ Domains follow this governance model, adapted through a **Domain Charter** that 
 
 ## 7. Selection, rotation, and removal (lightweight but real)
 
-### 7.1 CSC selection (default mechanism)
+### 7.1 CWG selection (default mechanism)
 
 - A public call for nominations is opened.
 - Nominations must include:
   - statement of intent,
   - relevant experience,
   - disclosure of conflicts of interest (employment, advisory roles, major commercial dependencies).
-- The CSC selects candidates via rough consensus; if contested, a 2/3 CSC vote applies.
+- The CWG selects candidates via rough consensus; if contested, a 2/3 CWG vote applies.
 - A time-boxed public objection window is provided before finalizing appointments.
 
 ### 7.2 Removal
@@ -188,7 +187,7 @@ A steward/editor may be removed for:
 Removal requires:
 - documented rationale,
 - an opportunity to respond,
-- CSC vote (2/3).
+- CWG vote (2/3).
 
 ---
 
@@ -203,15 +202,15 @@ A decision passes when:
 ### 8.2 Fallback: time-boxed vote
 
 If consensus stalls:
-- Editors or CSC may call a vote with a defined deadline.
+- Editors or CWG may call a vote with a defined deadline.
 - Vote outcomes and rationale must be documented in the issue/PR.
 
 ### 8.3 Interpretation authority
 
 When ambiguity exists in the spec:
 - Editors attempt resolution using principles;
-- unresolved disputes escalate to CSC;
-- CSC interpretations are binding until superseded by a release.
+- unresolved disputes escalate to CWG;
+- CWG interpretations are binding until superseded by a release.
 
 ---
 
@@ -316,7 +315,7 @@ To keep governance lightweight and real:
 
 - Normative PRs MUST pass automated validation (schemas, examples, conformance rules) where applicable.
 - Editors MUST refuse merges that omit required change metadata.
-- Repeated bypassing of gates triggers escalation to CSC.
+- Repeated bypassing of gates triggers escalation to CWG.
 
 ---
 
@@ -328,7 +327,7 @@ Because this document is constitutional:
   - written proposal,
   - documented rationale tied to principles,
   - a time-boxed public review window,
-  - CSC approval (2/3 minimum).
+  - CWG approval (2/3 minimum).
 - Amendment history MUST be maintained in a changelog section or linked artifact.
 
 ---
@@ -353,7 +352,7 @@ Each derived document MUST include the Notice statement defined in Section 0.
 
 - Governance is now explicitly **constitutional**: precedence and interpretation are formal.
 - The **Core → Domain → Network** layering is first-class and rules are explicit.
-- Roles are compressed into a minimal set (CSC, Editors, Release Captain, Domain Stewards).
+- Roles are compressed into a minimal set (CWG, Editors, Release Captain, Domain Stewards).
 - Change lifecycle is tied to **enforceable gates** (validation + migration + conformance impact).
 - Dependency-over-duplication is elevated as a governance principle to reduce drift and preserve interoperability.
 - Deprecation and removal rules are formalized (sunset clocks; removal via major versions only).
