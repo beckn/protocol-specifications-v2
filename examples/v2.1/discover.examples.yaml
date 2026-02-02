@@ -1,0 +1,93 @@
+discover_structured_query:
+  summary: Structured discover (electronics)
+  value:
+    context:
+      version: "2.0.0"
+      action: "discover"
+      timestamp: "2024-04-10T16:10:50+05:30"
+      message_id: "5c8f1a2b-9d3e-4f76-8b21-3a4c5d6e7f80"
+      transactionId: "d3b07384-4a1c-4f5e-9c2b-7e6d5c4b3a21"
+      bap_id: "bap.example.com"
+      bap_uri: "https://bap.example.com"
+      ttl: "PT30S"
+      schemaContext:
+        - "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld"
+    message:
+      textSearch: "gaming laptop premium tech"
+      filters:
+        expressionType: "jsonpath"
+        expression: "$[?(@.rating.value >= 4 && @.electronic.brand.name == 'Premium Tech')]"
+discover_natural_language:
+  summary: Natural-language discover (electronics)
+  value:
+    context:
+      version: "2.0.0"
+      action: "discover"
+      timestamp: "2024-04-10T16:10:50+05:30"
+      message_id: "9a7b6c5d-8e4f-4a3b-9c2d-1e0f2a3b4c5d"
+      transactionId: "1f2e3d4c-5b6a-4789-8c0d-1a2b3c4d5e6f"
+      bap_id: "bap.example.com"
+      bap_uri: "https://bap.example.com"
+      ttl: "PT30S"
+      schemaContext:
+        - "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld"
+    message:
+      textSearch: "Looking for a premium gaming laptop under $2000 near San Francisco"
+discover_grocery_search:
+  summary: Structured discover (grocery)
+  value:
+    context:
+      version: "2.0.0"
+      action: "discover"
+      timestamp: "2024-04-10T16:10:50+05:30"
+      message_id: "2a3b4c5d-6e7f-4890-9a1b-2c3d4e5f6071"
+      transactionId: "7e6d5c4b-3a21-4c5d-8f70-9a1b2c3d4e5f"
+      bap_id: "bap.example.com"
+      bap_uri: "https://bap.example.com"
+      ttl: "PT30S"
+      schemaContext:
+        - "https://example.org/schema/items/v1/GroceryItem/schema-context.jsonld"
+    message:
+      textSearch: "organic apples fresh"
+      filters:
+        expressionType: "jsonpath"
+        expression: "$[?(@.grocery.organicCertification ~ 'USDA Organic')]"
+discover_combined_search:
+  summary: Combined text + filters
+  value:
+    context:
+      version: "2.0.0"
+      action: "discover"
+      timestamp: "2024-04-10T16:10:50+05:30"
+      message_id: "3b4c5d6e-7f80-41a2-93b4-c5d6e7f8091a"
+      transactionId: "8f70e6d5-c4b3-42a1-9c2d-3e4f5a6b7c8d"
+      bap_id: "bap.example.com"
+      bap_uri: "https://bap.example.com"
+      ttl: "PT30S"
+      schemaContext:
+        - "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld"
+    message:
+      textSearch: "gaming laptop"
+      filters:
+        expressionType: "jsonpath"
+        expression: "$[?(@.electronic.price['schema:price'] <= 2000 && @.electronic.brand.name == 'Premium Tech')]"
+discover_multi_schema_search:
+  summary: Multi-schema discover (electronics + grocery)
+  value:
+    context:
+      version: "2.0.0"
+      action: "discover"
+      timestamp: "2024-04-10T16:10:50+05:30"
+      message_id: "4c5d6e7f-8091-42b3-94c5-d6e7f8091a2b"
+      transactionId: "9c2d3e4f-5a6b-47c8-8d90-1a2b3c4d5e6f"
+      bap_id: "bap.example.com"
+      bap_uri: "https://bap.example.com"
+      ttl: "PT30S"
+      schemaContext:
+        - "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld"
+        - "https://example.org/schema/items/v1/GroceryItem/schema-context.jsonld"
+    message:
+      textSearch: "premium tech and organic food"
+      filters:
+        expressionType: "jsonpath"
+        expression: "$[?(@.rating.value >= 4 && (@.electronic.brand.name == 'Premium Tech' || @.grocery.organicCertification ~ 'USDA Organic'))]"
