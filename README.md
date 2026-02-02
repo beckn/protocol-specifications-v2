@@ -1,18 +1,20 @@
-# Beckn Protocol v2.0.0-rc2 (Release Candidate)
-This repository contains the release candidate of the latest major version release of Beckn Protocol - v2.0.0, defining a JSON-LD and schema.org-aligned core schema, updated APIs, and reference flows for the next generation of Beckn networks. It introduces a catalog-first Catalog Discovery Service (CDS) (replacing the Beckn Gateway for discovery), a DeDi-compliant Network Registry, and a modular “core + schema packs” model to enable strong design-time and run-time composability and global semantic interoperability. 
+# Beckn Protocol v2.0.0
+This repository contains the the latest major version release of Beckn Protocol - v2.0.0, defining a JSON-LD and schema.org-aligned core schema, updated APIs, and reference flows for the next generation of Beckn networks. It introduces a catalog-first Catalog Discovery Service (CDS) (replacing the Beckn Gateway for discovery), a DeDi-compliant Network Registry, and a modular “core + schema packs” model to enable strong design-time and run-time composability and global semantic interoperability.
+
+TODO: Add version history table
 
 ## 1. High-level goals of v2
 
 Beckn v2 reorganizes the protocol around:
 - **Global semantic interoperability** via JSON-LD and deep alignment with schema.org and other globally interoperable linked data schemas.
 - Design-time composability: modular core + pluggable domain-specific “schema”.
-- **Run-time composability**: independent but interoperable actors (BAP, BPP, CDS, Registry, Agents) that can be recombined without changing the core.
+- **Run-time composability**: independent but interoperable actors (BAP, BPP, CDS, Registry) that can be recombined without changing the core.
 - **Registry and discovery modernization**:
 	- BG → CDS: Beckn Gateway is replaced by a Catalog Discovery Service (CDS).
 	- Legacy Registry → DeDi-compliant Registry: Network Registry becomes compliant with the Decentralized Directory (DeDi) protocol.  ￼
 
 
-## 2. Schema changes: from v1.x to v2
+## 2. Schema changes: from v1 to v2
 
 ### 2.1 From OpenAPI/JSON Schema to JSON-LD + schema.org
 
