@@ -1,0 +1,2071 @@
+openapi: 3.1.1
+info:
+  title: Beckn Core Schemas v2
+  description: 'Core schemas for the Beckn Protocol v2. This file contains the fundamental
+    data structures used across discovery, transaction, and other Beckn services'
+  version: 2.1.0
+  contact:
+    name: Beckn Labs
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+components:
+  schemas:
+    AcceptedPaymentMethod:
+      description: Payment methods accepted for this offer
+      example:
+      - UPI
+      - Card
+      - Wallet
+      items:
+        enum:
+        - UPI
+        - CREDIT_CARD
+        - DEBIT_CARD
+        - WALLET
+        - BANK_TRANSFER
+        - CASH
+        - APPLE_PAY
+        type: string
+      type: array
+      x-jsonld:
+        '@id': beckn:acceptedPaymentMethod
+    AckResponse:
+      additionalProperties: false
+      allOf:
+      - if:
+          properties:
+            ack_status:
+              const: NACK
+          required:
+          - ack_status
+        then:
+          required:
+          - error
+      - if:
+          properties:
+            ack_status:
+              const: ACK
+          required:
+          - ack_status
+        then:
+          not:
+            required:
+            - error
+      properties:
+        ack_status:
+          enum:
+          - ACK
+          - NACK
+          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+        timestamp:
+          format: date-time
+          type: string
+        transaction_id:
+          type: string
+      required:
+      - transaction_id
+      - timestamp
+      - ack_status
+      type: object
+    Address:
+      additionalProperties: false
+      description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses. Geometry lives in `Location.geo` as GeoJSON.'
+      properties:
+        addressCountry:
+          description: Country name or ISO-3166-1 alpha-2 code.
+          example: IN
+          type: string
+        addressLocality:
+          description: City/locality.
+          example: Bengaluru
+          type: string
+        addressRegion:
+          description: State/region/province.
+          example: Karnataka
+          type: string
+        extendedAddress:
+          description: Address extension (apt/suite/floor, C/O).
+          example: Apt 4B
+          type: string
+        postalCode:
+          description: Postal/ZIP code.
+          example: '560001'
+          type: string
+        streetAddress:
+          description: Street address (building name/number and street).
+          example: 123 Tech Street
+          type: string
+      type: object
+    Alert:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Alert
+          type: string
+        beckn:affectedEntities:
+          description: IDs of entities affected (route/order/fulfillment/etc.)
+          items:
+            type: string
+          type: array
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          type: string
+        beckn:severity:
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Attributes:
+      additionalProperties: true
+      description: 'JSON-LD aware container for domain-specific attributes of an Item. MUST include @context (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the provided JSON-LD context.'
+      minProperties: 2
+      properties:
+        '@context':
+          description: JSON-LD context URI for the specific domain schema (e.g., ElectronicItem)
+          example: https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld
+          format: uri
+          type: string
+        '@type':
+          description: JSON-LD type within the domain schema
+          example: beckn:ElectronicItem
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      type: object
+    Buyer:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Buyer
+          type: string
+          x-jsonld:
+            '@id': schema:Thing
+        beckn:buyerAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: 'Attribute Pack reference for richer identity: # buyer/identity.v1 (contact details: email, phone, address) # buyer/org-ids.v1 (LEI, GSTIN, ISIN, CUSIP…) # buyer/kyc.v1 (jurisdictional compliance fields) # buyer/preferences.v1 (delivery preferences, accessibility needs, etc.)'
+        beckn:displayName:
+          description: Human-readable display name
+          type: string
+          x-jsonld:
+            '@id': schema:name
+        beckn:email:
+          description: Email Address
+          format: email
+          type: string
+          x-jsonld:
+            '@id': schema:email
+        beckn:id:
+          description: Unique identifier for the buyer (personId or orgId in legacy schema)
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:role:
+          description: The functional role of the buyer in the transaction.
+          type: string
+          x-jsonld:
+            '@id': schema:roleName
+        beckn:taxID:
+          description: Tax identifier for the buyer.
+          type: string
+          x-jsonld:
+            '@id': schema:taxID
+        beckn:telephone:
+          description: Telephone number
+          type: string
+          x-jsonld:
+            '@id': schema:telephone
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      type: object
+    Catalog:
+      additionalProperties: false
+      properties:
+        '@context':
+          description: JSON-LD context URI for the core Catalog schema
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          description: Type of the catalog
+          example: beckn:Catalog
+          type: string
+        beckn:bppId:
+          description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
+          example: bpp.example.com
+          type: string
+        beckn:bppUri:
+          description: BPP (Beckn Protocol Provider) URI endpoint
+          example: https://bpp.example.com
+          format: uri
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          description: Unique identifier for the catalog
+          example: catalog-electronics-001
+          type: string
+        beckn:isActive:
+          default: true
+          description: Whether the catalog is active
+          type: boolean
+        beckn:items:
+          description: Array of beckn core Item entities in this catalog, returned directly without ItemResult wrapper for improved performance and simplified response structure
+          items:
+            $ref: '#/components/schemas/Item'
+          type: array
+        beckn:offers:
+          items:
+            $ref: '#/components/schemas/Offer'
+          type: array
+        beckn:providerId:
+          description: Reference to the provider that owns this catalog
+          example: tech-store-001
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      - beckn:bppId
+      - beckn:bppUri
+      - beckn:items
+      type: object
+    CategoryCode:
+      properties:
+        '@type':
+          description: Type of the category code
+          enum:
+          - schema:CategoryCode
+          example: schema:CategoryCode
+          type: string
+        schema:codeValue:
+          description: Category code value
+          example: electronics
+          type: string
+        schema:description:
+          description: Category description
+          example: Electronic devices and equipment
+          type: string
+        schema:name:
+          description: Category name
+          example: Electronics
+          type: string
+      required:
+      - '@type'
+      - schema:codeValue
+      type: object
+    Constraint:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Constraint
+          type: string
+        beckn:constraintType:
+          description: Type of constraint (extensible term)
+          type: string
+        beckn:id:
+          description: Identifier for the constraint
+          type: string
+        beckn:operator:
+          description: Comparator/operator (<=, >=, =, etc.)
+          type: string
+        beckn:unitCode:
+          description: Unit code (e.g., km, min)
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+        beckn:value:
+          description: Constraint value
+          type: number
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      type: object
+    Context:
+      description: 'Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions,'
+      type: object
+      properties:
+        action:
+          description: The Beckn protocol method being called by the sender and executed at the receiver.
+          type: string
+        bap_id:
+          description: A globally unique identifier of the BAP, Typically it is the fully qualified domain name (FQDN) of the BAP
+          type: string
+        bap_uri:
+          description: API URL of the BAP for accepting callbacks from BPPs.
+          type: string
+          format: uri
+        bpp_id:
+          description: A globally unique identifier of the BAP, Typically it is the fully qualified domain name (FQDN) of the BAP
+          type: string
+        bpp_uri:
+          description: API URL of the BPP for accepting calls from BAPs.
+          type: string
+          format: uri
+        message_id:
+          description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
+          type: string
+          format: uuid
+        network_id:
+          description: A unique identifier representing a group of platforms. By default, it is the url of the network registry on the Beckn network
+          type: string
+        schemas:
+          description: Optional JSON-LD context URLs relevant to the items/offers in this transaction
+          type: array
+          items:
+            type: string
+            format: uri
+        timestamp:
+          description: Time of request generation in RFC3339 format
+          type: string
+          format: date-time
+        transaction_id:
+          description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
+          type: string
+          format: uuid
+        try:
+          description: A flag to indicate that this request is intended to 'try' an operation. Typically set to `false` by default, but set to `true` when negotiating terms, updating or cancelling an active order. When set to `true`, the receiver must respond with the expected consequences as per the terms of service initially agreed between the BAP and the BPP during the `init/on_init` cycle. For example, A BAP will set this flag to `true` when requesting the BPP to cancel the order. Upon receiving this the BPP could respond with updated cost, cancellation fees, reasons for cancellation, a cancellation form, payment links, and any additional notifications or prompts informing the BAP about future consequences if continued (like an account ban, or reduced rating). When both participants are ready to continue the transaction, this flag MUST be set back to `false`.
+          type: boolean
+          default: false
+        ttl:
+          description: The duration in ISO8601 format after timestamp for which this message holds valid
+          type: string
+        version:
+          type: string
+          description: Version of beckn protocol being used by the sender
+    Credential:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Credential
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:expires_at:
+          format: date-time
+          type: string
+        beckn:id:
+          type: string
+        beckn:issueDate:
+          format: date-time
+          type: string
+        beckn:issuer:
+          description: Issuing authority/entity
+          type: string
+        beckn:number:
+          description: Credential/license number
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Descriptor:
+      properties:
+        '@type':
+          description: Type of the descriptor
+          enum:
+          - beckn:Descriptor
+          example: beckn:Descriptor
+          type: string
+        beckn:longDesc:
+          description: Detailed description of the item
+          example: Powerful gaming laptop with NVIDIA RTX graphics, fast SSD storage, and high-refresh display
+          type: string
+        beckn:shortDesc:
+          description: Short description of the item
+          example: High-performance gaming laptop with RTX graphics
+          type: string
+        schema:image:
+          items:
+            format: uri
+            type: string
+          type: array
+        schema:name:
+          description: Name of the entity being described
+          example: Premium Gaming Laptop Pro
+          type: string
+      required:
+      - '@type'
+      type: object
+    Eligibility:
+      properties:
+        eligibleQuantity:
+          properties:
+            max:
+              type: number
+            min:
+              type: number
+          type: object
+        eligibleRegion:
+          type: string
+      type: object
+      x-jsonld:
+        '@id': schema:DefinedRegion|schema:QuantitativeValue
+    Entitlement:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Entitlement
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:entitlementType:
+          description: Type of entitlement (ticket, voucher, pass, token, etc.)
+          type: string
+        beckn:id:
+          type: string
+        beckn:number:
+          description: Human-readable entitlement number
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Error:
+      properties:
+        code:
+          description: Error code
+          example: INVALID_SCHEMA_FIELD
+          type: string
+        details:
+          description: Additional error details
+          type: object
+        message:
+          description: Human-readable error message
+          example: Field 'electronic:invalidField' not found in ElectronicItem schema
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    ErrorResponse:
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      required:
+      - error
+      type: object
+    Feature:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Feature
+          type: string
+        beckn:category:
+          $ref: '#/components/schemas/CategoryCode'
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          description: Identifier for the feature term
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Form:
+      description: Describes a form
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Form
+          type: string
+          x-jsonld:
+            '@id': beckn:Form
+        data:
+          additionalProperties:
+            type: string
+          description: The form submission data
+          type: object
+        mime_type:
+          description: This field indicates the nature and format of the form received by querying the url. MIME types are defined and standardized in IETF's RFC 6838.
+          enum:
+          - text/html
+          - application/xml
+          type: string
+        submission_id:
+          format: uuid
+          type: string
+        url:
+          description: The URL from where the form can be fetched. The content fetched from the url must be processed as per the mime_type specified in this object. Once fetched, the rendering platform can choosed to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the the render can process the form data and reproduce it as per the standard specified in the form.
+          format: uri
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      type: object
+    Fulfillment:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Fulfillment
+          type: string
+          x-jsonld:
+            '@id': schema:Thing
+        beckn:alerts:
+          items:
+            $ref: '#/components/schemas/Alert'
+          type: array
+        beckn:deliveryAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: 'Bundle of attributes for the chosen mode:  # DELIVERY: endpoints, slot windows, route & events → map to schema:ParcelDelivery / schema:DeliveryEvent # PICKUP: pickupPlace, counter codes, time windows → map to schema:Place + schema:openingHoursSpecification # RESERVATION: reservationStatus, reservedTicket → map to schema:Reservation # DIGITAL: contentUrl/license/expiry → map to schema:DataDownload/schema:MediaObject'
+        beckn:entitlements:
+          items:
+            $ref: '#/components/schemas/Entitlement'
+          type: array
+        beckn:fulfillmentStatus:
+          description: Fulfillment status code (e.g., OutForDelivery, ReadyForPickup, Confirmed)
+          type: string
+          x-jsonld:
+            '@id': beckn:fulfillmentStatus
+        beckn:id:
+          description: Fulfillment identifier
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:instructions:
+          items:
+            $ref: '#/components/schemas/Instruction'
+          type: array
+        beckn:mode:
+          description: 'DELIVERY    → last-mile / parcel logistics
+
+            PICKUP      → customer collects from a place
+
+            RESERVATION → entitlement/booking is fulfilled (tickets, seats, appointments)
+
+            DIGITAL     → digital good / license access
+
+            '
+          enum:
+          - DELIVERY
+          - PICKUP
+          - RESERVATION
+          - DIGITAL
+          type: string
+          x-jsonld:
+            '@id': beckn:mode
+        beckn:participants:
+          items:
+            $ref: '#/components/schemas/Participant'
+          type: array
+        beckn:state:
+          $ref: '#/components/schemas/State'
+        beckn:stops:
+          items:
+            $ref: '#/components/schemas/FulfillmentStop'
+          type: array
+        trackingAction:
+          $ref: '#/components/schemas/TrackAction'
+          description: 'Tracking entrypoint for this fulfillment, modeled as schema.org TrackAction. Use target.url for a clickable tracking URL; may also include deliveryMethod.'
+          x-jsonld:
+            '@type': schema:TrackAction
+      required:
+      - '@context'
+      - '@type'
+      - beckn:mode
+      type: object
+    FulfillmentStop:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:FulfillmentStop
+          type: string
+        beckn:id:
+          type: string
+        beckn:instructions:
+          items:
+            $ref: '#/components/schemas/Instruction'
+          type: array
+        beckn:location:
+          $ref: '#/components/schemas/Location'
+        beckn:stopType:
+          description: Stop type/role (pickup, dropoff, hub, etc.)
+          type: string
+        beckn:time:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:location
+      type: object
+    GeoJSONGeometry:
+      additionalProperties: true
+      description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude,\
+        \ latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon\
+        \ - GeometryCollection (uses `geometries` instead of `coordinates`)\nNotes: - For rectangles, use a Polygon with a\
+        \ single linear ring where the first\n  and last positions are identical.\n- Circles are **not native** to GeoJSON.\
+        \ For circular searches, use\n  `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,\n  or approximate\
+        \ the circle as a Polygon.\n- Optional `bbox` is `[west, south, east, north]` in degrees.\n"
+      examples:
+        geometry_collection:
+          value:
+            geometries:
+            - coordinates:
+              - 77.6
+              - 12.95
+              type: Point
+            - coordinates:
+              - - 77.6
+                - 12.95
+              - - 77.62
+                - 12.97
+              type: LineString
+            type: GeometryCollection
+        point:
+          value:
+            coordinates:
+            - 77.5946
+            - 12.9716
+            type: Point
+        polygon_rectangle:
+          value:
+            coordinates:
+            - - - 77.61
+                - 12.92
+              - - 77.64
+                - 12.92
+              - - 77.64
+                - 12.95
+              - - 77.61
+                - 12.95
+              - - 77.61
+                - 12.92
+            type: Polygon
+      properties:
+        bbox:
+          description: Optional bounding box `[west, south, east, north]` in degrees.
+          maxItems: 4
+          minItems: 4
+          type: array
+        coordinates:
+          description: 'Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon, lat, (alt)]**.
+            For Polygons, this is an array of linear rings; each ring is an array of positions.
+
+            '
+          type: array
+        geometries:
+          description: 'Member geometries when `type` is **GeometryCollection**.
+
+            '
+          items:
+            $ref: '#/components/schemas/GeoJSONGeometry'
+          type: array
+        type:
+          enum:
+          - Point
+          - LineString
+          - Polygon
+          - MultiPoint
+          - MultiLineString
+          - MultiPolygon
+          - GeometryCollection
+          type: string
+      required:
+      - type
+      type: object
+    Instruction:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Instruction
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Invoice:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Invoice
+          type: string
+          x-jsonld:
+            '@id': schema:Invoice
+        beckn:dueDate:
+          format: date
+          nullable: true
+          type: string
+          x-jsonld:
+            '@id': schema:paymentDueDate
+        beckn:id:
+          description: Stable invoice identifier (system id)
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:invoiceAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: Attribute Pack for tax regime (e.g., GST/VAT), e-invoice refs, legal boilerplate, etc.
+        beckn:issueDate:
+          format: date
+          type: string
+          x-jsonld:
+            '@id': schema:dateIssued
+        beckn:number:
+          description: Human-visible invoice number
+          type: string
+          x-jsonld:
+            '@id': schema:confirmationNumber
+        beckn:payee:
+          $ref: '#/components/schemas/Provider/properties/beckn:id'
+          description: Seller / issuer of the invoice
+          x-jsonld:
+            '@id': schema:provider
+        beckn:payer:
+          $ref: '#/components/schemas/Buyer/properties/beckn:id'
+          description: Buyer being invoiced
+          x-jsonld:
+            '@id': schema:customer
+        beckn:priceComponents:
+          items:
+            $ref: '#/components/schemas/PriceComponent'
+          type: array
+        beckn:totals:
+          $ref: '#/components/schemas/PriceSpecification'
+          description: Invoice grand totals (tax/shipping/discount components inside)
+          x-jsonld:
+            '@id': schema:priceSpecification
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:number
+      - beckn:issueDate
+      - beckn:totals
+      - beckn:payee
+      - beckn:payer
+      type: object
+    Item:
+      additionalProperties: false
+      properties:
+        '@context':
+          description: JSON-LD context URI for the core Item schema
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          description: Type of the core item
+          enum:
+          - beckn:Item
+          type: string
+        beckn:availabilityWindow:
+          description: Time periods when the item is available
+          items:
+            $ref: '#/components/schemas/TimePeriod'
+          type: array
+        beckn:availableAt:
+          description: Physical locations where the item is available
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+        beckn:category:
+          $ref: '#/components/schemas/CategoryCode'
+        beckn:constraints:
+          items:
+            $ref: '#/components/schemas/Constraint'
+          type: array
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:features:
+          items:
+            $ref: '#/components/schemas/Feature'
+          type: array
+        beckn:id:
+          description: Unique identifier for the item
+          example: gaming-laptop-001
+          type: string
+        beckn:isActive:
+          default: true
+          description: Whether the item is active
+          type: boolean
+        beckn:itemAttributes:
+          $ref: '#/components/schemas/Attributes'
+        beckn:networkId:
+          description: Array of network identifiers for the BAP (Beckn App Provider) that offers this item
+          example:
+          - bap.net/electronics
+          - bap.net/tech
+          items:
+            type: string
+          type: array
+        beckn:policies:
+          items:
+            $ref: '#/components/schemas/Policy'
+          type: array
+        beckn:provider:
+          $ref: '#/components/schemas/Provider'
+        beckn:rateable:
+          description: Whether the item can be rated by customers
+          example: true
+          type: boolean
+        beckn:rating:
+          $ref: '#/components/schemas/Rating'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      - beckn:provider
+      - beckn:itemAttributes
+      type: object  
+    Intent:
+      type: object
+      description: A declaration of an intent to discover catalogs. 
+      properties:
+        text_search:
+          type: string
+          description: Free text search query for items
+          example: "gaming laptop premium tech"
+        filters:
+          type: object
+          description: Filter criteria for items
+          properties:
+            type:
+              type: string
+              enum: [jsonpath]
+              default: jsonpath
+              description: Type of filter expression
+            expression:
+              type: string
+              description: Filter expression based on the specified type
+              example: "$[?(@.rating.value >= 4.0 && @.electronic.brand.name == 'Premium Tech')]"
+          required: [type, expression]
+        spatial:
+          type: array
+          description: Optional array of spatial constraints (CQL2-JSON semantics).
+          items:
+            $ref: '#/components/schemas/SpatialConstraint'
+        media_search:
+          $ref: '#/components/schemas/MediaSearch'
+      anyOf:
+        - required: [text_search]
+        - required: [filters]
+        - required: [spatial]
+        - required: [filters, spatial]
+    MediaInput:
+      type: object
+      description: Reference to an image, audio clip, or video used for multimodal search.
+      required: [type, url]
+      properties:
+        id:
+          type: string
+          description: Client-supplied identifier for this media input.
+        type:
+          type: string
+          enum: [image, audio, video]
+          description: Media category.
+        url:
+          type: string
+          format: uri
+          description: HTTPS URL or data URI pointing to the media resource.
+        contentType:
+          type: string
+          description: MIME type, e.g., image/jpeg, audio/mpeg, video/mp4.
+        textHint:
+          type: string
+          description: Optional pre-extracted text (OCR/ASR) for search augmentation.
+        language:
+          type: string
+          description: Language code (BCP-47) of `textHint` or spoken audio.
+        startMs:
+          type: integer
+          description: Optional start offset in milliseconds (for audio/video segments).
+        endMs:
+          type: integer
+          description: Optional end offset in milliseconds (for audio/video segments).
+      additionalProperties: false
+    MediaSearchOptions:
+      type: object
+      description: How the discovery engine should use the provided media inputs.
+      properties:
+        goals:
+          type: array
+          description: >
+            Desired processing goals for the media.
+          items:
+            type: string
+            enum:
+              - VISUAL_SIMILARITY # find visually similar items
+              - VISUAL_OBJECT_DETECT # detect object classes within image/video
+              - TEXT_FROM_IMAGE # extract text (OCR)
+              - TEXT_FROM_AUDIO # extract text (ASR)
+              - SEMANTIC_AUDIO_MATCH # audio embedding similarity
+              - SEMANTIC_VIDEO_MATCH # video scene/keyframe similarity
+        augmentTextSearch:
+          type: boolean
+          default: true
+          description: >
+            Whether to append extracted text from OCR/ASR to `textSearch`.
+        restrictResultsToMediaProximity:
+          type: boolean
+          default: false
+          description: >
+            Restrict results to spatial proximity of media-derived coordinates (e.g., EXIF GPS tags).
+      additionalProperties: false    
+    Location:
+      additionalProperties: false
+      description: 'A **place** represented by **GeoJSON geometry** (Point/Polygon/Multi*) and optional human-readable `address`.
+        This unifies all Beckn location fields into a single, widely-adopted representation (GeoJSON).
+
+        '
+      examples:
+        service_area:
+          value:
+            geo:
+              coordinates:
+              - - - 77.61
+                  - 12.92
+                - - 77.64
+                  - 12.92
+                - - 77.64
+                  - 12.95
+                - - 77.61
+                  - 12.95
+                - - 77.61
+                  - 12.92
+              type: Polygon
+        site_point:
+          value:
+            address: MG Road, Bengaluru
+            geo:
+              coordinates:
+              - 77.5946
+              - 12.9716
+              type: Point
+      properties:
+        '@type':
+          enum:
+          - beckn:Location
+          type: string
+        address:
+          description: Optional human-readable address for the same place/area.
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/Address'
+        geo:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+      required:
+      - geo
+      type: object
+    Offer:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Offer
+          type: string
+          x-jsonld:
+            '@id': schema:Offer
+        beckn:acceptedPaymentMethod:
+          $ref: '#/components/schemas/AcceptedPaymentMethod'
+        beckn:addOnItems:
+          description: Optional extras modeled as items (e.g., toppings, accessories)
+          items:
+            $ref: '#/components/schemas/Item/properties/beckn:id'
+          type: array
+          x-jsonld:
+            '@id': schema:addOn
+        beckn:addOns:
+          description: Optional extra Offers that can be attached (e.g., warranty, gift wrap)
+          items:
+            $ref: '#/components/schemas/Offer/properties/beckn:id'
+          type: array
+          x-jsonld:
+            '@id': schema:addOn
+        beckn:constraints:
+          items:
+            $ref: '#/components/schemas/Constraint'
+          type: array
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:eligibleRegion:
+          description: Regions where the offer is eligible
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+        beckn:features:
+          items:
+            $ref: '#/components/schemas/Feature'
+          type: array
+        beckn:id:
+          description: Unique id for this offer
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:isActive:
+          default: true
+          description: Whether the offer is active
+          type: boolean
+        beckn:items:
+          description: Base item(s) the offer applies to (single or bundle)
+          items:
+            $ref: '#/components/schemas/Item/properties/beckn:id'
+          minItems: 1
+          type: array
+          x-jsonld:
+            '@id': schema:itemOffered
+        beckn:offerAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: Attribute Pack attachment (pricing models, discounts, rail terms, etc.)
+        beckn:policies:
+          items:
+            $ref: '#/components/schemas/Policy'
+          type: array
+        beckn:price:
+          $ref: '#/components/schemas/PriceSpecification'
+          description: Price snapshot; detailed models can live in offerAttributes
+          x-jsonld:
+            '@id': schema:priceSpecification
+        beckn:provider:
+          $ref: '#/components/schemas/Provider/properties/beckn:id'
+          description: Seller / provider of this offer
+          x-jsonld:
+            '@id': schema:seller
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+          description: Offer validity window
+          x-jsonld:
+            '@id': schema:availabilityStarts|schema:availabilityEnds
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      - beckn:provider
+      - beckn:items
+      type: object
+    Order:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Order
+          type: string
+          x-jsonld:
+            '@id': schema:Order
+        beckn:acceptedOffers:
+          description: Offers accepted at order-level (optional if captured per line)
+          items:
+            $ref: '#/components/schemas/Offer'
+          type: array
+          x-jsonld:
+            '@id': schema:acceptedOffer
+        beckn:buyer:
+          $ref: '#/components/schemas/Buyer'
+          x-jsonld:
+            '@id': schema:customer
+        beckn:entitlements:
+          items:
+            $ref: '#/components/schemas/Entitlement'
+          type: array
+        beckn:fulfillment:
+          $ref: '#/components/schemas/Fulfillment'
+          description: Parcel delivery or reservation summary
+          x-jsonld:
+            '@id': schema:ParcelDelivery|schema:Reservation
+        beckn:id:
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:invoice:
+          $ref: '#/components/schemas/Invoice/properties/beckn:id'
+          description: Invoice reference/summary
+          x-jsonld:
+            '@id': schema:Invoice
+        beckn:orderAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: Order-level Attribute Pack (vertical/regulatory specifics)
+        beckn:orderItems:
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          minItems: 1
+          type: array
+          x-jsonld:
+            '@id': schema:orderItem
+        beckn:orderNumber:
+          description: Human-visible order number
+          type: string
+          x-jsonld:
+            '@id': schema:orderNumber
+        beckn:orderStatus:
+          description: Order status/state
+          enum:
+          - CREATED
+          - PENDING
+          - CONFIRMED
+          - INPROGRESS
+          - PARTIALLYFULFILLED
+          - COMPLETED
+          - CANCELLED
+          - REJECTED
+          - FAILED
+          - RETURNED
+          - REFUNDED
+          - ONHOLD
+          type: string
+          x-jsonld:
+            '@id': beckn:orderStatus
+        beckn:orderValue:
+          $ref: '#/components/schemas/PriceSpecification'
+          description: Order totals snapshot (derivable from lines; optional)
+          x-jsonld:
+            '@id': schema:priceSpecification
+        beckn:participants:
+          items:
+            $ref: '#/components/schemas/Participant'
+          type: array
+        beckn:payment:
+          $ref: '#/components/schemas/Payment'
+          description: Method/status; rail-specific payloads go to packs
+          x-jsonld:
+            '@id': schema:PaymentMethod|schema:PaymentStatusType
+        beckn:policies:
+          items:
+            $ref: '#/components/schemas/Policy'
+          type: array
+        beckn:seller:
+          $ref: '#/components/schemas/Provider/properties/beckn:id'
+          x-jsonld:
+            '@id': schema:seller
+        beckn:state:
+          $ref: '#/components/schemas/State'
+      required:
+      - '@context'
+      - '@type'
+      - beckn:orderStatus
+      - beckn:seller
+      - beckn:buyer
+      - beckn:orderItems
+      type: object
+    OrderItem:
+      properties:
+        beckn:acceptedOffer:
+          $ref: '#/components/schemas/Offer'
+          description: Offer applied to this line (if different from order-level)
+          x-jsonld:
+            '@id': schema:acceptedOffer
+        beckn:lineId:
+          description: Unique line id within order
+          type: string
+        beckn:orderItemAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: Line-level Attribute Pack (options, substitutions, ESG, etc.)
+        beckn:orderedItem:
+          $ref: '#/components/schemas/Item/properties/beckn:id'
+          x-jsonld:
+            '@id': schema:orderedItem
+        beckn:price:
+          $ref: '#/components/schemas/PriceSpecification'
+          description: Line price composition (unit/tax/delivery/discount)
+          x-jsonld:
+            '@id': schema:priceSpecification
+        beckn:quantity:
+          $ref: '#/components/schemas/Quantity'
+          x-jsonld:
+            '@id': beckn:quantity
+      required:
+      - beckn:orderedItem
+      type: object
+    Participant:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Participant
+          type: string
+        beckn:credentials:
+          items:
+            $ref: '#/components/schemas/Credential'
+          type: array
+        beckn:displayName:
+          type: string
+        beckn:email:
+          format: email
+          type: string
+        beckn:id:
+          type: string
+        beckn:rating:
+          $ref: '#/components/schemas/Rating'
+        beckn:role:
+          description: Role of participant (buyer, recipient, rider, patient, operator, etc.)
+          type: string
+        beckn:skills:
+          items:
+            $ref: '#/components/schemas/Skill'
+          type: array
+        beckn:telephone:
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:role
+      type: object
+    Payment:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Payment
+          type: string
+          x-jsonld:
+            '@id': schema:Thing
+        beckn:acceptedPaymentMethod:
+          $ref: '#/components/schemas/AcceptedPaymentMethod'
+        beckn:amount:
+          description: Amount associated with this payment action
+          properties:
+            currency:
+              type: string
+              x-jsonld:
+                '@id': schema:priceCurrency
+            value:
+              type: number
+              x-jsonld:
+                '@id': schema:price
+          type: object
+        beckn:beneficiary:
+          description: Who will be the beneficiary or recipient of the payment
+          enum:
+          - BPP
+          - BAP
+          - BUYER
+          example: BPP
+          type: string
+          x-jsonld:
+            '@id': schema:beneficiary
+        beckn:id:
+          description: Payment record identifier
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        beckn:paidAt:
+          description: When the last terminal event (capture/refund) happened
+          format: date-time
+          nullable: true
+          type: string
+          x-jsonld:
+            '@id': schema:paymentDueDate
+        beckn:paymentAttributes:
+          $ref: '#/components/schemas/Attributes'
+          description: 'Rail-specific attribute pack (e.g., UPI: VPA/UTR; CARD: token/3DS; BNPL: plan/schedule)
+
+            '
+        beckn:paymentStatus:
+          description: Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)
+          enum:
+          - INITIATED
+          - PENDING
+          - AUTHORIZED
+          - CAPTURED
+          - COMPLETED
+          - FAILED
+          - CANCELLED
+          - REFUNDED
+          - PARTIALLY_REFUNDED
+          - CHARGEBACK
+          - DISPUTED
+          - EXPIRED
+          - REVERSED
+          - VOIDED
+          - SETTLED
+          - ON_HOLD
+          - ADJUSTED
+          type: string
+          x-jsonld:
+            '@id': beckn:paymentStatus
+        beckn:paymentURL:
+          description: URL for payment processing/redirection
+          example: https://payments.example.com/pay?transaction_id=123&amount=100
+          format: uri
+          type: string
+          x-jsonld:
+            '@id': schema:url
+        beckn:state:
+          $ref: '#/components/schemas/State'
+        beckn:txnRef:
+          description: PSP/gateway/bank transaction reference
+          type: string
+          x-jsonld:
+            '@id': schema:transactionNumber
+      required:
+      - '@context'
+      - '@type'
+      - beckn:paymentStatus
+      type: object
+    Policy:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Policy
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:documents:
+          description: Optional supporting documents/forms
+          items:
+            $ref: '#/components/schemas/Form'
+          type: array
+        beckn:id:
+          description: Identifier for the policy
+          type: string
+        beckn:policyType:
+          description: Type/kind of policy (extensible term)
+          type: string
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+          description: Validity window for this policy version
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    PriceComponent:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:PriceComponent
+          type: string
+        beckn:amount:
+          type: number
+        beckn:category:
+          $ref: '#/components/schemas/CategoryCode'
+          description: Component category (tax, fee, discount, etc.)
+        beckn:currency:
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      - beckn:amount
+      - beckn:currency
+      type: object
+    PriceSpecification:
+      additionalProperties: true
+      properties:
+        applicableQuantity:
+          $ref: '#/components/schemas/Quantity'
+          x-jsonld:
+            '@id': schema:eligibleQuantity
+        beckn:priceComponents:
+          items:
+            $ref: '#/components/schemas/PriceComponent'
+          type: array
+        components:
+          description: Optional components (tax, shipping, discount, fee, surcharge)
+          items:
+            properties:
+              currency:
+                type: string
+              description:
+                type: string
+              type:
+                enum:
+                - UNIT
+                - TAX
+                - DELIVERY
+                - DISCOUNT
+                - FEE
+                - SURCHARGE
+                type: string
+              value:
+                type: number
+            type: object
+          type: array
+        currency:
+          description: ISO 4217 code
+          type: string
+        value:
+          description: Total value for this price specification
+          type: number
+      type: object
+      x-jsonld:
+        '@id': schema:PriceSpecification
+    Provider:
+      additionalProperties: false
+      properties:
+        beckn:alerts:
+          items:
+            $ref: '#/components/schemas/Alert'
+          type: array
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:features:
+          items:
+            $ref: '#/components/schemas/Feature'
+          type: array
+        beckn:id:
+          description: Unique identifier for the provider
+          example: tech-store-001
+          type: string
+        beckn:locations:
+          description: Physical locations where the provider operates
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+        beckn:policies:
+          items:
+            $ref: '#/components/schemas/Policy'
+          type: array
+        beckn:providerAttributes:
+          $ref: '#/components/schemas/Attributes'
+        beckn:rateable:
+          description: Whether the provider can be rated by customers
+          example: true
+          type: boolean
+        beckn:rating:
+          $ref: '#/components/schemas/Rating'
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    Quantity:
+      additionalProperties: false
+      properties:
+        maxQuantity:
+          description: Maximum quantity for this price
+          example: 100
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+        minQuantity:
+          description: Minimum quantity for this price
+          example: 1
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+        unitCode:
+          description: Unit code for the quoted price (e.g., KWH, MIN, H, MON)
+          example: KWH
+          type: string
+          x-jsonld:
+            '@id': schema:unitCode
+        unitQuantity:
+          description: Quantity of the unit
+          example: 1
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+        unitText:
+          description: Unit for the quoted price (e.g., kWh, minute, hour, month)
+          example: kWh
+          type: string
+          x-jsonld:
+            '@id': schema:unitText
+      type: object
+      x-jsonld:
+        '@id': schema:QuantitativeValue
+    Rating:
+      properties:
+        '@type':
+          description: Type of the rating
+          enum:
+          - beckn:Rating
+          example: beckn:Rating
+          type: string
+        beckn:ratingCount:
+          description: Number of ratings
+          example: 1250
+          minimum: 0
+          type: integer
+        beckn:ratingValue:
+          description: Rating value (0-5)
+          example: 4.8
+          maximum: 5
+          minimum: 0
+          type: number
+      required:
+      - '@type'
+      type: object
+    RatingInput:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:RatingInput
+          type: string
+          x-jsonld:
+            '@id': beckn:RatingInput
+        bestRating:
+          description: Maximum of the rating scale (default 5 if omitted).
+          type: number
+        category:
+          description: What is being rated.
+          enum:
+          - ORDER
+          - FULFILLMENT
+          - ITEM
+          - PROVIDER
+          - AGENT
+          - OTHER
+          type: string
+        feedback:
+          additionalProperties: false
+          properties:
+            comments:
+              type: string
+            tags:
+              items:
+                type: string
+              type: array
+          type: object
+        id:
+          description: Target entity ID being rated (order/item/fulfillment/provider/agent).
+          type: string
+        ratingValue:
+          description: Numeric rating value (legacy usually 1–5).
+          minimum: 0
+          type: number
+        worstRating:
+          description: Minimum of the rating scale (default 1 or 0 if omitted).
+          type: number
+      required:
+      - '@context'
+      - '@type'
+      - id
+      - ratingValue
+      type: object
+      x-jsonld:
+        '@type': schema:Rating
+        schema:bestRating: $.best
+        schema:itemReviewed: $.id
+        schema:ratingValue: $.value
+        schema:worstRating: $.worst
+    Skill:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Skill
+          type: string
+        beckn:category:
+          $ref: '#/components/schemas/CategoryCode'
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      - beckn:descriptor
+      type: object
+    SpatialConstraint:
+      type: object
+      description: >
+        **Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.
+
+        Key ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry
+
+          fields within each item document (e.g., `$['beckn:availableAt'][*]['geo']`).
+        - `op`: spatial operator (CQL2). Common ones:
+
+            • `S_WITHIN`     (A is completely inside B)
+            • `S_INTERSECTS` (A intersects B)
+            • `S_CONTAINS`   (A contains B)
+            • `S_DWITHIN`    (A within distance of B)
+        - `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),
+
+          **ALL**, or **NONE** of elements must satisfy the predicate.
+
+        CRS: unless otherwise stated, all coordinates are **EPSG:4326**.
+
+      required: [op, targets]
+      properties:
+        op:
+          type: string
+          enum:
+            - S_WITHIN
+            - S_CONTAINS
+            - S_INTERSECTS
+            - S_DISJOINT
+            - S_OVERLAPS
+            - S_CROSSES
+            - S_TOUCHES
+            - S_EQUALS
+            - S_DWITHIN
+          description: OGC CQL2 spatial operator.
+        targets:
+          description: >
+            One or more JSONPath-like pointers to geometry fields within the item. Example pointers: - `$['beckn:availableAt'][*]['geo']` (array of site Points) - `$['beckn:itemAttributes']['ride:dropOff']['geo']` (drop zone Polygon)
+
+          oneOf:
+            - type: string
+            - type: array
+              items: {type: string}
+        geometry:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+        distanceMeters:
+          type: number
+          minimum: 0
+          description: >
+            For `S_DWITHIN`: maximum distance in meters from the target geometry to `geometry` (e.g., "within 5000 m of this Point"). Ignored for other ops.
+
+        quantifier:
+          type: string
+          enum: [ANY, ALL, NONE]
+          default: any
+          description: >
+            How to evaluate when `targets` resolves to an array: - **any**: at least one element matches (default) - **all**: every element must match - **none**: no element may match
+
+        srid:
+          type: string
+          description: >
+            Coordinate Reference System identifier for `geometry`. Default is `"EPSG:4326"`. If provided, servers MAY reproject to EPSG:4326 internally.
+
+          example: "EPSG:4326"
+      additionalProperties: false
+      examples:
+        within_circle_as_distance:
+          summary: EV sites within 5 km of a center (via S_DWITHIN)
+          value:
+            op: S_DWITHIN
+            targets: "$['beckn:availableAt'][*]['geo']"
+            geometry:
+              type: Point
+              coordinates: [77.5946, 12.9716]
+            distanceMeters: 5000
+        pickup_at_point:
+          summary: Pickup at a defined point (GeoJSON Point)
+          description: >
+            Example of a DiscoverRequest spatial constraint representing a specific pickup location. The requester defines a GeoJSON Point as the pickup location, and the server finds providers whose service area **contains** this point.
+
+          value:
+            op: S_CONTAINS
+            targets: "$['beckn:itemAttributes']['ride:serviceArea']['geo']" # provider polygon field
+            geometry:
+              type: Point
+              coordinates: [77.5946, 12.9716] # MG Road (Bengaluru) — [lon, lat]              
+        drop_intersects_user_box:
+          summary: Provider drop zone intersects user’s rectangle
+          value:
+            op: S_INTERSECTS
+            targets: "$['beckn:itemAttributes']['ride:dropOff']['geo']"
+            geometry:
+              type: Polygon
+              coordinates:
+                - [[77.6100, 12.9200], [77.6400, 12.9200], [77.6400, 12.9500], [77.6100, 12.9500], [77.6100, 12.9200]]
+        pickup_location_example:
+          summary: A defined pickup location object
+          value:
+            geo:
+              type: Point
+              coordinates: [77.5946, 12.9716] # [lon, lat]
+            address:
+              streetAddress: "MG Road"
+              addressLocality: "Bengaluru"
+              addressRegion: "Karnataka"
+              postalCode: "560001"
+              addressCountry: "IN"
+    State:
+      additionalProperties: false
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:State
+          type: string
+        beckn:descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        beckn:id:
+          description: State code/identifier
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - beckn:id
+      type: object
+    SupportInfo:
+      additionalProperties: false
+      description: 'Canonical support contact for an entity, mapped to schema.org ContactPoint.
+
+        '
+      example:
+        channels:
+        - web
+        - phone
+        - email
+        email: support@acme.example
+        hours: Mon–Sat 09:00–20:00 IST
+        name: Acme Support
+        phone: +91-80-1234-5678
+        url: https://acme.example/support
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:SupportInfo
+          type: string
+          x-jsonld:
+            '@id': beckn:SupportInfo
+        channels:
+          description: Available support channels.
+          items:
+            enum:
+            - PHONE
+            - EMAIL
+            - WEB
+            - CHAT
+            - WHATSAPP
+            - IN_APP
+            - OTHER
+            type: string
+          type: array
+        email:
+          description: Support email address.
+          format: email
+          type: string
+        hours:
+          description: Human-readable support hours (local time).
+          type: string
+        name:
+          description: Name of the support organization or contact.
+          type: string
+        phone:
+          description: Telephone number.
+          type: string
+        url:
+          description: Webpage or chat endpoint for support.
+          format: uri
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      type: object
+      x-jsonld:
+        '@type': schema:ContactPoint
+        schema:contactType: '"Customer Support"'
+        schema:email: $.email
+        schema:hoursAvailable: $.hours
+        schema:name: $.name
+        schema:telephone: $.phone
+        schema:url: $.url
+    TimePeriod:
+      anyOf:
+      - required:
+        - schema:startDate
+      - required:
+        - schema:endDate
+      - required:
+        - schema:startTime
+        - schema:endTime
+      description: Time window with date-time precision for availability/validity
+      properties:
+        '@type':
+          description: JSON-LD type for a date-time period
+          example: beckn:TimePeriod
+          type: string
+        schema:endDate:
+          description: End instant (exclusive or inclusive per domain semantics)
+          example: '2025-12-31T23:59:59Z'
+          format: date-time
+          type: string
+        schema:endTime:
+          description: End time of the time period
+          example: '22:00:00'
+          format: time
+          type: string
+        schema:startDate:
+          description: Start instant (inclusive)
+          example: '2025-01-27T09:00:00Z'
+          format: date-time
+          type: string
+        schema:startTime:
+          description: Start time of the time period
+          example: 09:00:00
+          format: time
+          type: string
+      required:
+      - '@type'
+      type: object
+    TrackAction:
+      additionalProperties: true
+      description: Minimal schema.org TrackAction for clickable tracking.
+      properties:
+        id:
+          description: Tracking action identifier
+          type: string
+          x-jsonld:
+            '@id': schema:identifier
+        url:
+          description: Tracking page URL
+          format: uri
+          type: string
+          x-jsonld:
+            '@id': schema:url
+      type: object
+      x-jsonld:
+        '@type': schema:TrackAction
+    TrackingRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Tracking reference identifier
+        callbackUrl:
+          type: string
+          format: uri
+          description: Optional callback URL for streaming tracking coordinates/updates
+        mode_hint:
+          type: string
+          description: Optional delivery mode for the tracking handle.
+          enum: [link_only, deep_link, webhook, ws_handle]
+    Tracking:
+      additionalProperties: false
+      description: 'Non-streaming tracking handle per legacy semantics (url/transport/status).'
+      example:
+        expires_at: '2025-10-16T18:30:00Z'
+        tl_method: http/get
+        trackingStatus: active
+        url: https://track.bpp.example?order_id=ORD-123
+      properties:
+        '@context':
+          const: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2.1/context.jsonld'
+          format: uri
+          type: string
+        '@type':
+          enum:
+          - beckn:Tracking
+          type: string
+          x-jsonld:
+            '@id': beckn:Tracking
+        beckn:state:
+          $ref: '#/components/schemas/State'
+        expires_at:
+          description: ISO 8601 expiry timestamp for the tracking handle.
+          format: date-time
+          type: string
+        tl_method:
+          description: Transport/method used to access the tracking handle.
+          enum:
+          - http/get
+          - http/post
+          - http/redirect
+          - ws/handle
+          - custom
+          type: string
+        trackingStatus:
+          enum:
+          - ACTIVE
+          - DISABLED
+          - COMPLETED
+          type: string
+        url:
+          description: Link/handle to off-network tracking UI or endpoint.
+          format: uri
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      - tl_method
+      - url
+      - trackingStatus
+      type: object
+      x-jsonld:
+        '@type': schema:TrackAction
+        beckn:trackingStatus: $.trackingStatus
+        schema:deliveryMethod: $.tl_method
+        schema:target: $.url
+
+
+    # ---------- Result model ----------
+    CatalogProcessingResult:
+      type: object
+      required: [catalogId, status]
+      properties:
+        catalogId:
+          type: string
+          description: The "beckn:id" of the submitted catalog
+        status:
+          type: string
+          enum: [ACCEPTED, REJECTED, PARTIAL]
+          description: Final processing outcome for this catalog
+        itemCount:
+          type: integer
+          minimum: 0
+          description: Number of items indexed (when accepted/partial)
+        warnings:
+          type: array
+          description: Non-fatal issues encountered
+          items:
+            $ref: '#/components/schemas/ProcessingNotice'
+        error:
+          $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-v2.0.0-rc2/schema/core/v2/attributes.yaml#/components/schemas/Error'
+    ProcessingNotice:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    MediaSearch:
+      type: object
+      description: >
+        Container for multimodal search inputs and configuration. Supports searching through **images, audio notes, and videos** alongside text, filters, and spatial predicates. For GET, this object should be JSON-encoded and URL-escaped.
+      properties:
+        media:
+          type: array
+          description: >
+            One or more references to **images, audio notes, or videos** supplied as part of a multimodal search. Each entry references a media resource accessible via HTTPS or data URI.
+          items:
+            $ref: '#/components/schemas/MediaInput'
+          example:
+            - id: "snap-1"
+              type: image
+              url: "https://cdn.example.com/user/snaps/ccs2-cable.jpg"
+              contentType: "image/jpeg"
+        options:
+          $ref: '#/components/schemas/MediaSearchOptions'
+          description: >
+            Options controlling how the discovery engine interprets the supplied media — e.g., whether to perform OCR/ASR, semantic similarity, or object detection.
+      additionalProperties: false
+      example:
+        media:
+          - id: "snap-1"
+            type: image
+            url: "https://cdn.example.com/user/snaps/ccs2-cable.jpg"
+            contentType: "image/jpeg"
+        options:
+          goals: ["VISUAL_OBJECT_DETECT", "TEXT_FROM_IMAGE"]
+          augmentTextSearch: true
+  
