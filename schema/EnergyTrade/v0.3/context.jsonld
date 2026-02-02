@@ -1,0 +1,118 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "schema": "https://schema.org/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "beckn": "./vocab.jsonld#",
+
+    "name": "schema:name",
+    "description": "schema:description",
+    "price": "schema:price",
+    "priceCurrency": "schema:priceCurrency",
+    "startTime": "schema:startTime",
+    "endTime": "schema:endTime",
+    "amount": "schema:amount",
+    "currency": "schema:currency",
+    "lastUpdated": "schema:dateModified",
+    "unit": "schema:unitText",
+
+    "EnergyTradeOffer": "beckn:EnergyTradeOffer",
+    "EnergyTradeOrder": "beckn:EnergyTradeOrder",
+    "EnergyTradeOrderInterUtility": "beckn:EnergyTradeOrderInterUtility",
+    "EnergyTradeDelivery": "beckn:EnergyTradeDelivery",
+    "EnergyResource": "beckn:EnergyResource",
+    "EnergyCustomer": "beckn:EnergyCustomer",
+    "EnergyOrderItem": "beckn:EnergyOrderItem",
+
+    "pricingModel": {
+      "@id": "beckn:pricingModel",
+      "@type": "@id"
+    },
+    "validityWindow": "beckn:validityWindow",
+    "deliveryWindow": "beckn:deliveryWindow",
+    "beckn:price": "schema:priceSpecification",
+
+    "bap_id": "beckn:bap_id",
+    "bpp_id": "beckn:bpp_id",
+    "total_quantity": "beckn:total_quantity",
+    "utilityIdBuyer": "beckn:utilityIdBuyer",
+    "utilityIdSeller": "beckn:utilityIdSeller",
+
+    "deliveryStatus": {
+      "@id": "beckn:deliveryStatus",
+      "@type": "@id"
+    },
+    "deliveryMode": {
+      "@id": "beckn:deliveryMode",
+      "@type": "@id"
+    },
+    "deliveredQuantity": "beckn:deliveredQuantity",
+    "meterReadings": "beckn:meterReadings",
+    "consumedEnergy": "beckn:consumedEnergy",
+    "producedEnergy": "beckn:producedEnergy",
+    "allocatedEnergy": "beckn:allocatedEnergy",
+    "curtailedQuantity": "beckn:curtailedQuantity",
+    "curtailmentReason": {
+      "@id": "beckn:curtailmentReason",
+      "@type": "@id"
+    },
+
+    "sourceType": {
+      "@id": "beckn:sourceType",
+      "@type": "@id"
+    },
+    "certificationStatus": "beckn:certificationStatus",
+    "meterId": "beckn:meterId",
+    "availableQuantity": "beckn:availableQuantity",
+    "productionWindow": "beckn:productionWindow",
+    "sourceVerification": "beckn:sourceVerification",
+    "verified": "beckn:verified",
+    "verificationDate": "beckn:verificationDate",
+    "certificates": "beckn:certificates",
+    "productionAsynchronous": "beckn:productionAsynchronous",
+
+    "sanctionedLoad": "beckn:sanctionedLoad",
+    "utilityCustomerId": "beckn:utilityCustomerId",
+    "utilityId": "beckn:utilityId",
+
+    "providerAttributes": "beckn:providerAttributes",
+    "fulfillmentAttributes": "beckn:fulfillmentAttributes",
+
+    "PER_KWH": "beckn:PricingModelPerKwh",
+    "PER-KWH": "beckn:PricingModelPerKwh",
+    "TIME_OF_DAY": "beckn:PricingModelTimeOfDay",
+    "TIME-OF-DAY": "beckn:PricingModelTimeOfDay",
+    "SUBSCRIPTION": "beckn:PricingModelSubscription",
+    "FIXED": "beckn:PricingModelFixed",
+
+    "PENDING": "beckn:DeliveryStatusPending",
+    "IN_PROGRESS": "beckn:DeliveryStatusInProgress",
+    "IN-PROGRESS": "beckn:DeliveryStatusInProgress",
+    "COMPLETED": "beckn:DeliveryStatusCompleted",
+    "FAILED": "beckn:DeliveryStatusFailed",
+
+    "EV_CHARGING": "beckn:DeliveryModeEvCharging",
+    "EV-CHARGING": "beckn:DeliveryModeEvCharging",
+    "BATTERY_SWAP": "beckn:DeliveryModeBatterySwap",
+    "BATTERY-SWAP": "beckn:DeliveryModeBatterySwap",
+    "V2G": "beckn:DeliveryModeV2G",
+    "GRID_INJECTION": "beckn:DeliveryModeGridInjection",
+    "GRID-INJECTION": "beckn:DeliveryModeGridInjection",
+
+    "SOLAR": "beckn:SourceTypeSolar",
+    "BATTERY": "beckn:SourceTypeBattery",
+    "GRID": "beckn:SourceTypeGrid",
+    "HYBRID": "beckn:SourceTypeHybrid",
+    "RENEWABLE": "beckn:SourceTypeRenewable",
+
+    "GRID_OUTAGE": "beckn:CurtailmentReasonGridOutage",
+    "EMERGENCY": "beckn:CurtailmentReasonEmergency",
+    "CONGESTION": "beckn:CurtailmentReasonCongestion",
+    "MAINTENANCE": "beckn:CurtailmentReasonMaintenance",
+    "OTHER": "beckn:CurtailmentReasonOther"
+  },
+
+  "@graph": []
+}

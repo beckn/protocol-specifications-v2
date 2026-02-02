@@ -1,0 +1,441 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/main/schema/EnergyTrade/v0.3/#",
+    "schema": "https://schema.org/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "beckn:EnergyTradeOffer",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Trade Offer",
+      "rdfs:comment": "Offer attributes for P2P energy trading, attached to Offer.offerAttributes."
+    },
+    {
+      "@id": "beckn:EnergyTradeOrder",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Trade Order",
+      "rdfs:comment": "Order attributes for P2P energy trading, attached to Order.orderAttributes."
+    },
+    {
+      "@id": "beckn:EnergyTradeOrderInterUtility",
+      "@type": "rdfs:Class",
+      "rdfs:subClassOf": "beckn:EnergyTradeOrder",
+      "rdfs:label": "Energy Trade Order Inter-Utility",
+      "rdfs:comment": "Extended order attributes for inter-utility (inter-discom) P2P trading."
+    },
+    {
+      "@id": "beckn:EnergyTradeDelivery",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Trade Delivery",
+      "rdfs:comment": "Fulfillment attributes for energy trade deliveries, attached to orderItemAttributes.fulfillmentAttributes."
+    },
+    {
+      "@id": "beckn:EnergyResource",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Resource",
+      "rdfs:comment": "Item attributes for energy resources, attached to Item.itemAttributes."
+    },
+    {
+      "@id": "beckn:EnergyCustomer",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Customer",
+      "rdfs:comment": "Customer attributes for energy flows, attached to Buyer.buyerAttributes or Provider.providerAttributes."
+    },
+    {
+      "@id": "beckn:EnergyOrderItem",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Energy Order Item",
+      "rdfs:comment": "Order item attributes wrapper for P2P energy trading, attached to beckn:orderItemAttributes."
+    },
+    {
+      "@id": "beckn:pricingModel",
+      "@type": "rdf:Property",
+      "rdfs:label": "Pricing model",
+      "rdfs:comment": "Pricing model classification (PER_KWH, TIME_OF_DAY, SUBSCRIPTION, FIXED).",
+      "rdfs:domain": "beckn:EnergyTradeOffer",
+      "schema:rangeIncludes": "beckn:PricingModel"
+    },
+    {
+      "@id": "beckn:validityWindow",
+      "@type": "rdf:Property",
+      "rdfs:label": "Validity window",
+      "rdfs:comment": "Time window when the offer can be selected/accepted.",
+      "rdfs:domain": "beckn:EnergyTradeOffer",
+      "schema:rangeIncludes": "schema:TimePeriod"
+    },
+    {
+      "@id": "beckn:deliveryWindow",
+      "@type": "rdf:Property",
+      "rdfs:label": "Delivery window",
+      "rdfs:comment": "Specific time period when energy delivery occurs.",
+      "rdfs:domain": "beckn:EnergyTradeOffer",
+      "schema:rangeIncludes": "schema:TimePeriod"
+    },
+    {
+      "@id": "beckn:bap_id",
+      "@type": "rdf:Property",
+      "rdfs:label": "BAP ID",
+      "rdfs:comment": "Beckn Application Platform (BAP) identifier.",
+      "rdfs:domain": "beckn:EnergyTradeOrder",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:bpp_id",
+      "@type": "rdf:Property",
+      "rdfs:label": "BPP ID",
+      "rdfs:comment": "Beckn Provider Platform (BPP) identifier.",
+      "rdfs:domain": "beckn:EnergyTradeOrder",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:total_quantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "Total quantity",
+      "rdfs:comment": "Total quantity of energy in kilowatt-hours (kWh) for this trade order.",
+      "rdfs:domain": "beckn:EnergyTradeOrder",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:utilityIdBuyer",
+      "@type": "rdf:Property",
+      "rdfs:label": "Utility ID Buyer",
+      "rdfs:comment": "Identifier of the buyer-side utility/distribution company (discom).",
+      "rdfs:domain": "beckn:EnergyTradeOrderInterUtility",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:utilityIdSeller",
+      "@type": "rdf:Property",
+      "rdfs:label": "Utility ID Seller",
+      "rdfs:comment": "Identifier of the seller-side utility/distribution company (discom).",
+      "rdfs:domain": "beckn:EnergyTradeOrderInterUtility",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:deliveryStatus",
+      "@type": "rdf:Property",
+      "rdfs:label": "Delivery status",
+      "rdfs:comment": "Delivery status for the energy transfer (PENDING, IN_PROGRESS, COMPLETED, FAILED).",
+      "rdfs:domain": "beckn:EnergyTradeDelivery",
+      "schema:rangeIncludes": "beckn:DeliveryStatus"
+    },
+    {
+      "@id": "beckn:deliveryMode",
+      "@type": "rdf:Property",
+      "rdfs:label": "Delivery mode",
+      "rdfs:comment": "Mode of energy delivery (EV_CHARGING, BATTERY_SWAP, V2G, GRID_INJECTION).",
+      "schema:rangeIncludes": "beckn:DeliveryMode"
+    },
+    {
+      "@id": "beckn:deliveredQuantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "Delivered quantity",
+      "rdfs:comment": "Total quantity delivered so far in kilowatt-hours (kWh).",
+      "rdfs:domain": "beckn:EnergyTradeDelivery",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:meterReadings",
+      "@type": "rdf:Property",
+      "rdfs:label": "Meter readings",
+      "rdfs:comment": "Array of meter readings for this orderItem.",
+      "rdfs:domain": "beckn:EnergyTradeDelivery",
+      "schema:rangeIncludes": "schema:ItemList"
+    },
+    {
+      "@id": "beckn:consumedEnergy",
+      "@type": "rdf:Property",
+      "rdfs:label": "Consumed energy",
+      "rdfs:comment": "Energy consumed by the customer (imported from grid) in kWh.",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:producedEnergy",
+      "@type": "rdf:Property",
+      "rdfs:label": "Produced energy",
+      "rdfs:comment": "Energy produced by the customer (exported to grid) in kWh.",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:allocatedEnergy",
+      "@type": "rdf:Property",
+      "rdfs:label": "Allocated energy",
+      "rdfs:comment": "Net energy allocated for this trade in kWh.",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:curtailedQuantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "Curtailed quantity",
+      "rdfs:comment": "Quantity curtailed from original contracted amount (kWh).",
+      "rdfs:domain": "beckn:EnergyTradeDelivery",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:curtailmentReason",
+      "@type": "rdf:Property",
+      "rdfs:label": "Curtailment reason",
+      "rdfs:comment": "Reason for curtailment (GRID_OUTAGE, EMERGENCY, CONGESTION, MAINTENANCE, OTHER).",
+      "rdfs:domain": "beckn:EnergyTradeDelivery",
+      "schema:rangeIncludes": "beckn:CurtailmentReason"
+    },
+    {
+      "@id": "beckn:sourceType",
+      "@type": "rdf:Property",
+      "rdfs:label": "Source type",
+      "rdfs:comment": "Type of energy source (SOLAR, BATTERY, GRID, HYBRID, RENEWABLE).",
+      "rdfs:domain": "beckn:EnergyResource",
+      "schema:rangeIncludes": "beckn:SourceType"
+    },
+    {
+      "@id": "beckn:certificationStatus",
+      "@type": "rdf:Property",
+      "rdfs:label": "Certification status",
+      "rdfs:comment": "Carbon offset or green energy certification status.",
+      "rdfs:domain": "beckn:EnergyResource",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:meterId",
+      "@type": "rdf:Property",
+      "rdfs:label": "Meter ID",
+      "rdfs:comment": "Meter identifier in DER address format (der://meter/{id}).",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:availableQuantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "Available quantity",
+      "rdfs:comment": "Available energy quantity in kilowatt-hours (kWh).",
+      "rdfs:domain": "beckn:EnergyResource",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:productionWindow",
+      "@type": "rdf:Property",
+      "rdfs:label": "Production window",
+      "rdfs:comment": "Array of time windows when energy is produced or available.",
+      "rdfs:domain": "beckn:EnergyResource",
+      "schema:rangeIncludes": "schema:ItemList"
+    },
+    {
+      "@id": "beckn:sourceVerification",
+      "@type": "rdf:Property",
+      "rdfs:label": "Source verification",
+      "rdfs:comment": "Source verification details including certificates.",
+      "rdfs:domain": "beckn:EnergyResource"
+    },
+    {
+      "@id": "beckn:productionAsynchronous",
+      "@type": "rdf:Property",
+      "rdfs:label": "Production asynchronous",
+      "rdfs:comment": "Whether production and trade may be asynchronous.",
+      "rdfs:domain": "beckn:EnergyResource",
+      "rdfs:range": "xsd:boolean"
+    },
+    {
+      "@id": "beckn:sanctionedLoad",
+      "@type": "rdf:Property",
+      "rdfs:label": "Sanctioned load",
+      "rdfs:comment": "Sanctioned load capacity in kilowatts (kW).",
+      "rdfs:domain": "beckn:EnergyCustomer",
+      "schema:rangeIncludes": "schema:Number"
+    },
+    {
+      "@id": "beckn:utilityCustomerId",
+      "@type": "rdf:Property",
+      "rdfs:label": "Utility customer ID",
+      "rdfs:comment": "Customer's account identifier with the utility company.",
+      "rdfs:domain": "beckn:EnergyCustomer",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:utilityId",
+      "@type": "rdf:Property",
+      "rdfs:label": "Utility ID",
+      "rdfs:comment": "Utility/DISCOM identifier for the customer's service territory.",
+      "rdfs:domain": "beckn:EnergyCustomer",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "beckn:providerAttributes",
+      "@type": "rdf:Property",
+      "rdfs:label": "Provider attributes",
+      "rdfs:comment": "Provider/customer information for this order item.",
+      "rdfs:domain": "beckn:EnergyOrderItem"
+    },
+    {
+      "@id": "beckn:fulfillmentAttributes",
+      "@type": "rdf:Property",
+      "rdfs:label": "Fulfillment attributes",
+      "rdfs:comment": "Optional fulfillment tracking for this order item.",
+      "rdfs:domain": "beckn:EnergyOrderItem"
+    },
+    {
+      "@id": "beckn:PricingModel",
+      "@type": "schema:Enumeration",
+      "schema:name": "Pricing Model",
+      "rdfs:comment": "Enumeration of supported pricing models for energy trade offers."
+    },
+    {
+      "@id": "beckn:PricingModelPerKwh",
+      "@type": "beckn:PricingModel",
+      "schema:name": "PER_KWH",
+      "schema:identifier": "PER_KWH"
+    },
+    {
+      "@id": "beckn:PricingModelTimeOfDay",
+      "@type": "beckn:PricingModel",
+      "schema:name": "TIME_OF_DAY",
+      "schema:identifier": "TIME_OF_DAY"
+    },
+    {
+      "@id": "beckn:PricingModelSubscription",
+      "@type": "beckn:PricingModel",
+      "schema:name": "SUBSCRIPTION",
+      "schema:identifier": "SUBSCRIPTION"
+    },
+    {
+      "@id": "beckn:PricingModelFixed",
+      "@type": "beckn:PricingModel",
+      "schema:name": "FIXED",
+      "schema:identifier": "FIXED"
+    },
+    {
+      "@id": "beckn:DeliveryStatus",
+      "@type": "schema:Enumeration",
+      "schema:name": "Delivery Status",
+      "rdfs:comment": "Enumeration of delivery statuses."
+    },
+    {
+      "@id": "beckn:DeliveryStatusPending",
+      "@type": "beckn:DeliveryStatus",
+      "schema:name": "PENDING",
+      "schema:identifier": "PENDING"
+    },
+    {
+      "@id": "beckn:DeliveryStatusInProgress",
+      "@type": "beckn:DeliveryStatus",
+      "schema:name": "IN_PROGRESS",
+      "schema:identifier": "IN_PROGRESS"
+    },
+    {
+      "@id": "beckn:DeliveryStatusCompleted",
+      "@type": "beckn:DeliveryStatus",
+      "schema:name": "COMPLETED",
+      "schema:identifier": "COMPLETED"
+    },
+    {
+      "@id": "beckn:DeliveryStatusFailed",
+      "@type": "beckn:DeliveryStatus",
+      "schema:name": "FAILED",
+      "schema:identifier": "FAILED"
+    },
+    {
+      "@id": "beckn:DeliveryMode",
+      "@type": "schema:Enumeration",
+      "schema:name": "Delivery Mode",
+      "rdfs:comment": "Enumeration of energy delivery modes."
+    },
+    {
+      "@id": "beckn:DeliveryModeEvCharging",
+      "@type": "beckn:DeliveryMode",
+      "schema:name": "EV_CHARGING",
+      "schema:identifier": "EV_CHARGING"
+    },
+    {
+      "@id": "beckn:DeliveryModeBatterySwap",
+      "@type": "beckn:DeliveryMode",
+      "schema:name": "BATTERY_SWAP",
+      "schema:identifier": "BATTERY_SWAP"
+    },
+    {
+      "@id": "beckn:DeliveryModeV2G",
+      "@type": "beckn:DeliveryMode",
+      "schema:name": "V2G",
+      "schema:identifier": "V2G"
+    },
+    {
+      "@id": "beckn:DeliveryModeGridInjection",
+      "@type": "beckn:DeliveryMode",
+      "schema:name": "GRID_INJECTION",
+      "schema:identifier": "GRID_INJECTION"
+    },
+    {
+      "@id": "beckn:SourceType",
+      "@type": "schema:Enumeration",
+      "schema:name": "Source Type",
+      "rdfs:comment": "Enumeration of energy source types."
+    },
+    {
+      "@id": "beckn:SourceTypeSolar",
+      "@type": "beckn:SourceType",
+      "schema:name": "SOLAR",
+      "schema:identifier": "SOLAR"
+    },
+    {
+      "@id": "beckn:SourceTypeBattery",
+      "@type": "beckn:SourceType",
+      "schema:name": "BATTERY",
+      "schema:identifier": "BATTERY"
+    },
+    {
+      "@id": "beckn:SourceTypeGrid",
+      "@type": "beckn:SourceType",
+      "schema:name": "GRID",
+      "schema:identifier": "GRID"
+    },
+    {
+      "@id": "beckn:SourceTypeHybrid",
+      "@type": "beckn:SourceType",
+      "schema:name": "HYBRID",
+      "schema:identifier": "HYBRID"
+    },
+    {
+      "@id": "beckn:SourceTypeRenewable",
+      "@type": "beckn:SourceType",
+      "schema:name": "RENEWABLE",
+      "schema:identifier": "RENEWABLE"
+    },
+    {
+      "@id": "beckn:CurtailmentReason",
+      "@type": "schema:Enumeration",
+      "schema:name": "Curtailment Reason",
+      "rdfs:comment": "Enumeration of reasons for energy curtailment."
+    },
+    {
+      "@id": "beckn:CurtailmentReasonGridOutage",
+      "@type": "beckn:CurtailmentReason",
+      "schema:name": "GRID_OUTAGE",
+      "schema:identifier": "GRID_OUTAGE"
+    },
+    {
+      "@id": "beckn:CurtailmentReasonEmergency",
+      "@type": "beckn:CurtailmentReason",
+      "schema:name": "EMERGENCY",
+      "schema:identifier": "EMERGENCY"
+    },
+    {
+      "@id": "beckn:CurtailmentReasonCongestion",
+      "@type": "beckn:CurtailmentReason",
+      "schema:name": "CONGESTION",
+      "schema:identifier": "CONGESTION"
+    },
+    {
+      "@id": "beckn:CurtailmentReasonMaintenance",
+      "@type": "beckn:CurtailmentReason",
+      "schema:name": "MAINTENANCE",
+      "schema:identifier": "MAINTENANCE"
+    },
+    {
+      "@id": "beckn:CurtailmentReasonOther",
+      "@type": "beckn:CurtailmentReason",
+      "schema:name": "OTHER",
+      "schema:identifier": "OTHER"
+    }
+  ]
+}

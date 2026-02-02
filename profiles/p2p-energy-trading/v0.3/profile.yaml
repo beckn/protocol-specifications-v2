@@ -1,0 +1,241 @@
+openapi: 3.1.1
+info:
+  title: P2P Energy Trading Profile (v0.3)
+  version: 0.3.0
+  description: |
+    Profile schema for P2P Energy Trading on Beckn Protocol v2.
+
+    This profile defines:
+    1. Which domain attribute schemas slot into which core Beckn entity slots
+    2. Required fields beyond core schema requirements
+    3. Validation constraints specific to P2P energy trading
+
+    ## Attribute Slot Mappings
+
+    | Core Entity | Attribute Slot | Domain Schema | Description |
+    |-------------|----------------|---------------|-------------|
+    | `Offer` | `beckn:offerAttributes` | `EnergyTradeOffer` | Pricing (beckn:price + applicableQuantity), delivery window |
+    | `Order` | `beckn:orderAttributes` | `EnergyTradeOrder` | BAP/BPP IDs, total quantity |
+    | `Order` | `beckn:orderAttributes` | `EnergyTradeOrderInterUtility` | Extended with utility IDs for inter-discom |
+    | `Order` | `beckn:buyer` | `P2PEnergyBuyer` | REQUIRED: Buyer with EnergyCustomer attributes |
+    | `Item` | `beckn:provider` | `P2PEnergyProvider` | REQUIRED: Provider with EnergyCustomer attributes |
+    | `Item` | `beckn:itemAttributes` | `EnergyResource` | Source type, delivery mode |
+    | `Provider` | `beckn:providerAttributes` | `EnergyCustomer` | REQUIRED: Provider/prosumer meterId, utilityId |
+    | `Buyer` | `beckn:buyerAttributes` | `EnergyCustomer` | REQUIRED: Buyer/consumer meterId, utilityId |
+    | `OrderItem` | `beckn:orderItemAttributes` | `EnergyOrderItem` | Wrapper for provider/fulfillment attrs |
+    | `EnergyOrderItem` | `providerAttributes` | `EnergyCustomer` | Delivery destination meter |
+    | `EnergyOrderItem` | `fulfillmentAttributes` | `EnergyTradeDelivery` | Meter readings, delivery status |
+
+    ## Required Core Fields
+
+    When using this profile, the following core Beckn fields are REQUIRED:
+
+    ### On Offer (discover response, select response)
+    - `beckn:offerAttributes` - Must be EnergyTradeOffer
+      - `beckn:price` with `applicableQuantity` - REQUIRED within EnergyTradeOffer
+
+    ### On Order (init, confirm, status)
+    - `beckn:orderAttributes` - Must be EnergyTradeOrder or EnergyTradeOrderInterUtility
+    - `beckn:orderItems` - At least one order item required
+
+    ### On OrderItem
+    - `beckn:quantity` - Requested energy quantity
+    - `beckn:acceptedOffer` - Reference to the accepted offer
+    - `beckn:orderItemAttributes` - Must be EnergyOrderItem
+
+    ## Schema URLs
+
+    Base URL: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/main/schema
+
+    - Core: `{base}/core/v2/attributes.yaml`
+    - Energy Trade: `{base}/EnergyTrade/v0.3/attributes.yaml`
+    - Energy Enrollment: `{base}/EnergyEnrollment/v0.2/attributes.yaml`
+
+  x-profile-id: profiles/p2p-energy-trading/v0.3
+  x-domain: deg:p2p-trading
+  contact:
+    name: Beckn Energy Working Group
+
+components:
+  schemas:
+    ########################################################################
+    # PROFILE: Offer with EnergyTradeOffer attributes
+    ########################################################################
+    P2PEnergyOffer:
+      description: |
+        Offer profile for P2P energy trading.
+        Extends core Offer with required fields for energy trading.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Offer'
+        - type: object
+          required:
+            - "beckn:offerAttributes"
+          properties:
+            beckn:offerAttributes:
+              description: |
+                Must be EnergyTradeOffer for P2P energy trading.
+                EnergyTradeOffer.beckn:price with applicableQuantity is REQUIRED.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeOffer'
+
+    ########################################################################
+    # PROFILE: Order with EnergyTradeOrder attributes
+    ########################################################################
+    P2PEnergyOrder:
+      description: |
+        Order profile for P2P energy trading (single utility).
+        Extends core Order with required fields for energy trading.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order'
+        - type: object
+          required:
+            - "beckn:orderAttributes"
+            - "beckn:orderItems"
+          properties:
+            beckn:buyer:
+              description: |
+                REQUIRED. Must be P2PEnergyBuyer for P2P energy trading.
+                Contains EnergyCustomer in buyerAttributes with meterId.
+              $ref: '#/components/schemas/P2PEnergyBuyer'
+            beckn:orderAttributes:
+              description: Must be EnergyTradeOrder for P2P energy trading.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeOrder'
+            beckn:orderItems:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/P2PEnergyOrderItem'
+
+    ########################################################################
+    # PROFILE: Order with EnergyTradeOrderInterUtility attributes
+    ########################################################################
+    P2PEnergyOrderInterUtility:
+      description: |
+        Order profile for inter-utility (inter-discom) P2P energy trading.
+        Extends core Order with utility identifiers for cross-discom transactions.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order'
+        - type: object
+          required:
+            - "beckn:orderAttributes"
+            - "beckn:orderItems"
+          properties:
+            beckn:buyer:
+              description: |
+                REQUIRED. Must be P2PEnergyBuyer for P2P energy trading.
+                Contains EnergyCustomer in buyerAttributes with meterId.
+              $ref: '#/components/schemas/P2PEnergyBuyer'
+            beckn:orderAttributes:
+              description: Must be EnergyTradeOrderInterUtility for inter-discom trading.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyTradeOrderInterUtility'
+            beckn:orderItems:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/P2PEnergyOrderItem'
+
+    ########################################################################
+    # PROFILE: OrderItem with EnergyOrderItem attributes
+    ########################################################################
+    P2PEnergyOrderItem:
+      description: |
+        OrderItem profile for P2P energy trading.
+        Extends core OrderItem with energy-specific attributes.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
+        - type: object
+          required:
+            - "beckn:quantity"
+            - "beckn:acceptedOffer"
+            - "beckn:orderItemAttributes"
+          properties:
+            beckn:quantity:
+              description: Requested energy quantity in kWh.
+              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Quantity'
+            beckn:acceptedOffer:
+              description: Reference to the accepted EnergyTradeOffer.
+              $ref: '#/components/schemas/P2PEnergyOffer'
+            beckn:orderItemAttributes:
+              description: Must be EnergyOrderItem for P2P energy trading.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyOrderItem'
+
+    ########################################################################
+    # PROFILE: Provider with EnergyCustomer attributes (for prosumers)
+    ########################################################################
+    P2PEnergyProvider:
+      description: |
+        Provider profile for P2P energy trading.
+        Represents an energy provider/prosumer with required EnergyCustomer attributes.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Provider'
+        - type: object
+          required:
+            - "beckn:providerAttributes"
+          properties:
+            beckn:providerAttributes:
+              description: |
+                REQUIRED. Must be EnergyCustomer for P2P energy trading.
+                Identifies the provider/prosumer with meterId, utilityId, etc.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyCustomer'
+
+    ########################################################################
+    # PROFILE: Item with P2PEnergyProvider and EnergyResource attributes
+    ########################################################################
+    P2PEnergyItem:
+      description: |
+        Item profile for P2P energy trading.
+        Represents an energy resource (solar panel, battery, etc.).
+        - beckn:provider (P2PEnergyProvider) is REQUIRED - identifies the provider/prosumer
+        - beckn:itemAttributes (EnergyResource) - energy source characteristics
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Item'
+        - type: object
+          properties:
+            beckn:provider:
+              description: |
+                REQUIRED. Must be P2PEnergyProvider for P2P energy trading.
+                Contains EnergyCustomer in providerAttributes with meterId.
+              $ref: '#/components/schemas/P2PEnergyProvider'
+            beckn:itemAttributes:
+              description: |
+                EnergyResource attributes for energy source characteristics.
+                Includes sourceType, deliveryMode, certificationStatus, etc.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyResource'
+
+    ########################################################################
+    # PROFILE: Buyer with EnergyCustomer attributes
+    ########################################################################
+    P2PEnergyBuyer:
+      description: |
+        Buyer profile for P2P energy trading.
+        Represents an energy consumer/buyer with required EnergyCustomer attributes.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Buyer'
+        - type: object
+          required:
+            - "beckn:buyerAttributes"
+          properties:
+            beckn:buyerAttributes:
+              description: |
+                REQUIRED. Must be EnergyCustomer for P2P energy trading.
+                Identifies the buyer/consumer with meterId, utilityId, etc.
+              $ref: '../../../schema/EnergyTrade/v0.3/attributes.yaml#/components/schemas/EnergyCustomer'
+
+    ########################################################################
+    # PROFILE: Catalog with energy items and offers
+    ########################################################################
+    P2PEnergyCatalog:
+      description: |
+        Catalog profile for P2P energy trading.
+        Contains energy items and offers from a provider.
+      allOf:
+        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Catalog'
+        - type: object
+          properties:
+            beckn:items:
+              type: array
+              items:
+                $ref: '#/components/schemas/P2PEnergyItem'
+            beckn:offers:
+              type: array
+              items:
+                $ref: '#/components/schemas/P2PEnergyOffer'
