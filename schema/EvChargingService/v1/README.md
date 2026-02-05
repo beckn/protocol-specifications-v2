@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Removal-2026--02--20-dbeafe?style=for-the-badge&labelColor=075985" alt="Removal: 2026-02-20" />
 </p>
 
-## This folder is being moved. **Migrate now.**
+## This schema is being moved. **Migrate now.**
 
 **What’s changing:** This schema is being migrated to **[DEG Specification](https://github.com/beckn/DEG)**.  
 **Impact:** Run-time references to files in this folder may continue to work until the removal date, after which they will fail.
@@ -35,13 +35,8 @@
   </a>
 </p>
 
-<table width="100%" cellpadding="12" cellspacing="0" border="0" bgcolor="#ffe4e6">
-  <tr>
-    <td>
-      <strong>Heads-up:</strong> If you maintain downstream specs or SDKs, pin versions and communicate timelines clearly.
-    </td>
-  </tr>
-</table>
+> [!CAUTION]
+> #### Heads-up:If you maintain downstream specs or SDKs, pin versions and communicate timelines clearly.
 
 <p align="center">
   <img
