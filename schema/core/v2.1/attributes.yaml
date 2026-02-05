@@ -27,10 +27,8 @@ components:
         - APPLE_PAY
       x-jsonld:
         '@id': beckn:acceptedPaymentMethod
-      example:
-      - UPI
-      - Card
-      - Wallet
+      examples:
+        - $ref: '../../examples/v2.1/AcceptedPaymentMethod.examples.yaml#/basic'
     AckResponse:
       type: object
       properties:
@@ -167,7 +165,8 @@ components:
           description: 'Attribute Pack reference for richer identity: # buyer/identity.v1 (contact details: email, phone,
             address) # buyer/org-ids.v1 (LEI, GSTIN, ISIN, CUSIP…) # buyer/kyc.v1 (jurisdictional compliance fields) # buyer/preferences.v1
             (delivery preferences, accessibility needs, etc.)'
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:displayName:
           description: Human-readable display name
           type: string
@@ -634,7 +633,8 @@ components:
             to schema:ParcelDelivery / schema:DeliveryEvent # PICKUP: pickupPlace, counter codes, time windows → map to schema:Place
             + schema:openingHoursSpecification # RESERVATION: reservationStatus, reservedTicket → map to schema:Reservation
             # DIGITAL: contentUrl/license/expiry → map to schema:DataDownload/schema:MediaObject'
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:entitlements:
           type: array
           items:
@@ -686,7 +686,8 @@ components:
             tracking URL; may also include deliveryMethod.
           x-jsonld:
             '@type': schema:TrackAction
-          $ref: '#/components/schemas/TrackAction'
+          allOf:
+            - $ref: '#/components/schemas/TrackAction'
       required:
       - '@context'
       - '@type'
@@ -763,40 +764,9 @@ components:
       - type
       additionalProperties: true
       examples:
-        geometry_collection:
-          value:
-            geometries:
-            - coordinates:
-              - 77.6
-              - 12.95
-              type: Point
-            - coordinates:
-              - - 77.6
-                - 12.95
-              - - 77.62
-                - 12.97
-              type: LineString
-            type: GeometryCollection
-        point:
-          value:
-            coordinates:
-            - 77.5946
-            - 12.9716
-            type: Point
-        polygon_rectangle:
-          value:
-            coordinates:
-            - - - 77.61
-                - 12.92
-              - - 77.64
-                - 12.92
-              - - 77.64
-                - 12.95
-              - - 77.61
-                - 12.95
-              - - 77.61
-                - 12.92
-            type: Polygon
+        - $ref: '../../examples/v2.1/GeoJSONGeometry.examples.yaml#/point'
+        - $ref: '../../examples/v2.1/GeoJSONGeometry.examples.yaml#/polygon_rectangle'
+        - $ref: '../../examples/v2.1/GeoJSONGeometry.examples.yaml#/geometry_collection'
     Instruction:
       type: object
       properties:
@@ -846,7 +816,8 @@ components:
             '@id': schema:identifier
         beckn:invoiceAttributes:
           description: Attribute Pack for tax regime (e.g., GST/VAT), e-invoice refs, legal boilerplate, etc.
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:issueDate:
           type: string
           x-jsonld:
@@ -861,12 +832,14 @@ components:
           description: Seller / issuer of the invoice
           x-jsonld:
             '@id': schema:provider
-          $ref: '#/components/schemas/Provider/properties/beckn:id'
+          allOf:
+            - $ref: '#/components/schemas/Provider/properties/beckn:id'
         beckn:payer:
           description: Buyer being invoiced
           x-jsonld:
             '@id': schema:customer
-          $ref: '#/components/schemas/Buyer/properties/beckn:id'
+          allOf:
+            - $ref: '#/components/schemas/Buyer/properties/beckn:id'
         beckn:priceComponents:
           type: array
           items:
@@ -875,7 +848,8 @@ components:
           description: Invoice grand totals (tax/shipping/discount components inside)
           x-jsonld:
             '@id': schema:priceSpecification
-          $ref: '#/components/schemas/PriceSpecification'
+          allOf:
+            - $ref: '#/components/schemas/PriceSpecification'
       required:
       - '@context'
       - '@type'
@@ -1091,29 +1065,8 @@ components:
       - geo
       additionalProperties: false
       examples:
-        service_area:
-          value:
-            geo:
-              coordinates:
-              - - - 77.61
-                  - 12.92
-                - - 77.64
-                  - 12.92
-                - - 77.64
-                  - 12.95
-                - - 77.61
-                  - 12.95
-                - - 77.61
-                  - 12.92
-              type: Polygon
-        site_point:
-          value:
-            address: MG Road, Bengaluru
-            geo:
-              coordinates:
-              - 77.5946
-              - 12.9716
-              type: Point
+        - $ref: '../../examples/v2.1/Location.examples.yaml#/site_point'
+        - $ref: '../../examples/v2.1/Location.examples.yaml#/service_area'
     Offer:
       type: object
       properties:
@@ -1177,7 +1130,8 @@ components:
           minItems: 1
         beckn:offerAttributes:
           description: Attribute Pack attachment (pricing models, discounts, rail terms, etc.)
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:policies:
           type: array
           items:
@@ -1186,17 +1140,20 @@ components:
           description: Price snapshot; detailed models can live in offerAttributes
           x-jsonld:
             '@id': schema:priceSpecification
-          $ref: '#/components/schemas/PriceSpecification'
+          allOf:
+            - $ref: '#/components/schemas/PriceSpecification'
         beckn:provider:
           description: Seller / provider of this offer
           x-jsonld:
             '@id': schema:seller
-          $ref: '#/components/schemas/Provider/properties/beckn:id'
+          allOf:
+            - $ref: '#/components/schemas/Provider/properties/beckn:id'
         beckn:validity:
           description: Offer validity window
           x-jsonld:
             '@id': schema:availabilityStarts|schema:availabilityEnds
-          $ref: '#/components/schemas/TimePeriod'
+          allOf:
+            - $ref: '#/components/schemas/TimePeriod'
       required:
       - '@context'
       - '@type'
@@ -1228,7 +1185,8 @@ components:
         beckn:consumer:
           x-jsonld:
             '@id': schema:customer
-          $ref: '#/components/schemas/Consumer'
+          allOf:
+            - $ref: '#/components/schemas/Consumer'
         beckn:entitlements:
           type: array
           items:
@@ -1237,7 +1195,8 @@ components:
           description: Parcel delivery or reservation summary
           x-jsonld:
             '@id': schema:ParcelDelivery|schema:Reservation
-          $ref: '#/components/schemas/Fulfillment'
+          allOf:
+            - $ref: '#/components/schemas/Fulfillment'
         beckn:id:
           type: string
           x-jsonld:
@@ -1246,10 +1205,12 @@ components:
           description: Invoice reference/summary
           x-jsonld:
             '@id': schema:Invoice
-          $ref: '#/components/schemas/Invoice/properties/beckn:id'
+          allOf:
+            - $ref: '#/components/schemas/Invoice/properties/beckn:id'
         beckn:orderAttributes:
           description: Order-level Attribute Pack (vertical/regulatory specifics)
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:orderItems:
           type: array
           items:
@@ -1284,7 +1245,8 @@ components:
           description: Order totals snapshot (derivable from lines; optional)
           x-jsonld:
             '@id': schema:priceSpecification
-          $ref: '#/components/schemas/PriceSpecification'
+          allOf:
+            - $ref: '#/components/schemas/PriceSpecification'
         beckn:participants:
           type: array
           items:
@@ -1293,7 +1255,8 @@ components:
           description: Method/status; rail-specific payloads go to packs
           x-jsonld:
             '@id': schema:PaymentMethod|schema:PaymentStatusType
-          $ref: '#/components/schemas/PaymentTerms'
+          allOf:
+            - $ref: '#/components/schemas/PaymentTerms'
         beckn:policies:
           type: array
           items:
@@ -1301,7 +1264,8 @@ components:
         beckn:provider:
           x-jsonld:
             '@id': schema:seller
-          $ref: '#/components/schemas/Provider'
+          allOf:
+            - $ref: '#/components/schemas/Provider'
         beckn:state:
           $ref: '#/components/schemas/State'
       required:
@@ -1319,26 +1283,31 @@ components:
           description: Offer applied to this line (if different from order-level)
           x-jsonld:
             '@id': schema:acceptedOffer
-          $ref: '#/components/schemas/Offer'
+          allOf:
+            - $ref: '#/components/schemas/Offer'
         beckn:lineId:
           description: Unique line id within order
           type: string
         beckn:orderItemAttributes:
           description: Line-level Attribute Pack (options, substitutions, ESG, etc.)
-          $ref: '#/components/schemas/Attributes'
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
         beckn:orderedItem:
           x-jsonld:
             '@id': schema:orderedItem
-          $ref: '#/components/schemas/Item/properties/beckn:id'
+          allOf:
+            - $ref: '#/components/schemas/Item/properties/beckn:id'
         beckn:price:
           description: Line price composition (unit/tax/delivery/discount)
           x-jsonld:
             '@id': schema:priceSpecification
-          $ref: '#/components/schemas/PriceSpecification'
+          allOf:
+            - $ref: '#/components/schemas/PriceSpecification'
         beckn:quantity:
           x-jsonld:
             '@id': beckn:quantity
-          $ref: '#/components/schemas/Quantity'
+          allOf:
+            - $ref: '#/components/schemas/Quantity'
       required:
       - beckn:orderedItem
     Participant:
@@ -1502,7 +1471,8 @@ components:
           type: string
         beckn:validity:
           description: Validity window for this policy version
-          $ref: '#/components/schemas/TimePeriod'
+          allOf:
+            - $ref: '#/components/schemas/TimePeriod'
       required:
       - '@context'
       - '@type'
@@ -1524,7 +1494,8 @@ components:
           type: number
         beckn:category:
           description: Component category (tax, fee, discount, etc.)
-          $ref: '#/components/schemas/CategoryCode'
+          allOf:
+            - $ref: '#/components/schemas/CategoryCode'
         beckn:currency:
           type: string
         beckn:descriptor:
@@ -1545,7 +1516,8 @@ components:
         applicableQuantity:
           x-jsonld:
             '@id': schema:eligibleQuantity
-          $ref: '#/components/schemas/Quantity'
+          allOf:
+            - $ref: '#/components/schemas/Quantity'
         beckn:priceComponents:
           type: array
           items:
@@ -1826,64 +1798,10 @@ components:
       - targets
       additionalProperties: false
       examples:
-        within_circle_as_distance:
-          summary: EV sites within 5 km of a center (via S_DWITHIN)
-          value:
-            op: S_DWITHIN
-            targets: $['beckn:availableAt'][*]['geo']
-            geometry:
-              type: Point
-              coordinates:
-              - 77.5946
-              - 12.9716
-            distanceMeters: 5000
-        pickup_at_point:
-          summary: Pickup at a defined point (GeoJSON Point)
-          description: 'Example of a DiscoverRequest spatial constraint representing a specific pickup location. The requester
-            defines a GeoJSON Point as the pickup location, and the server finds providers whose service area **contains**
-            this point.
-
-            '
-          value:
-            op: S_CONTAINS
-            targets: $['beckn:itemAttributes']['ride:serviceArea']['geo']
-            geometry:
-              type: Point
-              coordinates:
-              - 77.5946
-              - 12.9716
-        drop_intersects_user_box:
-          summary: Provider drop zone intersects user’s rectangle
-          value:
-            op: S_INTERSECTS
-            targets: $['beckn:itemAttributes']['ride:dropOff']['geo']
-            geometry:
-              type: Polygon
-              coordinates:
-              - - - 77.61
-                  - 12.92
-                - - 77.64
-                  - 12.92
-                - - 77.64
-                  - 12.95
-                - - 77.61
-                  - 12.95
-                - - 77.61
-                  - 12.92
-        pickup_location_example:
-          summary: A defined pickup location object
-          value:
-            geo:
-              type: Point
-              coordinates:
-              - 77.5946
-              - 12.9716
-            address:
-              streetAddress: MG Road
-              addressLocality: Bengaluru
-              addressRegion: Karnataka
-              postalCode: '560001'
-              addressCountry: IN
+        - $ref: '../../examples/v2.1/SpatialConstraint.examples.yaml#/within_circle'
+        - $ref: '../../examples/v2.1/SpatialConstraint.examples.yaml#/pickup_at_point'
+        - $ref: '../../examples/v2.1/SpatialConstraint.examples.yaml#/drop_intersects'
+        - $ref: '../../examples/v2.1/SpatialConstraint.examples.yaml#/pickup_location'
     State:
       type: object
       properties:
@@ -1961,16 +1879,8 @@ components:
         schema:telephone: $.phone
         schema:url: $.url
       additionalProperties: false
-      example:
-        channels:
-        - web
-        - phone
-        - email
-        email: support@acme.example
-        hours: Mon–Sat 09:00–20:00 IST
-        name: Acme Support
-        phone: +91-80-1234-5678
-        url: https://acme.example/support
+      examples:
+        - $ref: '../../examples/v2.1/SupportInfo.examples.yaml#/basic'
     SupportMethod:
       type: string
     SupportTicket:
@@ -2102,11 +2012,8 @@ components:
         schema:deliveryMethod: $.tl_method
         schema:target: $.url
       additionalProperties: false
-      example:
-        expires_at: '2025-10-16T18:30:00Z'
-        tl_method: http/get
-        trackingStatus: active
-        url: https://track.bpp.example?order_id=ORD-123
+      examples:
+        - $ref: '../../examples/v2.1/Tracking.examples.yaml#/basic'
     CatalogProcessingResult:
       type: object
       properties:
@@ -2174,14 +2081,5 @@ components:
             '
           $ref: '#/components/schemas/MediaSearchOptions'
       additionalProperties: false
-      example:
-        media:
-        - id: snap-1
-          type: image
-          url: https://cdn.example.com/user/snaps/ccs2-cable.jpg
-          contentType: image/jpeg
-        options:
-          goals:
-          - VISUAL_OBJECT_DETECT
-          - TEXT_FROM_IMAGE
-          augmentTextSearch: true
+      examples:
+        - $ref: '../../examples/v2.1/MediaSearch.examples.yaml#/basic'
