@@ -74,10 +74,8 @@
         "DEBIT_CARD": "beckn:DEBIT_CARD",
         "WALLET": "beckn:WALLET",
         "BANK_TRANSFER": "beckn:BANK_TRANSFER",
-        "BANK-TRANSFER": "beckn:BANK_TRANSFER",
         "CASH": "beckn:CASH",
-        "APPLE_PAY": "beckn:APPLE_PAY",
-        "APPLE-PAY": "beckn:APPLE_PAY"
+        "APPLE_PAY": "beckn:APPLE_PAY"
       }
     },
     "addOnItems": "beckn:addOnItems",

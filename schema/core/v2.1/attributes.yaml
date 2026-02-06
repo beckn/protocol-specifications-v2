@@ -1,8 +1,7 @@
 openapi: 3.1.1
 info:
   title: Beckn Core Schemas v2
-  description: Core schemas for the Beckn Protocol v2. This file contains the fundamental object structures and payload shapes
-    used when executing discovery, ordering, fulfillment, post-fulfillment and other workflows on Beckn
+  description: Core schemas for the Beckn Protocol v2. This file contains the fundamental object structures and payload shapes used when executing discovery, ordering, fulfillment, post-fulfillment and other workflows on Beckn
   version: 2.1.0
   contact:
     name: Beckn Labs
@@ -148,7 +147,7 @@ components:
       - '@type'
       additionalProperties: true
       minProperties: 2
-    Buyer:
+    Consumer:
       type: object
       properties:
         '@context':
@@ -158,7 +157,7 @@ components:
         '@type':
           type: string
           enum:
-          - beckn:Buyer
+          - beckn:Consumer
           x-jsonld:
             '@id': schema:Thing
         beckn:buyerAttributes:
@@ -349,30 +348,30 @@ components:
         action:
           description: The Beckn protocol method being called by the sender and executed at the receiver.
           type: string
-        bap_id:
+        bapId:
           description: A globally unique identifier of the BAP, Typically it is the fully qualified domain name (FQDN) of
             the BAP
           type: string
-        bap_uri:
+        bapUri:
           description: API URL of the BAP for accepting callbacks from BPPs.
           type: string
           format: uri
-        bpp_id:
+        bppId:
           description: A globally unique identifier of the BAP, Typically it is the fully qualified domain name (FQDN) of
             the BAP
           type: string
-        bpp_uri:
+        bppUri:
           description: API URL of the BPP for accepting calls from BAPs.
           type: string
           format: uri
-        message_id:
+        messageId:
           description: This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs
             are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value
             can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id
             for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.
           type: string
           format: uuid
-        network_id:
+        networkId:
           description: A unique identifier representing a group of platforms. By default, it is the url of the network registry
             on the Beckn network
           type: string
@@ -386,7 +385,7 @@ components:
           description: Time of request generation in RFC3339 format
           type: string
           format: date-time
-        transaction_id:
+        transactionId:
           description: This is a unique value which persists across all API calls from `search` through `confirm`. This is
             done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized
             recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active
@@ -424,7 +423,7 @@ components:
           - beckn:Credential
         beckn:descriptor:
           $ref: '#/components/schemas/Descriptor'
-        beckn:expires_at:
+        beckn:expiresAt:
           type: string
           format: date-time
         beckn:id:
@@ -624,26 +623,28 @@ components:
           - beckn:Fulfillment
           x-jsonld:
             '@id': schema:Thing
-        beckn:alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Alert'
-        beckn:deliveryAttributes:
-          description: 'Bundle of attributes for the chosen mode:  # DELIVERY: endpoints, slot windows, route & events → map
-            to schema:ParcelDelivery / schema:DeliveryEvent # PICKUP: pickupPlace, counter codes, time windows → map to schema:Place
-            + schema:openingHoursSpecification # RESERVATION: reservationStatus, reservedTicket → map to schema:Reservation
-            # DIGITAL: contentUrl/license/expiry → map to schema:DataDownload/schema:MediaObject'
+        beckn:agent:
+          description: 'The entity that directly performs the fulfillment'
+          allOf:
+            - $ref: '#/components/schemas/FulfillmentAgent'
+        beckn:provider:
+          description: 'The agency or organization that performs the fulfillment service'
+          allOf:
+            - $ref: '#/components/schemas/Provider'
+        beckn:fulfillmentAttributes:
+          description: 'Extensible set of domain-specific attributes describing the fulfillment'
           allOf:
             - $ref: '#/components/schemas/Attributes'
-        beckn:entitlements:
+        beckn:docs:
+          description: 'An attached set of docs related to the fulfillment of the order. It could be tickets, passes, shipment manifests, etc'
           type: array
           items:
-            $ref: '#/components/schemas/Entitlement'
-        beckn:fulfillmentStatus:
-          description: Fulfillment status code (e.g., OutForDelivery, ReadyForPickup, Confirmed)
-          type: string
+            $ref: '#/components/schemas/Document'
+        beckn:currentState:
+          allOf:
+            - $ref: '#/components/schemas/Descriptor'
           x-jsonld:
-            '@id': beckn:fulfillmentStatus
+            '@id': 'beckn:fulfillmentState'
         beckn:id:
           description: Fulfillment identifier
           type: string
@@ -652,48 +653,55 @@ components:
         beckn:instructions:
           type: array
           items:
-            $ref: '#/components/schemas/Instruction'
+            $ref: '#/components/schemas/Descriptor'
         beckn:mode:
-          description: 'DELIVERY    → last-mile / parcel logistics
-
-            PICKUP      → customer collects from a place
-
-            RESERVATION → entitlement/booking is fulfilled (tickets, seats, appointments)
-
-            DIGITAL     → digital good / license access
-
-            '
-          type: string
-          enum:
-          - DELIVERY
-          - PICKUP
-          - RESERVATION
-          - DIGITAL
+          description: 'Extensible set of attributes describing the mode of fulfillment. Varies with Industry Use Case'
+          allOf:
+            - $ref: '#/components/schemas/FulfillmentMode'
           x-jsonld:
-            '@id': beckn:mode
+            '@id': beckn:FulfillmentMode  
         beckn:participants:
+          description: A list of participants who are entitled to receive the fulfillment of the order. By default, it is the consumer who placed the order  
           type: array
           items:
             $ref: '#/components/schemas/Participant'
+          minItems: 1
         beckn:state:
-          $ref: '#/components/schemas/State'
-        beckn:stops:
+          description: 'The current state of fulfillment'
+          allOf:
+            $ref: '#/components/schemas/State'
+        beckn:stages:
+          description: 'The various stages of the fulfillment'
           type: array
           items:
-            $ref: '#/components/schemas/FulfillmentStop'
-        trackingAction:
-          description: Tracking entrypoint for this fulfillment, modeled as schema.org TrackAction. Use target.url for a clickable
-            tracking URL; may also include deliveryMethod.
-          x-jsonld:
-            '@type': schema:TrackAction
-          allOf:
-            - $ref: '#/components/schemas/TrackAction'
+            $ref: '#/components/schemas/FulfillmentStage'
+          minItems: 1
+        beckn:trackingEnabled:
+          description: Whether tracking is enabled / possible for this fulfillment
+          type: boolean
       required:
       - '@context'
       - '@type'
       - beckn:mode
       additionalProperties: false
-    FulfillmentStop:
+    FulfillmentAgent:
+      description: The entity directly involved in fulfilling the order. It could be a person, a machine, a software application, or an AI Agent
+      type: object
+      properties:
+        beckn:id:
+          type: string
+          x-jsonld:
+            '@id': 'schema:identifier'
+        beckn:name:
+          type: string
+          x-jsonld:
+            '@id': 'schema:name'
+        beckn:AgentAttributes:
+          description: An extensible set of attributes that describe the agent of fulfillment
+          allOf: 
+            $ref: '#/components/schemas/Attributes'
+
+    FulfillmentStage:
       type: object
       properties:
         '@context':
@@ -703,26 +711,36 @@ components:
         '@type':
           type: string
           enum:
-          - beckn:FulfillmentStop
+          - beckn:FulfillmentStage
         beckn:id:
+          description: A unique identifier for this stage of fulfillment
           type: string
         beckn:instructions:
+          description: A set of instructions to follow during this stage of fulfillment
           type: array
           items:
             $ref: '#/components/schemas/Instruction'
-        beckn:location:
-          $ref: '#/components/schemas/Location'
-        beckn:stopType:
-          description: Stop type/role (pickup, dropoff, hub, etc.)
-          type: string
-        beckn:time:
-          $ref: '#/components/schemas/TimePeriod'
+        beckn:start:
+          description: An extensible set of attributes that describe the criteria required to start this stage of fulfillment
+          allOf: 
+            $ref: '#/components/schemas/Attributes'
+        beckn:end:
+          description: An extensible set of attributes that describe the criteria required to end this stage of fulfillment
+          allOf: 
+            $ref: '#/components/schemas/Attributes'
+        beckn:FulfillmentStageAttributes:
+          description: An extensible set of attributes that describe this stage of fulfillment
+          allOf: 
+            $ref: '#/components/schemas/Attributes'
+      x-jsonld:
+        '@id': beckn:fulfillmentStage
       required:
       - '@context'
       - '@type'
       - beckn:id
       - beckn:location
       additionalProperties: false
+
     GeoJSONGeometry:
       description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude,\
         \ latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon\
@@ -1349,7 +1367,7 @@ components:
       - beckn:id
       - beckn:role
       additionalProperties: false
-    Payment:
+    PaymentAction:
       type: object
       properties:
         '@context':
@@ -1362,8 +1380,10 @@ components:
           - beckn:Payment
           x-jsonld:
             '@id': schema:Thing
-        beckn:acceptedPaymentMethod:
-          $ref: '#/components/schemas/AcceptedPaymentMethod'
+        beckn:payer: 
+          type: object
+        beckn:payee:
+          type: object
         beckn:amount:
           description: Amount associated with this payment action
           type: object
@@ -1398,11 +1418,6 @@ components:
             '@id': schema:paymentDueDate
           format: date-time
           nullable: true
-        beckn:paymentAttributes:
-          description: 'Rail-specific attribute pack (e.g., UPI: VPA/UTR; CARD: token/3DS; BNPL: plan/schedule)
-
-            '
-          $ref: '#/components/schemas/Attributes'
         beckn:paymentStatus:
           description: Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)
           type: string
@@ -1445,6 +1460,32 @@ components:
       - '@type'
       - beckn:paymentStatus
       additionalProperties: false
+
+    PaymentTerms:
+      type: object
+      properties:
+        beckn:collectedBy:
+          $ref: '#/components/schemas/PaymentCollector'
+        beckn:paymentSchedule:
+          $ref: '#/components/schemas/PaymentSchedule'
+        beckn:payTo:
+          $ref: '#/components/schemas/SettlementAccount'
+        beckn:refundTo:
+          $ref: '#/components/schemas/SettlementAccount'
+        beckn:paymentAttributes:
+          description: 'Rail-specific attribute pack (e.g., UPI: VPA/UTR; CARD: token/3DS; BNPL: plan/schedule)'
+          $ref: '#/components/schemas/Attributes'
+
+    PaymentCollector:
+      description: The entity that is liable to collect the payment from the consumer
+      type: string
+      enum:
+        - BAP
+        - BPP
+        - PROVIDER
+        - FULFILLMENT_AGENT
+        - THIRD_PARTY_AGENT
+
     Policy:
       type: object
       properties:

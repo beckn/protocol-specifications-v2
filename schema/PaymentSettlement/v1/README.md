@@ -1,4 +1,56 @@
 # Payment Settlement Definition Bundle (v1)
+---
+<p align="center">
+  <img
+    alt="Migration Notice"
+    src="https://capsule-render.vercel.app/api?type=soft&color=0:b42318,100:7a271a&height=100&section=header&text=MIGRATION%20NOTICE&fontSize=54&fontColor=ffffff&animation=fadeIn"
+  />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Effective-2026--02--06-fde2e0?style=for-the-badge&labelColor=b42318" alt="Effective: 2026-02-06" />
+  <img src="https://img.shields.io/badge/Removal-2026--02--20-dbeafe?style=for-the-badge&labelColor=075985" alt="Removal: 2026-02-20" />
+</p>
+
+## This schema is being moved. **Migrate now.**
+
+
+**What’s changing:** This schema is being merged with the **Core Schema**.  
+**Impact:** Run-time references to files in this folder may continue to work until the removal date, after which they will fail.
+
+### Recommended action
+1. Change your schema context to **[Core](../../core/v2.1/)**.
+2. Update your integrations before **2026-02-20**.
+3. If blocked, open an issue with logs and request context.
+
+<p>
+  <!-- Replace MIGRATION_GUIDE_LINK with the real URL (your HTML had REPLACEMENT_LINK placeholder) -->
+  <a href="https://github.com/beckn/protocol-specifications-v2/issues/new">
+    <img src="https://img.shields.io/badge/Report%20an%20issue-b42318?style=for-the-badge" alt="Report an issue" />
+  </a>
+  <a href="https://github.com/beckn/protocol-specifications-v2/discussions/categories/announcements">
+    <img src="https://img.shields.io/badge/Announcements-111827?style=for-the-badge" alt="Announcements" />
+  </a>
+</p>
+
+<table width="100%" cellpadding="12" cellspacing="0" border="0" bgcolor="#ffe4e6">
+  <tr>
+    <td>
+      <strong>Heads-up:</strong> If you maintain downstream specs or SDKs, pin versions and communicate timelines clearly.
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img
+    alt="Migration Notice End"
+    src="https://capsule-render.vercel.app/api?type=soft&color=0:b42318,100:7a271a&height=25&section=header&text=End%20of%20notice&fontSize=15&fontColor=ffffff&animation=fadeIn"
+  />
+</p>
+
+---
+
+# Overview
 
 This bundle defines **payment settlement attribute extensions** for Provider and Payment objects. It provides settlement account details required for inter-party fund transfers in Beckn payment transactions.
 

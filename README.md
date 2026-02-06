@@ -1,5 +1,5 @@
-# Beckn Protocol v2.0.0
-This repository contains the the latest major version release of Beckn Protocol - v2.0.0, defining a JSON-LD and schema.org-aligned core schema, updated APIs, and reference flows for the next generation of Beckn networks. It introduces a catalog-first Catalog Discovery Service (CDS) (replacing the Beckn Gateway for discovery), a DeDi-compliant Network Registry, and a modular “core + schema packs” model to enable strong design-time and run-time composability and global semantic interoperability.
+# Beckn Protocol Version 2
+This repository contains the the latest major version release of Beckn Protocol - Version 2, defining a JSON-LD and schema.org-aligned core schema, updated APIs, and reference flows for the next generation of Beckn networks. It introduces a catalog-first Catalog Discovery Service (CDS) (replacing the Beckn Gateway for discovery), a DeDi-compliant Network Registry, and a modular “core + schema packs” model to enable strong design-time and run-time composability and global semantic interoperability.
 
 TODO: Add version history table
 
