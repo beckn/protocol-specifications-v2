@@ -1,0 +1,119 @@
+# Test Configuration for v2.0 to v2.1 Conversion
+# This configuration file specifies all inputs and expected outputs for automated testing
+
+# Default versions
+default_input_version: "2.0"
+default_output_version: "2.1"
+
+# Default transformation mode
+# Options: "hybrid" (IRI + structural rules) or "semantic" (pure DCT + @container)
+default_mode: "hybrid"
+
+# Test input files
+input_files:
+  v2_json: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_0_ev-charging-on-confirm.json"
+  expected_v2_1_json: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_1_ev-charging-on-confirm.json"
+
+# Ontology files for transformation
+ontology_files:
+  context_jsonld: "schema/core/v2.1/updated.context.jsonld"
+  vocab_jsonld: "schema/core/v2.1/updated.vocab.jsonld"
+  attributes_yaml: "schema/core/v2.1/attributes.yaml"
+
+# Transformation rules (for hybrid mode)
+transformation_rules:
+  structural_rules: "scripts/v2.1/v2_to_v21_converter/structural_transforms.yaml"
+  
+# Optional: SHACL shapes (for semantic mode)
+# shacl_shapes: "path/to/shapes.ttl"
+
+# Test settings
+test_settings:
+  # Whether to strip beckn: and schema: prefixes from output
+  strip_prefixes: true
+  
+  # Whether to generate detailed diff report on mismatch
+  generate_diff_report: true
+  
+  # Output directory for test results
+  output_directory: "scripts/v2.1/v2_to_v21_converter/test_output"
+  
+  # Whether to include transformation metadata in output
+  include_metadata: false
+  
+  # Verbose output for debugging
+  verbose: true
+
+# Test scenarios
+test_scenarios:
+  - name: "EV Charging on_confirm - Hybrid Mode"
+    description: "Test v2.0 to v2.1 transformation using hybrid approach"
+    mode: "hybrid"
+    input: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_0_ev-charging-on-confirm.json"
+    expected: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_1_ev-charging-on-confirm.json"
+    enabled: true
+    
+  - name: "EV Charging on_confirm - Semantic Mode"
+    description: "Test v2.0 to v2.1 transformation using semantic approach (requires DCT/container in ontology)"
+    mode: "semantic"
+    input: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_0_ev-charging-on-confirm.json"
+    expected: "scripts/v2.1/v2_to_v21_converter/test_inputs/v2_1_ev-charging-on-confirm.json"
+    enabled: false  # Disabled until ontology is enhanced with DCT
+
+# Fields to validate in transformed output
+validation_fields:
+  buyer_to_consumer:
+    - path: "message.order.consumer"
+      description: "Buyer should be transformed to consumer"
+      required: true
+      
+  seller_to_provider:
+    - path: "message.order.provider"
+      description: "Seller should be transformed to provider"
+      required: true
+      
+  payment_split:
+    - path: "message.order.paymentAction"
+      description: "Payment should be split into paymentAction"
+      required: true
+    - path: "message.order.paymentTerms"
+      description: "Payment should be split into paymentTerms"
+      required: true
+      
+  fulfillment_singular_to_plural:
+    - path: "message.order.fulfillments"
+      description: "fulfillment should become fulfillments (array)"
+      required: true
+      type: "array"
+
+# Expected transformations (for reporting)
+expected_transformations:
+  - field: "buyer"
+    from: "order.buyer"
+    to: "order.consumer.person"
+    transformation_type: "nested_path"
+    
+  - field: "seller"
+    from: "order.seller"
+    to: "order.provider.descriptor.id"
+    transformation_type: "nested_path"
+    
+  - field: "payment"
+    from: "order.payment"
+    to: ["order.paymentAction", "order.paymentTerms"]
+    transformation_type: "object_split"
+    
+  - field: "fulfillment"
+    from: "order.fulfillment"
+    to: "order.fulfillments"
+    transformation_type: "singular_to_plural"
+
+# Statistics to track
+track_statistics:
+  - transformation_count
+  - iri_resolutions
+  - structural_rule_applications
+  - warnings_generated
+  - fields_added
+  - fields_removed
+  - fields_renamed

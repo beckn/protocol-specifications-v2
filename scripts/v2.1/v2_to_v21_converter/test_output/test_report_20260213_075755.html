@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>v2 to v2.1 Conversion Test Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
+        .summary {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .passed { color: #4CAF50; }
+        .failed { color: #f44336; }
+        .scenario {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+            padding: 20px;
+        }
+        .scenario.passed {
+            border-left: 4px solid #4CAF50;
+            background: #f1f8f4;
+        }
+        .scenario.failed {
+            border-left: 4px solid #f44336;
+            background: #fef5f5;
+        }
+        .scenario h2 {
+            margin-top: 0;
+        }
+        .diff-item {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .validation {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        .validation.passed {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+        .validation.failed {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 v2 to v2.1 Conversion Test Report</h1>
+        
+        <div class="summary">
+            <div class="stat">
+                <div class="stat-value">1</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value passed">0</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value failed">1</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">2026-02-13 07:57</div>
+                <div class="stat-label">Generated</div>
+            </div>
+        </div>
+
+        <div class="scenario failed">
+            <h2>✗ EV Charging on_confirm - Hybrid Mode</h2>
+            <p><strong>Mode:</strong> hybrid</p>
+            <p><strong>Timestamp:</strong> 2026-02-13T07:57:55.473843</p>
+
+            <h3>Differences (42)</h3>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bapId<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"example-bap.com"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bapUri<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"https://example-bap.com/pilot/bap/energy/v2"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bap_id<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"example-bap.com"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bap_uri<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"https://example-bap.com/pilot/bap/energy/v2"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bppId<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"example-bpp.com"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bppUri<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"https://example-bpp.com/pilot/bpp/energy/v2"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bpp_id<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"example-bpp.com"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.bpp_uri<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"https://example-bpp.com/pilot/bpp/energy/v2"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.domain<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"beckn.one:deg:ev-charging:*"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.messageId<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"c69b4c1e-fb7e-469d-ae90-00f4d5e82b64"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.message_id<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"c69b4c1e-fb7e-469d-ae90-00f4d5e82b64"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.transactionId<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"2b4d69aa-22e4-4c78-9f56-5a7b9e2b2002"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.transaction_id<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"2b4d69aa-22e4-4c78-9f56-5a7b9e2b2002"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.context.version<br>
+                <strong>Type:</strong> value_mismatch<br>
+                <strong>Expected:</strong> <code>"2.1.0"</code><br>
+                <strong>Actual:</strong> <code>"2.0.0"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.@context<br>
+                <strong>Type:</strong> value_mismatch<br>
+                <strong>Expected:</strong> <code>"https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2.1/context.jsonld"</code><br>
+                <strong>Actual:</strong> <code>"https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.consumer.person.@context<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.consumer.person.@type<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"beckn:Buyer"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.consumer.person.displayName<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"Ravi Kumar"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.consumer.person.id<br>
+                <strong>Type:</strong> missing_in_expected<br>
+                <strong>Expected:</strong> <code>null</code><br>
+                <strong>Actual:</strong> <code>"user-123"</code>
+            </div>
+
+            <div class="diff-item">
+                <strong>Path:</strong> root.message.order.consumer.person.name<br>
+                <strong>Type:</strong> missing_in_actual<br>
+                <strong>Expected:</strong> <code>"Ravi Kumar"</code><br>
+                <strong>Actual:</strong> <code>null</code>
+            </div>
+<p>... and 22 more differences</p><h3>Field Validations</h3>
+            <div class="validation passed">
+                ✓ <strong>buyer_to_consumer</strong>: Buyer should be transformed to consumer<br>
+                Path: message.order.consumer - Found: True
+            </div>
+
+            <div class="validation passed">
+                ✓ <strong>seller_to_provider</strong>: Seller should be transformed to provider<br>
+                Path: message.order.provider - Found: True
+            </div>
+
+            <div class="validation passed">
+                ✓ <strong>payment_split</strong>: Payment should be split into paymentAction<br>
+                Path: message.order.paymentAction - Found: True
+            </div>
+
+            <div class="validation failed">
+                ✗ <strong>payment_split</strong>: Payment should be split into paymentTerms<br>
+                Path: message.order.paymentTerms - Found: False
+            </div>
+
+            <div class="validation failed">
+                ✗ <strong>fulfillment_singular_to_plural</strong>: fulfillment should become fulfillments (array)<br>
+                Path: message.order.fulfillments - Found: False
+            </div>
+
+            <h3>Transformation Statistics</h3>
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <strong>Structural Rules Applied:</strong> 3
+                </div>
+
+                <div class="stat-card">
+                    <strong>Applied Structural Rules:</strong> ['split_payment_object', 'buyer_to_consumer_person', 'seller_to_provider_descriptor_id']
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>
