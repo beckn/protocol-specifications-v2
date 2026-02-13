@@ -1,8 +1,0 @@
-# Requirements for v2.0 → v2.1 converter
-
-# No external dependencies required for core conversion
-# (Uses only Python standard library)
-
-# Optional: for testing
-pytest>=7.0.0
-pytest-cov>=4.0.0

@@ -2,41 +2,98 @@
     "@context": {
         "@version": 1.1,
         "@protected": true,
-        "schema": "https://schema.org/",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/",
         "AcceptedPaymentMethod": "beckn:AcceptedPaymentMethod",
         "AckResponse": "beckn:AckResponse",
         "Address": "beckn:Address",
-        "Alert": "beckn:Alert",
+        "Alert": {
+            "@id": "beckn:Alert",
+            "@context": {
+                "descriptor": "beckn:alertDescriptor"
+            }
+        },
         "Attributes": "beckn:Attributes",
         "Buyer": "beckn:Buyer",
         "CancellationOutcome": "beckn:CancellationOutcome",
-        "CancellationPolicy": "beckn:CancellationPolicy",
+        "CancellationPolicy": {
+            "@id": "beckn:CancellationPolicy",
+            "@context": {
+                "descriptor": "beckn:cancellationPolicyDescriptor"
+            }
+        },
         "CancellationReason": "beckn:CancellationReason",
-        "Catalog": "beckn:Catalog",
+        "Catalog": {
+            "@id": "beckn:Catalog",
+            "@context": {
+                "descriptor": "beckn:catalogDescriptor"
+            }
+        },
         "CatalogProcessingResult": "beckn:CatalogProcessingResult",
         "CategoryCode": "beckn:CategoryCode",
-        "Constraint": "beckn:Constraint",
+        "Constraint": {
+            "@id": "beckn:Constraint",
+            "@context": {
+                "descriptor": "beckn:constraintDescriptor"
+            }
+        },
         "Context": "beckn:Context",
-        "Credential": "beckn:Credential",
+        "Credential": {
+            "@id": "beckn:Credential",
+            "@context": {
+                "descriptor": "beckn:credentialDescriptor"
+            }
+        },
         "Descriptor": "beckn:Descriptor",
         "Document": "beckn:Document",
         "Eligibility": "beckn:Eligibility",
-        "Entitlement": "beckn:Entitlement",
+        "Entitlement": {
+            "@id": "beckn:Entitlement",
+            "@context": {
+                "descriptor": "beckn:entitlementDescriptor"
+            }
+        },
         "Error": "beckn:Error",
         "ErrorResponse": "beckn:ErrorResponse",
         "Feedback": "beckn:Feedback",
         "Form": "beckn:Form",
-        "Fulfillment": "beckn:Fulfillment",
+        "Fulfillment": {
+            "@id": "beckn:Fulfillment",
+            "@context": {
+                "descriptor": "beckn:fulfillmentDescriptor",
+                "currentState": "beckn:currentFulfillmentState"
+            }
+        },
         "FulfillmentMode": "beckn:FulfillmentMode",
         "FulfillmentStop": "beckn:FulfillmentStop",
         "GeoJSONGeometry": "beckn:GeoJSONGeometry",
-        "Instruction": "beckn:Instruction",
+        "Instruction": {
+            "@id": "beckn:Instruction",
+            "@context": {
+                "descriptor": "beckn:instructionDescriptor"
+            }
+        },
         "Intent": "beckn:Intent",
-        "Invoice": "beckn:Invoice",
-        "Item": "beckn:Item",
-        "Location": "beckn:Location",
+        "Invoice": {
+            "@id": "beckn:Invoice",
+            "@context": {
+                "descriptor": "beckn:invoiceDescriptor"
+            }
+        },
+        "Item": {
+            "@id": "beckn:Item",
+            "@context": {
+                "descriptor": "beckn:itemDescriptor"
+            }
+        },
+        "Location": {
+            "@id": "beckn:Location",
+            "@context": {
+                "descriptor": "beckn:locationDescriptor"
+            }
+        },
         "MediaInput": {
             "@id": "beckn:MediaInput",
             "@context": {
@@ -52,18 +109,53 @@
         },
         "MediaSearch": "beckn:MediaSearch",
         "MediaSearchOptions": "beckn:MediaSearchOptions",
-        "Offer": "beckn:Offer",
-        "Order": "beckn:Order",
-        "OrderItem": "beckn:OrderItem",
-        "Organization": "schema:Organization",
-        "Participant": "beckn:Participant",
-        "Payment": "beckn:Payment",
-        "Person": "schema:Person",
-        "Policy": "beckn:Policy",
+        "Offer": {
+            "@id": "beckn:Offer",
+            "@context": {
+                "descriptor": "beckn:offerDescriptor"
+            }
+        },
+        "Order": {
+            "@id": "beckn:Order",
+            "@context": {
+                "descriptor": "beckn:orderDescriptor"
+            }
+        },
+        "OrderItem": {
+            "@id": "beckn:OrderItem",
+            "@context": {
+                "descriptor": "beckn:orderItemDescriptor"
+            }
+        },
+        "Organization": "beckn:Organization",
+        "Participant": {
+            "@id": "beckn:Participant",
+            "@context": {
+                "descriptor": "beckn:participantDescriptor"
+            }
+        },
+        "Payment": {
+            "@id": "beckn:Payment",
+            "@context": {
+                "descriptor": "beckn:paymentDescriptor"
+            }
+        },
+        "Person": "beckn:Person",
+        "Policy": {
+            "@id": "beckn:Policy",
+            "@context": {
+                "descriptor": "beckn:policyDescriptor"
+            }
+        },
         "PriceComponent": "beckn:PriceComponent",
-        "PriceSpecification": "schema:PriceSpecification",
+        "PriceSpecification": "beckn:PriceSpecification",
         "ProcessingNotice": "beckn:ProcessingNotice",
-        "Provider": "beckn:Provider",
+        "Provider": {
+            "@id": "beckn:Provider",
+            "@context": {
+                "descriptor": "beckn:providerDescriptor"
+            }
+        },
         "Quantity": "beckn:Quantity",
         "Rating": "beckn:Rating",
         "RatingInput": {
@@ -71,21 +163,38 @@
             "@context": {
                 "category": {
                     "@id": "beckn:ratingCategory",
+                    "@type": "@id",
                     "@context": {
                         "ORDER": "beckn:OrderRating",
                         "FULFILLMENT": "beckn:FulfillmentRating",
                         "ITEM": "beckn:ItemRating",
                         "PROVIDER": "beckn:ProviderRating",
                         "AGENT": "beckn:AgentRating",
-                        "SUPPORT": "beckn:SupportRating"
+                        "SUPPORT": "beckn:SupportRating",
+                        "OTHER": "beckn:OtherRating"
                     }
                 }
             }
         },
-        "Skill": "beckn:Skill",
+        "Skill": {
+            "@id": "beckn:Skill",
+            "@context": {
+                "descriptor": "beckn:skillDescriptor"
+            }
+        },
         "SpatialConstraint": "beckn:SpatialConstraint",
-        "State": "beckn:State",
-        "SupportInfo": "beckn:SupportInfo",
+        "State": {
+            "@id": "beckn:State",
+            "@context": {
+                "descriptor": "beckn:stateDescriptor"
+            }
+        },
+        "SupportInfo": {
+            "@id": "beckn:SupportInfo",
+            "@context": {
+                "descriptor": "beckn:supportInfoDescriptor"
+            }
+        },
         "SupportMethod": "beckn:SupportMethod",
         "SupportTicket": "beckn:SupportTicket",
         "Time": "beckn:Time",
@@ -101,11 +210,15 @@
             "@context": {
                 "UPI": "beckn:UPI",
                 "CREDIT_CARD": "beckn:CREDIT_CARD",
+                "CREDIT-CARD": "beckn:CREDIT_CARD",
                 "DEBIT_CARD": "beckn:DEBIT_CARD",
+                "DEBIT-CARD": "beckn:DEBIT_CARD",
                 "WALLET": "beckn:WALLET",
                 "BANK_TRANSFER": "beckn:BANK_TRANSFER",
+                "BANK-TRANSFER": "beckn:BANK_TRANSFER",
                 "CASH": "beckn:CASH",
-                "APPLE_PAY": "beckn:APPLE_PAY"
+                "APPLE_PAY": "beckn:APPLE_PAY",
+                "APPLE-PAY": "beckn:APPLE_PAY"
             }
         },
         "addOnItems": "beckn:addOnItems",
@@ -124,7 +237,7 @@
             }
         },
         "bestRating": "beckn:bestRating",
-        "buyer": "beckn:buyer",
+        "buyer": "beckn:consumer",
         "buyerAttributes": "beckn:buyerAttributes",
         "category": "beckn:category",
         "channels": {
@@ -149,17 +262,18 @@
         "deliveryAttributes": "beckn:deliveryAttributes",
         "fulfillmentStatus": "beckn:fulfillmentStatus",
         "descriptor": "beckn:descriptor",
-        "displayName": "schema:alternateName",
+        "displayName": "beckn:name",
         "dueDate": "beckn:dueDate",
-        "eligibleQuantity": "schema:eligibleQuantity",
+        "eligibleQuantity": "beckn:eligibleQuantity",
         "eligibleRegion": "beckn:eligibleRegion",
-        "email": "schema:email",
+        "email": "beckn:email",
         "endDate": "beckn:endDate",
         "endTime": "beckn:endTime",
         "errorCode": "beckn:errorCode",
         "errorDetails": "beckn:errorDetails",
         "errorMessage": "beckn:errorMessage",
         "expiresAt": "beckn:expiresAt",
+        "expires_at": "beckn:expiresAt",
         "feedback": "beckn:feedback",
         "form": "beckn:form",
         "fulfillment": "beckn:fulfillment",
@@ -209,7 +323,7 @@
             }
         },
         "orderValue": "beckn:orderValue",
-        "orderedItem": "beckn:orderedItem",
+        "orderedItem": "beckn:itemId",
         "paidAt": "beckn:paidAt",
         "payee": "beckn:payee",
         "payer": "beckn:payer",
@@ -243,7 +357,7 @@
             }
         },
         "phone": "beckn:phone",
-        "price": "schema:price",
+        "price": "beckn:price",
         "provider": "beckn:provider",
         "providerAttributes": "beckn:providerAttributes",
         "providerId": "beckn:providerId",
@@ -257,13 +371,13 @@
         "reviewText": "beckn:reviewText",
         "role": "beckn:role",
         "worstRating": "beckn:worstRating",
-        "seller": "beckn:seller",
+        "seller": "beckn:provider",
         "shortDesc": "beckn:shortDesc",
         "startDate": "beckn:startDate",
         "startTime": "beckn:startTime",
         "supportInfo": "beckn:supportInfo",
         "taxID": "beckn:taxID",
-        "telephone": "schema:telephone",
+        "telephone": "beckn:telephone",
         "tlMethod": "beckn:tlMethod",
         "tl_method": "beckn:tlMethod",
         "trackingStatus": {
@@ -280,9 +394,9 @@
         "tracking": "beckn:tracking",
         "trackingAction": "beckn:trackingAction",
         "txnRef": "beckn:txnRef",
-        "unitCode": "schema:unitCode",
+        "unitCode": "beckn:unitCode",
         "unitQuantity": "beckn:unitQuantity",
-        "unitText": "schema:unitText",
+        "unitText": "beckn:unitText",
         "updatedAt": "beckn:updatedAt",
         "validity": "beckn:validity",
         "value": "beckn:value",
@@ -295,7 +409,7 @@
         "entitlements": "beckn:entitlements",
         "alerts": "beckn:alerts",
         "priceComponents": {
-            "@id" : "beckn:priceComponents"
+            "@id": "beckn:priceComponents"
         },
         "state": "beckn:state",
         "stops": "beckn:stops",
@@ -342,7 +456,7 @@
         "language": "beckn:language",
         "media": "beckn:media",
         "mediaFile": "beckn:mediaFile",
-        "media_search": "beckn:MediaSearch",
+        "media_search": "beckn:mediaSearch",
         "mediaSearch": "beckn:MediaSearch",
         "message": "beckn:message",
         "methods": "beckn:methods",
@@ -436,7 +550,12 @@
         "Consumer": "beckn:Consumer",
         "DiscoveryIntent": "beckn:DiscoveryIntent",
         "DisplayedRating": "beckn:DisplayedRating",
-        "FulfillmentAgent": "beckn:FulfillmentAgent",
+        "FulfillmentAgent": {
+            "@id": "beckn:FulfillmentAgent",
+            "@context": {
+                "descriptor": "beckn:fulfillmentAgentDescriptor"
+            }
+        },
         "FulfillmentStage": "beckn:FulfillmentStage",
         "FulfillmentStageAuthorization": "beckn:FulfillmentStageAuthorization",
         "FulfillmentStageEndpoint": "beckn:FulfillmentStageEndpoint",
@@ -470,7 +589,7 @@
         "addressCountry": "beckn:addressCountry",
         "addressLocality": "beckn:addressLocality",
         "addressRegion": "beckn:addressRegion",
-        "age": "schema:age",
+        "age": "beckn:age",
         "agent": "beckn:agent",
         "agentAttributes": "beckn:agentAttributes",
         "authToken": "beckn:authToken",
@@ -519,7 +638,7 @@
         "coordinates": "beckn:coordinates",
         "currentState": "beckn:currentState",
         "docs": "beckn:docs",
-        "duration": "schema:duration",
+        "duration": "beckn:duration",
         "extendedAddress": "beckn:extendedAddress",
         "fulfillmentAttributes": "beckn:fulfillmentAttributes",
         "fulfillmentStageAttributes": "beckn:fulfillmentStageAttributes",
@@ -529,7 +648,7 @@
         "itemId": "beckn:itemId",
         "keyId": "beckn:keyId",
         "key_id": "beckn:keyId",
-        "knowsLanguage": "schema:knowsLanguage",
+        "knowsLanguage": "beckn:knowsLanguage",
         "label": "beckn:label",
         "max": "beckn:max",
         "mediaFiles": "beckn:mediaFiles",
@@ -647,7 +766,22 @@
         "uri": "beckn:uri",
         "version": "beckn:version",
         "vpa": "beckn:vpa",
-        "worksFor": "schema:worksFor",
-        "x-jsonld": "beckn:jsonldExtension"
+        "worksFor": "beckn:worksFor",
+        "x-jsonld": "beckn:jsonldExtension",
+        "FulfillmentState": {
+            "@id": "beckn:FulfillmentState",
+            "@context": {
+                "descriptor": "beckn:fulfillmentStateDescriptor"
+            }
+        },
+        "settleByDateTime": "beckn:settleByDateTime",
+        "settleByEndOf": {
+            "@id": "beckn:settleByEndOf",
+            "@type": "@id",
+            "@context": {
+                "END_OF_DAY": "beckn:END_OF_DAY",
+                "END_OF_MONTH": "beckn:END_OF_MONTH"
+            }
+        }
     }
 }
