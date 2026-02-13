@@ -652,7 +652,7 @@
       "schema:name": "INITIATED",
       "schema:identifier": "INITIATED",
       "rdfs:label": "payment Initiated",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentPending",
@@ -663,7 +663,7 @@
       "schema:name": "PENDING",
       "schema:identifier": "PENDING",
       "rdfs:label": "payment Pending",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentAuthorized",
@@ -674,7 +674,7 @@
       "schema:name": "AUTHORIZED",
       "schema:identifier": "AUTHORIZED",
       "rdfs:label": "payment Authorized",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCaptured",
@@ -685,7 +685,7 @@
       "schema:name": "CAPTURED",
       "schema:identifier": "CAPTURED",
       "rdfs:label": "payment Captured",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCompleted",
@@ -696,7 +696,7 @@
       "schema:name": "COMPLETED",
       "schema:identifier": "COMPLETED",
       "rdfs:label": "payment Completed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentFailed",
@@ -707,7 +707,7 @@
       "schema:name": "FAILED",
       "schema:identifier": "FAILED",
       "rdfs:label": "payment Failed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCancelled",
@@ -719,7 +719,7 @@
       "schema:identifier": "CANCELLED",
       "schema:alternateName": "CANCELED",
       "rdfs:label": "payment Cancelled",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentRefunded",
@@ -730,7 +730,7 @@
       "schema:name": "REFUNDED",
       "schema:identifier": "REFUNDED",
       "rdfs:label": "payment Refunded",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentPartiallyRefunded",
@@ -742,7 +742,7 @@
       "schema:identifier": "PARTIALLY_REFUNDED",
       "schema:alternateName": "PARTIALLY-REFUNDED",
       "rdfs:label": "payment Partially Refunded",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentChargeback",
@@ -753,7 +753,7 @@
       "schema:name": "CHARGEBACK",
       "schema:identifier": "CHARGEBACK",
       "rdfs:label": "payment Chargeback",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentDisputed",
@@ -764,7 +764,7 @@
       "schema:name": "DISPUTED",
       "schema:identifier": "DISPUTED",
       "rdfs:label": "payment Disputed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentExpired",
@@ -775,7 +775,7 @@
       "schema:name": "EXPIRED",
       "schema:identifier": "EXPIRED",
       "rdfs:label": "payment Expired",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentReversed",
@@ -786,7 +786,7 @@
       "schema:name": "REVERSED",
       "schema:identifier": "REVERSED",
       "rdfs:label": "payment Reversed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentVoided",
@@ -797,7 +797,7 @@
       "schema:name": "VOIDED",
       "schema:identifier": "VOIDED",
       "rdfs:label": "payment Voided",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentSettled",
@@ -808,7 +808,7 @@
       "schema:name": "SETTLED",
       "schema:identifier": "SETTLED",
       "rdfs:label": "payment Settled",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentOnHold",
@@ -820,7 +820,7 @@
       "schema:identifier": "ON_HOLD",
       "schema:alternateName": "ON-HOLD",
       "rdfs:label": "payment On Hold",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentAdjusted",
@@ -831,7 +831,7 @@
       "schema:name": "ADJUSTED",
       "schema:identifier": "ADJUSTED",
       "rdfs:label": "payment Adjusted",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:currency",
@@ -1208,7 +1208,7 @@
       "@id": "beckn:ratingValue",
       "@type": "rdf:Property",
       "rdfs:label": "Rating value",
-      "rdfs:comment": "Numeric rating score. Numeric rating value (legacy usually 1\u20135).",
+      "rdfs:comment": "Numeric rating score. Numeric rating value (legacy usually 1–5).",
       "rdfs:domain": [
         "beckn:Rating",
         "beckn:RatingInput"
@@ -2334,7 +2334,7 @@
       "@id": "beckn:SpatialConstraint",
       "rdfs:label": "Spatial Constraint",
       "@type": "rdfs:Class",
-      "rdfs:comment": "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    \u2022 `S_WITHIN`     (A is completely inside B)\n    \u2022 `S_INTERSECTS` (A intersects B)\n    \u2022 `S_CONTAINS`   (A contains B)\n    \u2022 `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
+      "rdfs:comment": "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
     },
     {
       "@id": "beckn:SupportMethod",
@@ -3134,7 +3134,7 @@
       ],
       "schema:rangeIncludes": "beckn:MediaSearchOptions",
       "@type": "rdf:Property",
-      "rdfs:comment": "Options controlling how the discovery engine interprets the supplied media \u2014 e.g., whether to perform OCR/ASR, semantic similarity, or object detection."
+      "rdfs:comment": "Options controlling how the discovery engine interprets the supplied media — e.g., whether to perform OCR/ASR, semantic similarity, or object detection."
     },
     {
       "@id": "beckn:orderDocs",
@@ -3776,6 +3776,345 @@
       "rdfs:label": "ws Handle",
       "@type": "schema:Enumeration",
       "rdfs:comment": "Optional delivery mode for the tracking handle."
+    },
+    {
+      "@id": "beckn:DeliveryPriceComponent",
+      "rdfs:label": "Delivery Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:DiscountPriceComponent",
+      "rdfs:label": "Discount Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:EcdsaAlgorithm",
+      "rdfs:label": "Ecdsa Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:Ed25519Algorithm",
+      "rdfs:label": "Ed25519Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:FeePriceComponent",
+      "rdfs:label": "Fee Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:FulfillmentMode",
+      "rdfs:label": "Fulfillment Mode",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "Describes the mode of fulfillment. This is an extensible container allowing domain-specific fulfillment modes to be expressed via attributes."
+    },
+    {
+      "@id": "beckn:GeoJSONGeometryCollection",
+      "rdfs:label": "Geo JSON Geometry Collection",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONLineString",
+      "rdfs:label": "Geo JSON Line String",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiLineString",
+      "rdfs:label": "Geo JSON Multi Line String",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiPoint",
+      "rdfs:label": "Geo JSON Multi Point",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiPolygon",
+      "rdfs:label": "Geo JSON Multi Polygon",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONPoint",
+      "rdfs:label": "Geo JSON Point",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONPolygon",
+      "rdfs:label": "Geo JSON Polygon",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:HmacAlgorithm",
+      "rdfs:label": "Hmac Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:JsonPathType",
+      "rdfs:label": "Json Path Type",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:OtherAlgorithm",
+      "rdfs:label": "Other Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:PaymentTrigger",
+      "rdfs:label": "Payment Trigger",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Describes when in the order lifecycle a payment flow should be triggered. Typically useful for initiating checkouts and settlement flows."
+    },
+    {
+      "@id": "beckn:QuantifierAll",
+      "rdfs:label": "Quantifier All",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:QuantifierAny",
+      "rdfs:label": "Quantifier Any",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:QuantifierNone",
+      "rdfs:label": "Quantifier None",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:RsaAlgorithm",
+      "rdfs:label": "Rsa Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SemanticAudioMatch",
+      "rdfs:label": "Semantic Audio Match",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:SemanticVideoMatch",
+      "rdfs:label": "Semantic Video Match",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:SpatialContains",
+      "rdfs:label": "Spatial Contains",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialCrosses",
+      "rdfs:label": "Spatial Crosses",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialDisjoint",
+      "rdfs:label": "Spatial Disjoint",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialDwithin",
+      "rdfs:label": "Spatial Dwithin",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialEquals",
+      "rdfs:label": "Spatial Equals",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialIntersects",
+      "rdfs:label": "Spatial Intersects",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialOverlaps",
+      "rdfs:label": "Spatial Overlaps",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialTouches",
+      "rdfs:label": "Spatial Touches",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialWithin",
+      "rdfs:label": "Spatial Within",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:StatusAccepted",
+      "rdfs:label": "Status Accepted",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Final processing outcome for this catalog"
+    },
+    {
+      "@id": "beckn:StatusPartial",
+      "rdfs:label": "Status Partial",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Final processing outcome for this catalog"
+    },
+    {
+      "@id": "beckn:SurchargePriceComponent",
+      "rdfs:label": "Surcharge Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:TaxPriceComponent",
+      "rdfs:label": "Tax Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:TextFromAudio",
+      "rdfs:label": "Text From Audio",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:TextFromImage",
+      "rdfs:label": "Text From Image",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:Time",
+      "rdfs:label": "Time",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "Represents a moment or duration in time. Can express a timestamp, a duration, or a time range."
+    },
+    {
+      "@id": "beckn:UnitPriceComponent",
+      "rdfs:label": "Unit Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:VisualObjectDetect",
+      "rdfs:label": "Visual Object Detect",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:VisualSimilarity",
+      "rdfs:label": "Visual Similarity",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:checkoutTrigger",
+      "rdfs:label": "checkout Trigger",
+      "rdfs:domain": [
+        "beckn:PaymentTerms"
+      ],
+      "schema:rangeIncludes": "beckn:PaymentTrigger",
+      "@type": "rdf:Property",
+      "rdfs:comment": "The stage in the order lifecycle when the checkout should be triggered"
+    },
+    {
+      "@id": "beckn:collectedBy",
+      "rdfs:label": "collected By",
+      "rdfs:domain": [
+        "beckn:PaymentTerms"
+      ],
+      "schema:rangeIncludes": "schema:Text",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Describes the entity that first collects the payment from the consumer. This is the actor who is responsible to initiate the settlement process as per the terms described in the settlementTerms property."
+    },
+    {
+      "@id": "beckn:jsonldExtension",
+      "rdfs:label": "jsonld Extension",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:modeAttributes",
+      "rdfs:label": "mode Attributes",
+      "rdfs:domain": [
+        "beckn:FulfillmentMode"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Domain-specific fulfillment mode attributes (e.g., delivery, pickup, reservation, digital)"
+    },
+    {
+      "@id": "beckn:organizationAttributes",
+      "rdfs:label": "organization Attributes",
+      "rdfs:domain": [
+        "beckn:Organization"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Extensible attribute pack for jurisdictional or domain-specific organization properties"
+    },
+    {
+      "@id": "beckn:personAttributes",
+      "rdfs:label": "person Attributes",
+      "rdfs:domain": [
+        "beckn:Person"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Extensible attribute pack for jurisdictional or domain-specific person properties"
+    },
+    {
+      "@id": "beckn:range",
+      "rdfs:label": "range",
+      "rdfs:domain": [
+        "beckn:Time"
+      ],
+      "schema:rangeIncludes": "beckn:TimePeriod",
+      "@type": "rdf:Property",
+      "rdfs:comment": "A time range with start and end"
+    },
+    {
+      "@id": "beckn:required",
+      "rdfs:label": "required",
+      "rdfs:domain": [
+        "beckn:Document"
+      ],
+      "@type": "rdf:Property",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:signatureAlgorithm",
+      "rdfs:label": "signature Algorithm",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:spatialOperator",
+      "rdfs:label": "spatial Operator",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
     }
   ]
 }

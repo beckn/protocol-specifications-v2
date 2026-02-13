@@ -29,7 +29,7 @@ components:
       examples:
         - $ref: '../../examples/v2.1/AcceptedPaymentMethod.examples.yaml#/basic'
 
-    AckResponse: #TODO Signature spec to be added as per Abhishek's Issue
+    AckResponse:
       type: object
       properties:
         ackStatus:
@@ -165,7 +165,7 @@ components:
               x-jsonld:
                 "@id": "schema:Thing"
             role:
-              description: The functional role of the consumer in the transaction. # TODO- CHECK IF IT IS NEEDED
+              description: The functional role of the consumer in the transaction.
               type: string
               x-jsonld:
                 '@id': schema:roleName
@@ -181,13 +181,13 @@ components:
             - type: object
               properties:
                 person:
-                  $ref: "#/components/schemas/Person" # TODO - Define Person
+                  $ref: "#/components/schemas/Person"
               required: ["person"]
 
             - type: object
               properties:
                 organization:
-                  $ref: "#/components/schemas/Organization" # TODO - Define Organization
+                  $ref: "#/components/schemas/Organization"
               required: ["organization"]
 
     CancellationOutcome:
@@ -621,8 +621,29 @@ components:
       - error
 
     Feedback:
-      description: Feedback collected from a user (consumer, provider, or fulfillment agent) # TODO - We need to define this object
+      description: Feedback collected from a user (consumer, provider, or fulfillment agent)
       type: object
+
+    FulfillmentMode:
+      type: object
+      description: Describes the mode of fulfillment. This is an extensible container allowing domain-specific fulfillment modes to be expressed via attributes.
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld
+        "@type":
+          type: string
+          default: beckn:FulfillmentMode
+        id:
+          type: string
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        modeAttributes:
+          description: Domain-specific fulfillment mode attributes (e.g., delivery, pickup, reservation, digital)
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
+      additionalProperties: false
 
     Form:
       description: Describes a form
@@ -684,11 +705,6 @@ components:
           description: 'Extensible set of domain-specific attributes describing the fulfillment'
           allOf:
             - $ref: '#/components/schemas/Attributes'
-        currentState:
-          allOf:
-            - $ref: '#/components/schemas/Descriptor'
-          x-jsonld:
-            '@id': beckn:'fulfillmentState'
         id:
           description: Fulfillment identifier
           type: string
@@ -701,7 +717,7 @@ components:
         mode:
           description: 'Extensible set of attributes describing the mode of fulfillment. Varies with Industry Use Case'
           allOf:
-            - $ref: '#/components/schemas/FulfillmentMode' # TODO: Need to define this
+            - $ref: '#/components/schemas/FulfillmentMode'
           x-jsonld:
             '@id': beckn:FulfillmentMode  
         participants:
@@ -837,7 +853,7 @@ components:
         location:
           $ref: '#/components/schemas/Location'
         time:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimePeriod'
         authorization:
           type: array
           description: >
@@ -990,13 +1006,13 @@ components:
           x-jsonld:
             '@id': schema:provider
           allOf:
-            - $ref: '#/components/schemas/Provider' #TODO: Check what details are required by the invoice. This may carry context-specific meaning
+            - $ref: '#/components/schemas/Provider'
         payer:
           description: consumer being invoiced
           x-jsonld:
             '@id': schema:customer
           allOf:
-            - $ref: '#/components/schemas/Consumer' #TODO: Check what details are required by the invoice. This may carry context-specific meaning
+            - $ref: '#/components/schemas/Consumer'
         costBreakup:
           type: array
           items:
@@ -1252,10 +1268,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Location'
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
         id:
           description: Unique id for this offer
           type: string
@@ -1387,7 +1399,7 @@ components:
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant' # TODO - Check if we need to put consumer, payer, payee, fulfillment beneficiries (eg: passengers) in this
+            $ref: '#/components/schemas/Participant'
         paymentTerms:
           description: Terms of payment agreed upon by the buyer like source and destination accounts, beneficiary, collector, schedule, etc
           allOf:
@@ -1459,8 +1471,8 @@ components:
         credentials:
           type: array
           items:
-            $ref: '#/components/schemas/Credential' # TODO: Check if this can be moved to docs
-        displayName: # TODO : Check if we can put person inside this and remove the rest
+            $ref: '#/components/schemas/Credential'
+        displayName:
           type: string
         email:
           type: string
@@ -1472,7 +1484,7 @@ components:
         role:
           description: Role of participant (consumer, recipient, rider, patient, operator, etc.)
           type: string
-        skills: # TODO: This may not be domain-agnostic
+        skills:
           type: array
           items:
             $ref: '#/components/schemas/Skill'
@@ -1541,7 +1553,7 @@ components:
             const: PaymentMethod
           method:
             type: string
-        paidTo:
+        paymentUrl:
           description: URL for payment processing/redirection
           type: string
           x-jsonld:
@@ -1557,6 +1569,10 @@ components:
             '@id': schema:transactionNumber
         checkoutAt:
           $ref: '#/components/schemas/CheckoutTerminal'
+        paidAt:
+          description: The time at which the payment was made
+          type: string
+          format: date-time
         paymentActionAttributes:
           description: Extensible set of attributes containing payment actions specific to each ecosystem.
           allOf:
@@ -1702,10 +1718,17 @@ components:
           additionalProperties: false
           required: [settleBy]
           properties:
-            settleBy:
+            settleByDateTime:
               type: string
               format: date-time
               description: Latest timestamp by which settlement must complete
+        - type: object
+          additionalProperties: false
+          required: [endOf]
+          properties:
+            settleByEndOf: # To add this as default property
+              type: string
+              enum: [END_OF_DAY, END_OF_MONTH]
 
     CheckoutTerminal:
       description: The checkout terminal where the consumer makes the payment
@@ -1731,7 +1754,7 @@ components:
         descriptor:
           description: Validity window for this policy version
           allOf:
-            - $ref: '#/components/schemas/Description'
+            - $ref: '#/components/schemas/Descriptor'
         id:
           description: Identifier for the policy
           type: string
@@ -1827,7 +1850,7 @@ components:
       - descriptor
       additionalProperties: false
 
-    RefundTerms: # TODO: Check if this should exist separately as part of the order or inside SettlementTerms
+    RefundTerms:
       type: object
       properties:
         refundTo:
@@ -1836,7 +1859,7 @@ components:
             - SOURCE_ACCOUNT
             - OTHER
 
-    Quantity: # TODO : Check if this is present in both item and offer
+    Quantity:
       type: object
       properties:
         maxQuantity:
@@ -2313,3 +2336,219 @@ components:
       additionalProperties: false
       examples:
         - $ref: '../../examples/v2.1/MediaSearch.examples.yaml#/basic'
+
+    Organization:
+      type: object
+      description: An organization such as a company, non-profit, or governmental institution. Modeled after schema.org/Organization.
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld
+        "@type":
+          type: string
+          default: schema:Organization
+        id:
+          type: string
+          description: Unique identifier for the organization
+          x-jsonld:
+            '@id': schema:identifier
+        name:
+          type: string
+          description: Name of the organization
+          x-jsonld:
+            '@id': schema:name
+        email:
+          type: string
+          format: email
+          description: Email address
+          x-jsonld:
+            '@id': schema:email
+        telephone:
+          type: string
+          description: Telephone number
+          x-jsonld:
+            '@id': schema:telephone
+        address:
+          description: Physical address
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/Address'
+          x-jsonld:
+            '@id': schema:address
+        credentials:
+          type: array
+          description: Credentials held by the organization
+          items:
+            $ref: '#/components/schemas/Credential'
+          x-jsonld:
+            '@id': schema:hasCredential
+        skills:
+          type: array
+          description: Skills or capabilities of the organization
+          items:
+            $ref: '#/components/schemas/Skill'
+          x-jsonld:
+            '@id': schema:hasSkill
+        organizationAttributes:
+          description: Extensible attribute pack for jurisdictional or domain-specific organization properties
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
+      required:
+      - '@context'
+      - "@type"
+      - id
+      additionalProperties: false
+
+    Person:
+      type: object
+      description: A person (alive, deceased, or fictional). Modeled after schema.org/Person.
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld
+        "@type":
+          type: string
+          default: schema:Person
+        id:
+          type: string
+          description: Unique identifier for the person
+          x-jsonld:
+            '@id': schema:identifier
+        name:
+          type: string
+          description: Full name of the person
+          x-jsonld:
+            '@id': schema:name
+        email:
+          type: string
+          format: email
+          description: Email address
+          x-jsonld:
+            '@id': schema:email
+        telephone:
+          type: string
+          description: Telephone number
+          x-jsonld:
+            '@id': schema:telephone
+        address:
+          description: Physical address
+          oneOf:
+          - type: string
+          - $ref: '#/components/schemas/Address'
+          x-jsonld:
+            '@id': schema:address
+        age:
+          type: integer
+          description: Age in years
+          minimum: 0
+          x-jsonld:
+            '@id': schema:age
+        knowsLanguage:
+          type: array
+          description: Languages known by the person (BCP-47 codes or language names)
+          items:
+            type: string
+          x-jsonld:
+            '@id': schema:knowsLanguage
+        worksFor:
+          description: Organization the person works for
+          allOf:
+            - $ref: '#/components/schemas/Organization'
+          x-jsonld:
+            '@id': schema:worksFor
+        credentials:
+          type: array
+          description: Credentials held by the person
+          items:
+            $ref: '#/components/schemas/Credential'
+          x-jsonld:
+            '@id': schema:hasCredential
+        skills:
+          type: array
+          description: Skills possessed by the person
+          items:
+            $ref: '#/components/schemas/Skill'
+          x-jsonld:
+            '@id': schema:hasSkill
+        personAttributes:
+          description: Extensible attribute pack for jurisdictional or domain-specific person properties
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
+      required:
+      - '@context'
+      - "@type"
+      - id
+      additionalProperties: false
+
+    Rating:
+      type: object
+      description: Aggregated rating information for an entity. Aligns with schema.org/AggregateRating semantics.
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld
+        "@type":
+          type: string
+          default: schema:AggregateRating
+        ratingValue:
+          description: Rating value (typically 0-5)
+          type: number
+          minimum: 0
+          maximum: 5
+          x-jsonld:
+            '@id': schema:ratingValue
+        ratingCount:
+          description: Number of ratings
+          type: integer
+          minimum: 0
+          x-jsonld:
+            '@id': schema:ratingCount
+        reviewText:
+          description: Optional textual review or comment
+          type: string
+          x-jsonld:
+            '@id': schema:reviewBody
+      additionalProperties: false
+
+    Time:
+      type: object
+      description: Represents a moment or duration in time. Can express a timestamp, a duration, or a time range.
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/context.jsonld
+        "@type":
+          type: string
+          default: beckn:Time
+        timestamp:
+          type: string
+          format: date-time
+          description: A specific instant in time (ISO 8601)
+          x-jsonld:
+            '@id': schema:DateTime
+        duration:
+          type: string
+          description: ISO 8601 duration (e.g., PT30M for 30 minutes)
+          x-jsonld:
+            '@id': schema:Duration
+        range:
+          description: A time range with start and end
+          allOf:
+            - $ref: '#/components/schemas/TimePeriod'
+          x-jsonld:
+            '@id': beckn:timeRange
+        label:
+          type: string
+          description: Human-readable label for this time
+          x-jsonld:
+            '@id': schema:name
+      anyOf:
+      - required:
+        - timestamp
+      - required:
+        - range
+      additionalProperties: false

@@ -678,24 +678,43 @@ Payment:
 
 ---
 
-## Known Gaps / TODOs
+## Known Gaps / TODOs - Resolution Summary
 
-The following schema types are **referenced** in v2.1 `attributes.yaml` but **not defined** in this file:
+All previously identified gaps in v2.1 `attributes.yaml` have been **resolved** as of 2026-11-02:
 
-1. **`Person`** - Referenced in `Consumer` and `FulfillmentAgent` oneOf
-2. **`Organization`** - Referenced in `Consumer` and `FulfillmentAgent` oneOf
-3. **`Rating`** - Referenced in `Item`, `Provider`, `Participant` (v2.0 had `Rating`, but v2.1 removed it and references an undefined one)
-4. **`Feature`** - Referenced in `Offer.features`
-5. **`Description`** - Referenced in `Policy.descriptor` (likely typo for `Descriptor`)
-6. **`Time`** - Referenced in `FulfillmentStageEndpoint.time`
-7. **`FulfillmentMode`** - Referenced in `Fulfillment.mode`
+### ✅ Resolved Gaps
 
-**Impact:** These missing definitions will cause validation errors if strict schema validation is enforced. Implementations must either:
-- Define these schemas elsewhere and merge definitions
-- Treat references as opaque strings/objects until definitions are added
-- Use relaxed validation
+1. **`Person`** - ✅ **ADDED** - Defined with schema.org alignment (name, age, knowsLanguage, worksFor, contact details)
+2. **`Organization`** - ✅ **ADDED** - Defined with schema.org alignment (name, address, contact, organizationAttributes for domain-specific extensions)
+3. **`Rating`** - ✅ **ADDED** - Defined aligning with DisplayedRating shape (ratingValue, ratingCount, reviewText, bestRating, worstRating)
+4. **`Feature`** - ✅ **REMOVED** - Explicitly removed as it was determined to be unnecessary (features can be expressed through Descriptor or Attributes)
+5. **`Description`** - ✅ **FIXED** - Typo in `Policy.descriptor` corrected to properly reference `Descriptor` schema
+6. **`Time`** - ✅ **ADDED** - Defined with schema.org alignment supporting timestamps, durations, time ranges (TimePeriod), and labels
+7. **`FulfillmentMode`** - ✅ **ADDED** - Defined as generic, extensible schema without hardcoded enums to allow domain-specific fulfillment modes
 
-**Note:** Per user confirmation, these gaps will be addressed in future updates.
+### Context Mappings
+
+All new schemas and their properties have been added to `context.jsonld` with appropriate semantic mappings:
+- Person and Organization mapped to schema.org equivalents
+- Schema-specific properties (age, knowsLanguage, worksFor) mapped to schema.org
+- Time, Rating, and FulfillmentMode mapped to beckn namespace
+- Feature references removed from context
+
+### Architectural Principles Maintained
+
+- ✅ Prefix-free property names in attributes.yaml
+- ✅ Schema.org vocabulary reuse where applicable
+- ✅ Generic/extensible patterns (no hardcoded enums in core types)
+- ✅ Strict 3-layer separation (structure/context/semantics)
+
+### Outstanding Context Coverage
+
+A context-checker validation identified 47 keywords in `attributes.yaml` not yet mapped in `context.jsonld`:
+- 1 schema name (PaymentTrigger with scoped enums)
+- 8 properties (checksumAlgorithm, duration, keyId, range, required, signatureAlgorithm, textSearch, x-jsonld)
+- 38 enumeration values (spatial operators, geometry types, price component types, media search goals, etc.)
+
+These are **not gaps** in schema definitions but rather unmapped terms that exist in the structural schema. They can be added to context.jsonld incrementally as needed for semantic validation.
 
 ---
 

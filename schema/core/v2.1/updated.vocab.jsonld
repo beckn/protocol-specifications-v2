@@ -65,10 +65,51 @@
       "schema:rangeIncludes": "schema:QuantitativeValue"
     },
     {
+      "@id": "beckn:Consumer",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Consumer",
+      "rdfs:comment": "Abstract consumer entity - can be a Person or Organization in v2.1"
+    },
+    {
+      "@id": "beckn:PersonAsConsumer",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Person As Consumer",
+      "rdfs:comment": "A person acting in consumer role. Maps to v2.0 Buyer.",
+      "rdfs:subClassOf": [
+        {
+          "@id": "beckn:Consumer"
+        },
+        {
+          "@id": "schema:Person"
+        }
+      ]
+    },
+    {
+      "@id": "beckn:OrgAsConsumer",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Organization As Consumer",
+      "rdfs:comment": "An organization acting in consumer role.",
+      "rdfs:subClassOf": [
+        {
+          "@id": "beckn:Consumer"
+        },
+        {
+          "@id": "schema:Organization"
+        }
+      ]
+    },
+    {
       "@id": "beckn:Buyer",
       "@type": "rdfs:Class",
-      "rdfs:label": "Buyer",
-      "rdfs:comment": "A person or organization purchasing items; identity via attribute packs."
+      "rdfs:label": "Buyer (DEPRECATED - v2.0 legacy)",
+      "rdfs:comment": "DEPRECATED: Use beckn:PersonAsConsumer or beckn:OrgAsConsumer in v2.1. Legacy v2.0 class for person purchasing items.",
+      "owl:deprecated": true,
+      "owl:equivalentClass": {
+        "@id": "beckn:PersonAsConsumer"
+      },
+      "rdfs:subClassOf": {
+        "@id": "beckn:PersonAsConsumer"
+      }
     },
     {
       "@id": "beckn:Descriptor",
@@ -512,10 +553,14 @@
     {
       "@id": "beckn:fulfillmentStatus",
       "@type": "rdf:Property",
-      "rdfs:label": "Fulfillment status",
-      "rdfs:comment": "Lifecycle status for a fulfillment (e.g., PENDING, CONFIRMED, COMPLETED).",
+      "rdfs:label": "Fulfillment status (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:currentFulfillmentState with FulfillmentStateDescriptor.",
       "rdfs:domain": "beckn:Fulfillment",
-      "schema:rangeIncludes": "schema:Text"
+      "schema:rangeIncludes": "beckn:FulfillmentState",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:currentFulfillmentState"
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:paymentStatus",
@@ -652,7 +697,7 @@
       "schema:name": "INITIATED",
       "schema:identifier": "INITIATED",
       "rdfs:label": "payment Initiated",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentPending",
@@ -663,7 +708,7 @@
       "schema:name": "PENDING",
       "schema:identifier": "PENDING",
       "rdfs:label": "payment Pending",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentAuthorized",
@@ -674,7 +719,7 @@
       "schema:name": "AUTHORIZED",
       "schema:identifier": "AUTHORIZED",
       "rdfs:label": "payment Authorized",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCaptured",
@@ -685,7 +730,7 @@
       "schema:name": "CAPTURED",
       "schema:identifier": "CAPTURED",
       "rdfs:label": "payment Captured",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCompleted",
@@ -696,7 +741,7 @@
       "schema:name": "COMPLETED",
       "schema:identifier": "COMPLETED",
       "rdfs:label": "payment Completed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentFailed",
@@ -707,7 +752,7 @@
       "schema:name": "FAILED",
       "schema:identifier": "FAILED",
       "rdfs:label": "payment Failed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentCancelled",
@@ -719,7 +764,7 @@
       "schema:identifier": "CANCELLED",
       "schema:alternateName": "CANCELED",
       "rdfs:label": "payment Cancelled",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentRefunded",
@@ -730,7 +775,7 @@
       "schema:name": "REFUNDED",
       "schema:identifier": "REFUNDED",
       "rdfs:label": "payment Refunded",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentPartiallyRefunded",
@@ -742,7 +787,7 @@
       "schema:identifier": "PARTIALLY_REFUNDED",
       "schema:alternateName": "PARTIALLY-REFUNDED",
       "rdfs:label": "payment Partially Refunded",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentChargeback",
@@ -753,7 +798,7 @@
       "schema:name": "CHARGEBACK",
       "schema:identifier": "CHARGEBACK",
       "rdfs:label": "payment Chargeback",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentDisputed",
@@ -764,7 +809,7 @@
       "schema:name": "DISPUTED",
       "schema:identifier": "DISPUTED",
       "rdfs:label": "payment Disputed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentExpired",
@@ -775,7 +820,7 @@
       "schema:name": "EXPIRED",
       "schema:identifier": "EXPIRED",
       "rdfs:label": "payment Expired",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentReversed",
@@ -786,7 +831,7 @@
       "schema:name": "REVERSED",
       "schema:identifier": "REVERSED",
       "rdfs:label": "payment Reversed",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentVoided",
@@ -797,7 +842,7 @@
       "schema:name": "VOIDED",
       "schema:identifier": "VOIDED",
       "rdfs:label": "payment Voided",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentSettled",
@@ -808,7 +853,7 @@
       "schema:name": "SETTLED",
       "schema:identifier": "SETTLED",
       "rdfs:label": "payment Settled",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentOnHold",
@@ -820,7 +865,7 @@
       "schema:identifier": "ON_HOLD",
       "schema:alternateName": "ON-HOLD",
       "rdfs:label": "payment On Hold",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:PaymentAdjusted",
@@ -831,7 +876,7 @@
       "schema:name": "ADJUSTED",
       "schema:identifier": "ADJUSTED",
       "rdfs:label": "payment Adjusted",
-      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund \u2026)"
+      "rdfs:comment": "Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)"
     },
     {
       "@id": "beckn:currency",
@@ -1111,10 +1156,17 @@
     {
       "@id": "beckn:buyer",
       "@type": "rdf:Property",
-      "rdfs:label": "Buyer",
-      "rdfs:comment": "Buyer associated with an order.",
+      "rdfs:label": "Buyer (legacy v2 property)",
+      "rdfs:comment": "DEPRECATED: Use beckn:consumer. Legacy v2.0 buyer property retained for backward compatibility.",
       "rdfs:domain": "beckn:Order",
-      "schema:rangeIncludes": "beckn:Buyer"
+      "schema:rangeIncludes": "beckn:Buyer",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:consumer"
+      },
+      "owl:equivalentProperty": {
+        "@id": "beckn:consumer"
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:orderStatus",
@@ -1135,10 +1187,17 @@
     {
       "@id": "beckn:seller",
       "@type": "rdf:Property",
-      "rdfs:label": "Seller",
-      "rdfs:comment": "Seller or provider associated with an order.",
+      "rdfs:label": "Seller (legacy v2 property)",
+      "rdfs:comment": "DEPRECATED: Use beckn:provider. Legacy v2.0 seller property retained for backward compatibility.",
       "rdfs:domain": "beckn:Order",
-      "schema:rangeIncludes": "beckn:Provider"
+      "schema:rangeIncludes": "beckn:Provider",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:provider"
+      },
+      "owl:equivalentProperty": {
+        "@id": "beckn:provider"
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:invoice",
@@ -1208,7 +1267,7 @@
       "@id": "beckn:ratingValue",
       "@type": "rdf:Property",
       "rdfs:label": "Rating value",
-      "rdfs:comment": "Numeric rating score. Numeric rating value (legacy usually 1\u20135).",
+      "rdfs:comment": "Numeric rating score. Numeric rating value (legacy usually 1–5).",
       "rdfs:domain": [
         "beckn:Rating",
         "beckn:RatingInput"
@@ -1601,9 +1660,12 @@
       "@id": "beckn:email",
       "@type": "rdf:Property",
       "rdfs:label": "Email",
-      "rdfs:comment": "Support email address.",
+      "rdfs:comment": "Proxy for schema:email to avoid schema.org IRIs in context.",
       "rdfs:domain": "beckn:SupportInfo",
-      "schema:rangeIncludes": "schema:Text"
+      "schema:rangeIncludes": "schema:Text",
+      "owl:equivalentProperty": {
+        "@id": "schema:email"
+      }
     },
     {
       "@id": "beckn:hours",
@@ -1624,39 +1686,43 @@
     {
       "@id": "beckn:mime_type",
       "@type": "rdf:Property",
-      "rdfs:label": "MIME Type of a document (legacy snake_case IRI)",
-      "rdfs:comment": "DEPRECATED: Use beckn:mimeType. This legacy IRI is retained for backward compatibility with Beckn v2.0.",
+      "rdfs:label": "mime_type (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:mimeType. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
       "owl:equivalentProperty": {
         "@id": "beckn:mimeType"
-      }
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:submission_id",
       "@type": "rdf:Property",
-      "rdfs:label": "Form Submission ID (legacy snake_case IRI)",
-      "rdfs:comment": "DEPRECATED: Use beckn:submissionID. This legacy IRI is retained for backward compatibility with Beckn v2.0",
+      "rdfs:label": "submission_id (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:submissionId. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
       "rdfs:domain": "beckn:Form",
       "owl:equivalentProperty": {
         "@id": "beckn:submissionId"
-      }
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:text_search",
       "@type": "rdf:Property",
-      "rdfs:label": "Text search input (legacy snake_case IRI)",
-      "rdfs:comment": "DEPRECATED: Use beckn:textSearch. This legacy IRI is retained for backward compatibility with Beckn v2.0.",
+      "rdfs:label": "text_search (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:textSearch. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
       "owl:equivalentProperty": {
         "@id": "beckn:textSearch"
-      }
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:tl_method",
       "@type": "rdf:Property",
-      "rdfs:label": "Tracking transport method (legacy snake_case IRI)",
-      "rdfs:comment": "DEPRECATED: Use beckn:tlMethod. This legacy IRI is retained for backward compatibility with Beckn v2.0.",
+      "rdfs:label": "tl_method (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:tlMethod. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
       "owl:equivalentProperty": {
         "@id": "beckn:tlMethod"
-      }
+      },
+      "owl:deprecated": true
     },
     {
       "@id": "beckn:mimeType",
@@ -1919,6 +1985,222 @@
       "rdfs:subClassOf": "schema:DefinedTerm"
     },
     {
+      "@id": "beckn:FulfillmentState",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Fulfillment State",
+      "rdfs:comment": "State specific to fulfillment lifecycle (v2.1)",
+      "rdfs:subClassOf": {
+        "@id": "beckn:State"
+      }
+    },
+    {
+      "@id": "beckn:CatalogDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Catalog Descriptor",
+      "rdfs:comment": "Scoped descriptor for Catalog metadata",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:ItemDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Item Descriptor",
+      "rdfs:comment": "Scoped descriptor for Item/product/service description",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:OfferDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Offer Descriptor",
+      "rdfs:comment": "Scoped descriptor for commercial offer details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:ProviderDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Provider Descriptor",
+      "rdfs:comment": "Scoped descriptor for Provider/organization information",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:OrderDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Order Descriptor",
+      "rdfs:comment": "Scoped descriptor for Order summary",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:OrderItemDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Order Item Descriptor",
+      "rdfs:comment": "Scoped descriptor for OrderItem line details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:FulfillmentDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Fulfillment Descriptor",
+      "rdfs:comment": "Scoped descriptor for Fulfillment method",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:PaymentDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Payment Descriptor",
+      "rdfs:comment": "Scoped descriptor for Payment method",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:InvoiceDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Invoice Descriptor",
+      "rdfs:comment": "Scoped descriptor for Invoice metadata",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:LocationDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Location Descriptor",
+      "rdfs:comment": "Scoped descriptor for Location/place description",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:PolicyDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Policy Descriptor",
+      "rdfs:comment": "Scoped descriptor for Policy details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:StateDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "State Descriptor",
+      "rdfs:comment": "Scoped descriptor for generic State",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:FulfillmentStateDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Fulfillment State Descriptor",
+      "rdfs:comment": "Scoped descriptor for fulfillment state details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:AlertDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Alert Descriptor",
+      "rdfs:comment": "Scoped descriptor for Alert notification details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:InstructionDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Instruction Descriptor",
+      "rdfs:comment": "Scoped descriptor for Instruction text",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:EntitlementDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Entitlement Descriptor",
+      "rdfs:comment": "Scoped descriptor for Ticket/voucher/pass details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:CredentialDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Credential Descriptor",
+      "rdfs:comment": "Scoped descriptor for Credential/license details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:SkillDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Skill Descriptor",
+      "rdfs:comment": "Scoped descriptor for Skill/competency description",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:ParticipantDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Participant Descriptor",
+      "rdfs:comment": "Scoped descriptor for Participant role description",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:FulfillmentAgentDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Fulfillment Agent Descriptor",
+      "rdfs:comment": "Scoped descriptor for FulfillmentAgent details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:SupportInfoDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Support Info Descriptor",
+      "rdfs:comment": "Scoped descriptor for SupportInfo contact description",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:ConstraintDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Constraint Descriptor",
+      "rdfs:comment": "Scoped descriptor for Constraint details",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
+      "@id": "beckn:CancellationPolicyDescriptor",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Cancellation Policy Descriptor",
+      "rdfs:comment": "Scoped descriptor for CancellationPolicy terms",
+      "rdfs:subClassOf": {
+        "@id": "beckn:Descriptor"
+      }
+    },
+    {
       "@id": "beckn:FulfillmentStop",
       "@type": "rdfs:Class",
       "rdfs:label": "Fulfillment stop",
@@ -2157,12 +2439,6 @@
       "rdfs:comment": "The checkout terminal where the consumer makes the payment"
     },
     {
-      "@id": "beckn:Consumer",
-      "rdfs:label": "Consumer",
-      "@type": "rdfs:Class",
-      "rdfs:comment": "TODO: Add Description of Property"
-    },
-    {
       "@id": "beckn:Context",
       "rdfs:label": "Context",
       "@type": "rdfs:Class",
@@ -2334,7 +2610,7 @@
       "@id": "beckn:SpatialConstraint",
       "rdfs:label": "Spatial Constraint",
       "@type": "rdfs:Class",
-      "rdfs:comment": "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    \u2022 `S_WITHIN`     (A is completely inside B)\n    \u2022 `S_INTERSECTS` (A intersects B)\n    \u2022 `S_CONTAINS`   (A contains B)\n    \u2022 `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
+      "rdfs:comment": "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
     },
     {
       "@id": "beckn:SupportMethod",
@@ -3134,7 +3410,7 @@
       ],
       "schema:rangeIncludes": "beckn:MediaSearchOptions",
       "@type": "rdf:Property",
-      "rdfs:comment": "Options controlling how the discovery engine interprets the supplied media \u2014 e.g., whether to perform OCR/ASR, semantic similarity, or object detection."
+      "rdfs:comment": "Options controlling how the discovery engine interprets the supplied media — e.g., whether to perform OCR/ASR, semantic similarity, or object detection."
     },
     {
       "@id": "beckn:orderDocs",
@@ -3776,6 +4052,792 @@
       "rdfs:label": "ws Handle",
       "@type": "schema:Enumeration",
       "rdfs:comment": "Optional delivery mode for the tracking handle."
+    },
+    {
+      "@id": "beckn:DeliveryPriceComponent",
+      "rdfs:label": "Delivery Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:DiscountPriceComponent",
+      "rdfs:label": "Discount Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:EcdsaAlgorithm",
+      "rdfs:label": "Ecdsa Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:Ed25519Algorithm",
+      "rdfs:label": "Ed25519Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:FeePriceComponent",
+      "rdfs:label": "Fee Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:FulfillmentMode",
+      "rdfs:label": "Fulfillment Mode",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "Describes the mode of fulfillment. This is an extensible container allowing domain-specific fulfillment modes to be expressed via attributes."
+    },
+    {
+      "@id": "beckn:GeoJSONGeometryCollection",
+      "rdfs:label": "Geo JSON Geometry Collection",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONLineString",
+      "rdfs:label": "Geo JSON Line String",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiLineString",
+      "rdfs:label": "Geo JSON Multi Line String",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiPoint",
+      "rdfs:label": "Geo JSON Multi Point",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONMultiPolygon",
+      "rdfs:label": "Geo JSON Multi Polygon",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONPoint",
+      "rdfs:label": "Geo JSON Point",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:GeoJSONPolygon",
+      "rdfs:label": "Geo JSON Polygon",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:HmacAlgorithm",
+      "rdfs:label": "Hmac Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:JsonPathType",
+      "rdfs:label": "Json Path Type",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:OtherAlgorithm",
+      "rdfs:label": "Other Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:PaymentTrigger",
+      "rdfs:label": "Payment Trigger",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Describes when in the order lifecycle a payment flow should be triggered. Typically useful for initiating checkouts and settlement flows."
+    },
+    {
+      "@id": "beckn:QuantifierAll",
+      "rdfs:label": "Quantifier All",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:QuantifierAny",
+      "rdfs:label": "Quantifier Any",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:QuantifierNone",
+      "rdfs:label": "Quantifier None",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "'How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match'\n"
+    },
+    {
+      "@id": "beckn:RsaAlgorithm",
+      "rdfs:label": "Rsa Algorithm",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SemanticAudioMatch",
+      "rdfs:label": "Semantic Audio Match",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:SemanticVideoMatch",
+      "rdfs:label": "Semantic Video Match",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:SpatialContains",
+      "rdfs:label": "Spatial Contains",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialCrosses",
+      "rdfs:label": "Spatial Crosses",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialDisjoint",
+      "rdfs:label": "Spatial Disjoint",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialDwithin",
+      "rdfs:label": "Spatial Dwithin",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialEquals",
+      "rdfs:label": "Spatial Equals",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialIntersects",
+      "rdfs:label": "Spatial Intersects",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialOverlaps",
+      "rdfs:label": "Spatial Overlaps",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialTouches",
+      "rdfs:label": "Spatial Touches",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:SpatialWithin",
+      "rdfs:label": "Spatial Within",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:StatusAccepted",
+      "rdfs:label": "Status Accepted",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Final processing outcome for this catalog"
+    },
+    {
+      "@id": "beckn:StatusPartial",
+      "rdfs:label": "Status Partial",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Final processing outcome for this catalog"
+    },
+    {
+      "@id": "beckn:SurchargePriceComponent",
+      "rdfs:label": "Surcharge Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:TaxPriceComponent",
+      "rdfs:label": "Tax Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:TextFromAudio",
+      "rdfs:label": "Text From Audio",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:TextFromImage",
+      "rdfs:label": "Text From Image",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:Time",
+      "rdfs:label": "Time",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "Represents a moment or duration in time. Can express a timestamp, a duration, or a time range."
+    },
+    {
+      "@id": "beckn:UnitPriceComponent",
+      "rdfs:label": "Unit Price Component",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Media category."
+    },
+    {
+      "@id": "beckn:VisualObjectDetect",
+      "rdfs:label": "Visual Object Detect",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:VisualSimilarity",
+      "rdfs:label": "Visual Similarity",
+      "@type": "schema:Enumeration",
+      "rdfs:comment": "Desired processing goals for the media."
+    },
+    {
+      "@id": "beckn:checkoutTrigger",
+      "rdfs:label": "checkout Trigger",
+      "rdfs:domain": [
+        "beckn:PaymentTerms"
+      ],
+      "schema:rangeIncludes": "beckn:PaymentTrigger",
+      "@type": "rdf:Property",
+      "rdfs:comment": "The stage in the order lifecycle when the checkout should be triggered"
+    },
+    {
+      "@id": "beckn:collectedBy",
+      "rdfs:label": "collected By",
+      "rdfs:domain": [
+        "beckn:PaymentTerms"
+      ],
+      "schema:rangeIncludes": "schema:Text",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Describes the entity that first collects the payment from the consumer. This is the actor who is responsible to initiate the settlement process as per the terms described in the settlementTerms property."
+    },
+    {
+      "@id": "beckn:jsonldExtension",
+      "rdfs:label": "jsonld Extension",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:modeAttributes",
+      "rdfs:label": "mode Attributes",
+      "rdfs:domain": [
+        "beckn:FulfillmentMode"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Domain-specific fulfillment mode attributes (e.g., delivery, pickup, reservation, digital)"
+    },
+    {
+      "@id": "beckn:organizationAttributes",
+      "rdfs:label": "organization Attributes",
+      "rdfs:domain": [
+        "beckn:Organization"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Extensible attribute pack for jurisdictional or domain-specific organization properties"
+    },
+    {
+      "@id": "beckn:personAttributes",
+      "rdfs:label": "person Attributes",
+      "rdfs:domain": [
+        "beckn:Person"
+      ],
+      "schema:rangeIncludes": "beckn:Attributes",
+      "@type": "rdf:Property",
+      "rdfs:comment": "Extensible attribute pack for jurisdictional or domain-specific person properties"
+    },
+    {
+      "@id": "beckn:range",
+      "rdfs:label": "range",
+      "rdfs:domain": [
+        "beckn:Time"
+      ],
+      "schema:rangeIncludes": "beckn:TimePeriod",
+      "@type": "rdf:Property",
+      "rdfs:comment": "A time range with start and end"
+    },
+    {
+      "@id": "beckn:required",
+      "rdfs:label": "required",
+      "rdfs:domain": [
+        "beckn:Document"
+      ],
+      "@type": "rdf:Property",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:signatureAlgorithm",
+      "rdfs:label": "signature Algorithm",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:spatialOperator",
+      "rdfs:label": "spatial Operator",
+      "@type": "schema:Thing",
+      "rdfs:comment": "TODO: Add Description of Property"
+    },
+    {
+      "@id": "beckn:PriceSpecification",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Price Specification",
+      "rdfs:comment": "Proxy for schema:PriceSpecification to avoid schema.org IRIs in context.",
+      "owl:equivalentClass": {
+        "@id": "schema:PriceSpecification"
+      }
+    },
+    {
+      "@id": "beckn:displayName",
+      "@type": "rdf:Property",
+      "rdfs:label": "Display name (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:name (Descriptor.name). This legacy property IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "beckn:name"
+      },
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:name"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:eligibleQuantity",
+      "@type": "rdf:Property",
+      "rdfs:label": "Eligible quantity (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use schema:eligibleQuantity. This legacy property IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "schema:eligibleQuantity"
+      }
+    },
+    {
+      "@id": "beckn:price",
+      "@type": "rdf:Property",
+      "rdfs:label": "Price (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use schema:price. This legacy property IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "schema:price"
+      }
+    },
+    {
+      "@id": "beckn:unitCode",
+      "@type": "rdf:Property",
+      "rdfs:label": "Unit code (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use schema:unitCode. This legacy property IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "schema:unitCode"
+      }
+    },
+    {
+      "@id": "beckn:unitText",
+      "@type": "rdf:Property",
+      "rdfs:label": "Unit text (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use schema:unitText. This legacy property IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "schema:unitText"
+      }
+    },
+    {
+      "@id": "beckn:expires_at",
+      "@type": "rdf:Property",
+      "rdfs:label": "expires_at (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:expiresAt. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
+      "owl:equivalentProperty": {
+        "@id": "beckn:expiresAt"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:OtherRating",
+      "@type": [
+        "schema:Enumeration"
+      ],
+      "schema:name": "OTHER",
+      "schema:identifier": "OTHER",
+      "rdfs:label": "Other rating category",
+      "rdfs:comment": "A catch-all rating category for contexts not covered by ORDER, FULFILLMENT, ITEM, PROVIDER, AGENT, or SUPPORT."
+    },
+    {
+      "@id": "beckn:Person",
+      "rdfs:label": "Person",
+      "rdfs:comment": "Proxy for schema:Person to avoid schema.org IRIs in context.",
+      "@type": "rdfs:Class",
+      "owl:equivalentClass": {
+        "@id": "schema:Person"
+      }
+    },
+    {
+      "@id": "beckn:Organization",
+      "rdfs:label": "Organization",
+      "rdfs:comment": "Proxy for schema:Organization to avoid schema.org IRIs in context.",
+      "@type": "rdfs:Class",
+      "owl:equivalentClass": {
+        "@id": "schema:Organization"
+      }
+    },
+    {
+      "@id": "beckn:telephone",
+      "rdfs:label": "Telephone",
+      "rdfs:comment": "Proxy for schema:telephone to avoid schema.org IRIs in context.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "schema:telephone"
+      }
+    },
+    {
+      "@id": "beckn:age",
+      "rdfs:label": "Age",
+      "rdfs:comment": "Proxy for schema:age to avoid schema.org IRIs in context.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "schema:age"
+      }
+    },
+    {
+      "@id": "beckn:duration",
+      "rdfs:label": "Duration",
+      "rdfs:comment": "Proxy for schema:duration to avoid schema.org IRIs in context.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "schema:duration"
+      }
+    },
+    {
+      "@id": "beckn:knowsLanguage",
+      "rdfs:label": "Knows language",
+      "rdfs:comment": "Proxy for schema:knowsLanguage to avoid schema.org IRIs in context.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "schema:knowsLanguage"
+      }
+    },
+    {
+      "@id": "beckn:worksFor",
+      "rdfs:label": "Works for",
+      "rdfs:comment": "Proxy for schema:worksFor to avoid schema.org IRIs in context.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "schema:worksFor"
+      }
+    },
+    {
+      "@id": "beckn:currentFulfillmentState",
+      "rdfs:label": "Current fulfillment state",
+      "rdfs:comment": "Scoped current state for a fulfillment.",
+      "@type": "rdf:Property",
+      "rdfs:domain": [
+        "beckn:Fulfillment"
+      ],
+      "schema:rangeIncludes": "beckn:FulfillmentStateDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:currentState"
+      }
+    },
+    {
+      "@id": "beckn:transaction_id",
+      "rdfs:label": "transaction_id (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:transactionId. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "beckn:transactionId"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:ack_status",
+      "rdfs:label": "ack_status (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:ackStatus. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "beckn:ackStatus"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:key_id",
+      "rdfs:label": "key_id (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:keyId. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "beckn:keyId"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:media_search",
+      "rdfs:label": "media_search (legacy v2 IRI)",
+      "rdfs:comment": "DEPRECATED: Use beckn:mediaSearch. This legacy snake_case IRI is retained for backward compatibility with Beckn v2.0.",
+      "@type": "rdf:Property",
+      "owl:equivalentProperty": {
+        "@id": "beckn:mediaSearch"
+      },
+      "owl:deprecated": true
+    },
+    {
+      "@id": "beckn:catalogDescriptor",
+      "rdfs:label": "Catalog descriptor",
+      "rdfs:comment": "Scoped descriptor for Catalog metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Catalog",
+      "schema:rangeIncludes": "beckn:CatalogDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:itemDescriptor",
+      "rdfs:label": "Item descriptor",
+      "rdfs:comment": "Scoped descriptor for Item metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Item",
+      "schema:rangeIncludes": "beckn:ItemDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:offerDescriptor",
+      "rdfs:label": "Offer descriptor",
+      "rdfs:comment": "Scoped descriptor for Offer metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Offer",
+      "schema:rangeIncludes": "beckn:OfferDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:providerDescriptor",
+      "rdfs:label": "Provider descriptor",
+      "rdfs:comment": "Scoped descriptor for Provider metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Provider",
+      "schema:rangeIncludes": "beckn:ProviderDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:orderDescriptor",
+      "rdfs:label": "Order descriptor",
+      "rdfs:comment": "Scoped descriptor for Order metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Order",
+      "schema:rangeIncludes": "beckn:OrderDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:orderItemDescriptor",
+      "rdfs:label": "OrderItem descriptor",
+      "rdfs:comment": "Scoped descriptor for OrderItem metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:OrderItem",
+      "schema:rangeIncludes": "beckn:OrderItemDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:fulfillmentDescriptor",
+      "rdfs:label": "Fulfillment descriptor",
+      "rdfs:comment": "Scoped descriptor for Fulfillment metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Fulfillment",
+      "schema:rangeIncludes": "beckn:FulfillmentDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:paymentDescriptor",
+      "rdfs:label": "Payment descriptor",
+      "rdfs:comment": "Scoped descriptor for Payment metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Payment",
+      "schema:rangeIncludes": "beckn:PaymentDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:invoiceDescriptor",
+      "rdfs:label": "Invoice descriptor",
+      "rdfs:comment": "Scoped descriptor for Invoice metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Invoice",
+      "schema:rangeIncludes": "beckn:InvoiceDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:locationDescriptor",
+      "rdfs:label": "Location descriptor",
+      "rdfs:comment": "Scoped descriptor for Location metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Location",
+      "schema:rangeIncludes": "beckn:LocationDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:policyDescriptor",
+      "rdfs:label": "Policy descriptor",
+      "rdfs:comment": "Scoped descriptor for Policy metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Policy",
+      "schema:rangeIncludes": "beckn:PolicyDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:stateDescriptor",
+      "rdfs:label": "State descriptor",
+      "rdfs:comment": "Scoped descriptor for State metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:State",
+      "schema:rangeIncludes": "beckn:StateDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:fulfillmentStateDescriptor",
+      "rdfs:label": "FulfillmentState descriptor",
+      "rdfs:comment": "Scoped descriptor for FulfillmentState metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:FulfillmentState",
+      "schema:rangeIncludes": "beckn:FulfillmentStateDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:alertDescriptor",
+      "rdfs:label": "Alert descriptor",
+      "rdfs:comment": "Scoped descriptor for Alert metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Alert",
+      "schema:rangeIncludes": "beckn:AlertDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:instructionDescriptor",
+      "rdfs:label": "Instruction descriptor",
+      "rdfs:comment": "Scoped descriptor for Instruction metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Instruction",
+      "schema:rangeIncludes": "beckn:InstructionDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:entitlementDescriptor",
+      "rdfs:label": "Entitlement descriptor",
+      "rdfs:comment": "Scoped descriptor for Entitlement metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Entitlement",
+      "schema:rangeIncludes": "beckn:EntitlementDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:credentialDescriptor",
+      "rdfs:label": "Credential descriptor",
+      "rdfs:comment": "Scoped descriptor for Credential metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Credential",
+      "schema:rangeIncludes": "beckn:CredentialDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:skillDescriptor",
+      "rdfs:label": "Skill descriptor",
+      "rdfs:comment": "Scoped descriptor for Skill metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Skill",
+      "schema:rangeIncludes": "beckn:SkillDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:participantDescriptor",
+      "rdfs:label": "Participant descriptor",
+      "rdfs:comment": "Scoped descriptor for Participant metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Participant",
+      "schema:rangeIncludes": "beckn:ParticipantDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:fulfillmentAgentDescriptor",
+      "rdfs:label": "FulfillmentAgent descriptor",
+      "rdfs:comment": "Scoped descriptor for FulfillmentAgent metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:FulfillmentAgent",
+      "schema:rangeIncludes": "beckn:FulfillmentAgentDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:supportInfoDescriptor",
+      "rdfs:label": "SupportInfo descriptor",
+      "rdfs:comment": "Scoped descriptor for SupportInfo metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:SupportInfo",
+      "schema:rangeIncludes": "beckn:SupportInfoDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:constraintDescriptor",
+      "rdfs:label": "Constraint descriptor",
+      "rdfs:comment": "Scoped descriptor for Constraint metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:Constraint",
+      "schema:rangeIncludes": "beckn:ConstraintDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
+    },
+    {
+      "@id": "beckn:cancellationPolicyDescriptor",
+      "rdfs:label": "CancellationPolicy descriptor",
+      "rdfs:comment": "Scoped descriptor for CancellationPolicy metadata.",
+      "@type": "rdf:Property",
+      "rdfs:domain": "beckn:CancellationPolicy",
+      "schema:rangeIncludes": "beckn:CancellationPolicyDescriptor",
+      "rdfs:subPropertyOf": {
+        "@id": "beckn:descriptor"
+      }
     }
   ]
 }
