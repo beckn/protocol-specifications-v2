@@ -149,7 +149,7 @@ This architecture allows multiple Network Protocol (NP) versions to coexist on a
 
 ## Schema Modifications
 
-### `AckResponse` (Breaking)
+### `AckResponse` 
 
 **Changes:**
 - **Field name changes:**
@@ -162,7 +162,7 @@ This architecture allows multiple Network Protocol (NP) versions to coexist on a
 
 ---
 
-### `Attributes` (Non-breaking)
+### `Attributes`  
 
 **Changes:**
 - **Removed** `minProperties: 2` constraint
@@ -173,7 +173,7 @@ This architecture allows multiple Network Protocol (NP) versions to coexist on a
 
 ---
 
-### `Catalog` (Breaking)
+### `Catalog` 
 
 **v2.0 structure (prefixed):**
 ```yaml
@@ -218,7 +218,7 @@ properties:
 
 ---
 
-### `Item` (Breaking)
+### `Item` 
 
 **v2.0 structure (prefixed):**
 ```yaml
@@ -269,7 +269,7 @@ properties:
 
 ---
 
-### `Offer` (Breaking)
+### `Offer` 
 
 **v2.0 structure:**
 ```yaml
@@ -300,7 +300,7 @@ properties:
 
 ---
 
-### `Provider` (Breaking)
+### `Provider` 
 
 **v2.0 structure:**
 ```yaml
@@ -331,7 +331,7 @@ properties:
 
 ---
 
-### `Descriptor` (Breaking)
+### `Descriptor` 
 
 **v2.0 structure:**
 ```yaml
@@ -447,7 +447,7 @@ properties:
 
 ---
 
-### `OrderItem` (Breaking)
+### `OrderItem` 
 
 **v2.0 structure:**
 ```yaml
@@ -477,7 +477,7 @@ properties:
 
 ---
 
-### `Invoice` (Breaking)
+### `Invoice` 
 
 **v2.0 structure:**
 ```yaml
@@ -553,7 +553,7 @@ properties:
 
 ---
 
-### `Tracking` (Breaking)
+### `Tracking` 
 
 **v2.0 structure:**
 ```yaml
@@ -588,7 +588,7 @@ required: ["@context", "@type", "url", "trackingStatus"]
 
 ---
 
-### `RatingInput` (Breaking)
+### `RatingInput` 
 
 **Changes:**
 - Prefix removal from all fields
