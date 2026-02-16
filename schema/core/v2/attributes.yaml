@@ -23,7 +23,6 @@ components:
           type: string
           format: uri
           description: JSON-LD context URI for the core Catalog schema
-          enum: ["https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/context.jsonld"]
         "@type":
           type: string
           description: Type of the catalog
@@ -72,7 +71,6 @@ components:
           type: string
           format: uri
           description: JSON-LD context URI for the core Item schema
-          enum: ["https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/context.jsonld"]
         "@type":
           type: string
           description: Type of the core item
