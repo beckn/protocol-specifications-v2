@@ -1,0 +1,219 @@
+{
+    "@context": {
+        "@version": 1.1,
+        "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/core/v2.1/#",
+        "owl": "http://www.w3.org/2002/07/owl#",
+        "schema": "https://schema.org/",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@graph": [
+        {
+            "@id": "beckn:Action",
+            "@type": "schema:Enumeration",
+            "rdfs:label": "Action",
+            "rdfs:comment": "Enumeration of Beckn protocol actions defining the lifecycle stages of transactions",
+            "schema:hasEnumerationMember": [
+                { "@id": "beckn:DiscoverAction" },
+                { "@id": "beckn:OnDiscoverAction" },
+                { "@id": "beckn:SelectAction" },
+                { "@id": "beckn:OnSelectAction" },
+                { "@id": "beckn:InitAction" },
+                { "@id": "beckn:OnInitAction" },
+                { "@id": "beckn:ConfirmAction" },
+                { "@id": "beckn:OnConfirmAction" },
+                { "@id": "beckn:StatusAction" },
+                { "@id": "beckn:OnStatusAction" },
+                { "@id": "beckn:UpdateAction" },
+                { "@id": "beckn:OnUpdateAction" },
+                { "@id": "beckn:CancelAction" },
+                { "@id": "beckn:OnCancelAction" },
+                { "@id": "beckn:TrackAction" },
+                { "@id": "beckn:OnTrackAction" },
+                { "@id": "beckn:RateAction" },
+                { "@id": "beckn:OnRateAction" },
+                { "@id": "beckn:SupportAction" },
+                { "@id": "beckn:OnSupportAction" },
+                { "@id": "beckn:CatalogPublishAction" },
+                { "@id": "beckn:CatalogOnPublishAction" }
+            ]
+        },
+        {
+            "@id": "beckn:DiscoverAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "discover",
+            "schema:identifier": "discover",
+            "rdfs:label": "Discover Action",
+            "rdfs:comment": "Action to discover catalogs on a network. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnDiscoverAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_discover",
+            "schema:identifier": "on_discover",
+            "rdfs:label": "On Discover Action",
+            "rdfs:comment": "Callback response to discover request. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:SelectAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "select",
+            "schema:identifier": "select",
+            "rdfs:label": "Select Action",
+            "rdfs:comment": "BAP requests for quote. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnSelectAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_select",
+            "schema:identifier": "on_select",
+            "rdfs:label": "On Select Action",
+            "rdfs:comment": "BPP sends quote with optional additional forms. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:InitAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "init",
+            "schema:identifier": "init",
+            "rdfs:label": "Init Action",
+            "rdfs:comment": "BAP requests final draft order with terms. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnInitAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_init",
+            "schema:identifier": "on_init",
+            "rdfs:label": "On Init Action",
+            "rdfs:comment": "BPP sends final draft of order with terms of service. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:ConfirmAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "confirm",
+            "schema:identifier": "confirm",
+            "rdfs:label": "Confirm Action",
+            "rdfs:comment": "BAP confirms the order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnConfirmAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_confirm",
+            "schema:identifier": "on_confirm",
+            "rdfs:label": "On Confirm Action",
+            "rdfs:comment": "BPP sends confirmed order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:StatusAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "status",
+            "schema:identifier": "status",
+            "rdfs:label": "Status Action",
+            "rdfs:comment": "BAP requests latest state of the order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnStatusAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_status",
+            "schema:identifier": "on_status",
+            "rdfs:label": "On Status Action",
+            "rdfs:comment": "BPP sends the latest state of the order with fulfillment status. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:UpdateAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "update",
+            "schema:identifier": "update",
+            "rdfs:label": "Update Action",
+            "rdfs:comment": "Request to update an active order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnUpdateAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_update",
+            "schema:identifier": "on_update",
+            "rdfs:label": "On Update Action",
+            "rdfs:comment": "BPP sends updated order with updated terms. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:CancelAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "cancel",
+            "schema:identifier": "cancel",
+            "rdfs:label": "Cancel Action",
+            "rdfs:comment": "Request to cancel an order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnCancelAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_cancel",
+            "schema:identifier": "on_cancel",
+            "rdfs:label": "On Cancel Action",
+            "rdfs:comment": "Provider returns cancelled order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:TrackAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "track",
+            "schema:identifier": "track",
+            "rdfs:label": "Track Action",
+            "rdfs:comment": "Track order in real-time. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnTrackAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_track",
+            "schema:identifier": "on_track",
+            "rdfs:label": "On Track Action",
+            "rdfs:comment": "Send real-time tracking handles for an active order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:RateAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "rate",
+            "schema:identifier": "rate",
+            "rdfs:label": "Rate Action",
+            "rdfs:comment": "Rate any aspect of an order. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnRateAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_rate",
+            "schema:identifier": "on_rate",
+            "rdfs:label": "On Rate Action",
+            "rdfs:comment": "Provider acknowledges/returns rating receipt. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:SupportAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "support",
+            "schema:identifier": "support",
+            "rdfs:label": "Support Action",
+            "rdfs:comment": "Request support details for an entity. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:OnSupportAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "on_support",
+            "schema:identifier": "on_support",
+            "rdfs:label": "On Support Action",
+            "rdfs:comment": "Provider returns support details. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:CatalogPublishAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "catalog/publish",
+            "schema:identifier": "catalog/publish",
+            "rdfs:label": "Catalog Publish Action",
+            "rdfs:comment": "Publish one or more catalogs for indexing. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        },
+        {
+            "@id": "beckn:CatalogOnPublishAction",
+            "@type": ["beckn:Action", "schema:Enumeration"],
+            "schema:name": "catalog/on_publish",
+            "schema:identifier": "catalog/on_publish",
+            "rdfs:label": "Catalog On Publish Action",
+            "rdfs:comment": "Callback with catalog publish processing results. This value is used as the path parameter in Beckn Protocol HTTP endpoints (e.g., /beckn/{action})."
+        }
+    ]
+}

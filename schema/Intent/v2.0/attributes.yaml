@@ -1,0 +1,30 @@
+openapi: 3.1.1
+info:
+  title: Intent Schema v2.0
+  description: Factory class definition for Discovery Intent in Beckn Protocol
+  version: 2.0.0
+  contact:
+    name: Beckn Labs
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+components:
+  schemas:
+    DiscoveryIntent:
+      description: A declaration of an intent to discover catalogs. This is a factory class that can be extended with domain-specific search attributes.
+      type: object
+      properties:
+        '@context':
+          type: string
+          format: uri
+          const: https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/draft/schema/Intent/v2.0/context.jsonld
+        "@type":
+          type: string
+          const: beckn:DiscoveryIntent
+      required:
+      - '@context'
+      - "@type"
+      additionalProperties: true
+      x-jsonld:
+        '@id': beckn:DiscoveryIntent

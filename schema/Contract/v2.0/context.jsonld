@@ -1,0 +1,64 @@
+{
+    "@context": {
+        "@version": 1.1,
+        "@protected": true,
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "beckn": "https://schema.beckn.io/",
+        "Contract": {
+            "@id": "beckn:Contract",
+            "@context": {
+                "descriptor": "beckn:contractDescriptor"
+            }
+        },
+        "acceptedOffers": "beckn:acceptedOffers",
+        "buyer": "beckn:consumer",
+        "createdAt": "beckn:createdAt",
+        "form": "beckn:form",
+        "fulfillment": "beckn:fulfillment",
+        "id": "beckn:id",
+        "invoice": "beckn:invoice",
+        "items": "beckn:items",
+        "location": "beckn:location",
+        "contractAttributes": "beckn:contractAttributes",
+        "contractItems": "beckn:contractItems",
+        "contractNumber": "beckn:contractNumber",
+        "contractStatus": {
+            "@id": "beckn:contractStatus",
+            "@type": "@id",
+            "@context": {
+                "UNDER_NEGOTIATION": "beckn:ContractUnderNegotiation",
+                "CREATED": "beckn:ContractCreated",
+                "PENDING": "beckn:ContractPending",
+                "CONFIRMED": "beckn:ContractConfirmed",
+                "INPROGRESS": "beckn:ContractInProgress",
+                "PARTIALLYFULFILLED": "beckn:ContractPartiallyFulfilled",
+                "COMPLETED": "beckn:ContractCompleted",
+                "CANCELLED": "beckn:ContractCancelled",
+                "REJECTED": "beckn:ContractRejected",
+                "FAILED": "beckn:ContractFailed",
+                "RETURNED": "beckn:ContractReturned",
+                "REFUNDED": "beckn:ContractRefunded",
+                "ONHOLD": "beckn:ContractOnHold",
+                "ON-HOLD": "beckn:ContractOnHold"
+            }
+        },
+        "contractValue": "beckn:contractValue",
+        "payment": "beckn:payment",
+        "provider": "beckn:provider",
+        "supportInfo": "beckn:supportInfo",
+        "updatedAt": "beckn:updatedAt",
+        "policies": "beckn:policies",
+        "participants": "beckn:participants",
+        "instructions": "beckn:instructions",
+        "entitlements": "beckn:entitlements",
+        "alerts": "beckn:alerts",
+        "state": "beckn:state",
+        "fulfillments": "beckn:fulfillments",
+        "invoices": "beckn:invoices",
+        "contractDocs": "beckn:contractDocs",
+        "paymentAction": "beckn:paymentAction",
+        "paymentTerms": "beckn:paymentTerms"
+    }
+}

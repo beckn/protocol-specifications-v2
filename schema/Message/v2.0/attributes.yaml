@@ -1,0 +1,13 @@
+openapi: 3.1.1
+info:
+  title: Beckn Message Schema
+  description: Schema definition for Message in the Beckn Protocol v2.1. This defines the message envelope and payload structures used in Beckn protocol communications.
+  version: 2.1.0
+  contact:
+    name: Beckn Labs
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+components:
+  schemas: {}
