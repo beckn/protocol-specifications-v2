@@ -1,0 +1,164 @@
+openapi: 3.1.1
+info:
+  title: Beckn Protocol API Specification Version 2
+  description: |
+    The API specification of Beckn Protocol covering the known interaction domains of a Beckn-enabled network. Current domains include Discovery, Ordering, Fulfillment, and Post-Fulfillment. The protocol is being actively extended to cover additional domains including Reconciliation & Settlement, Observability, Reputation Ledger, and Issue & Grievance Management.
+  version: 2.0.1
+  contact:
+    name: Beckn Protocol
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+
+paths:
+  /beckn/{action}:
+    get:
+      summary: Dispatch a Beckn protocol action on HTTP GET endpoint
+      description: |
+        Universal endpoint for dispatching any Beckn protocol action across a Beckn-enabled network. The `{action}` path parameter identifies the specific operation being performed within any supported Beckn interaction domain.
+
+        This endpoint supports two mutually exclusive modes:
+
+        **Body Mode** — The action payload is sent as a JSON request body and the signature is transmitted in the `Authorization` header:
+        `GET /beckn/{action}` with `Authorization: {Signature}` header and `RequestAction` body.
+
+        **Query Mode** — The action payload and signature are both expressed as URL query parameters, making the entire request a self-contained URL suitable for QR codes, deep links, bookmarkable pages, frontend UIs, IoT/embedded clients, and browser-triggered interactions:
+        `GET /beckn/{action}?Authorization={Signature}&RequestAction={RequestActionQuery}`
+        In Query Mode, the caller MUST NOT expect a callback. The server acknowledges receipt with an `Ack` (HTTP 200) but will not send an asynchronous callback to the caller. Query Mode is designed for stateless, one-way interactions where the originating client (e.g. a browser or QR code scanner) has no registered callback endpoint.
+
+        These two modes are mutually exclusive. If `Authorization` and `RequestAction` are present as query parameters, the request body MUST be absent and the `Authorization` header MUST be absent. If the request body is present, both query parameters MUST be absent.
+
+        This endpoint may be implemented by any Beckn Network Participant — including Beckn Application Platforms (BAPs), Beckn Provider Platforms (BPPs), Catalog Discovery Services, Catalog Publishing Services, and Registries (which follow the DeDi — Decentralized Directory — protocol for network participant lookup and public key resolution). Each participant may selectively support a subset of actions appropriate to their role.
+
+        The server responds synchronously with an `Ack` (HTTP 200) confirming receipt and successful signature validation, indicating that an asynchronous callback will follow. An `AckNoCallback` (HTTP 409) indicates the request was received but no callback will follow due to a business constraint. A `NackBadRequest` (HTTP 400), `NackUnauthorized` (HTTP 401), or `ServerError` (HTTP 500) indicates that the request could not be accepted.
+      parameters:
+        - name: action
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Action'
+        # Body Mode — Authorization in header (mutually exclusive with Query Mode parameters)
+        - name: Authorization
+          in: header
+          required: false
+          description: Beckn Signature authentication header (Body Mode only). See `#/components/schemas/Signature` for the expected structure.
+          schema:
+            $ref: '#/components/schemas/Signature'
+        # Query Mode — Authorization and RequestAction both in query string (mutually exclusive with Body Mode)
+        - $ref: '#/components/parameters/AuthorizationQuery'
+        - $ref: '#/components/parameters/RequestActionQuery'
+      requestBody:
+        required: false
+        description: Body Mode only — MUST be absent when query parameters are used.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      summary: Dispatch a Beckn protocol action on an HTTP POST endpoint
+      description: |
+        Universal endpoint for dispatching any Beckn protocol action across a Beckn-enabled network. The `{action}` path parameter identifies the specific operation being performed within any supported Beckn interaction domain.
+
+        The request body MUST conform to either a `RequestAction` — originated by a BAP directed at a BPP or Catalog Discovery Service — or a `CallbackAction` — originated by a BPP or Catalog Publishing Service directed back at a BAP. The `action` value in the path determines which schema variant is applicable: forward actions (e.g. `search`, `select`, `init`, `confirm`) carry a `RequestAction`, while callback actions (e.g. `on_search`, `on_select`, `on_init`, `on_confirm`) carry a `CallbackAction`.
+
+        This endpoint may be implemented by any Beckn Network Participant — including Beckn Application Platforms (BAPs), Beckn Provider Platforms (BPPs), Catalog Discovery Services, Catalog Publishing Services, and Registries (which follow the DeDi — Decentralized Directory — protocol for network participant lookup and public key resolution). Each participant may selectively support a subset of actions appropriate to their role.
+
+        All requests MUST be authenticated using a valid Beckn Signature transmitted in the `Authorization` header. The receiver validates the signature against the sender's public key resolved from the Beckn Registry.
+
+        The server responds synchronously with an `Ack` (HTTP 200) confirming receipt and successful signature validation, indicating that an asynchronous callback will follow. An `AckNoCallback` (HTTP 409) indicates the request was received but no callback will follow due to a business constraint (e.g. agents not found, inventory unavailable, store closed). A `NackBadRequest` (HTTP 400), `NackUnauthorized` (HTTP 401), or `ServerError` (HTTP 500) indicates that the request could not be accepted.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+        - name: action
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Action'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/RequestAction'
+                - $ref: '#/components/schemas/CallbackAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Action:
+      $ref: 'https://schema.beckn.io/Action/ref'
+
+    Signature:
+      $ref: 'https://schema.beckn.io/Signature/ref'
+
+    RequestAction:
+      $ref: 'https://schema.beckn.io/RequestAction/ref'
+
+    RequestActionQuery:
+      $ref: 'https://schema.beckn.io/RequestActionQuery/ref'
+
+    CallbackAction:
+      $ref: 'https://schema.beckn.io/CallbackAction/ref'
+
+  responses:
+    Ack:
+      $ref: 'https://schema.beckn.io/Ack/ref'
+
+    AckNoCallback:
+      $ref: 'https://schema.beckn.io/AckNoCallback/ref'
+
+    NackBadRequest:
+      $ref: 'https://schema.beckn.io/NackBadRequest/ref'
+
+    NackUnauthorized:
+      $ref: 'https://schema.beckn.io/NackUnauthorized/ref'
+
+    ServerError:
+      $ref: 'https://schema.beckn.io/ServerError/ref'
+
+  parameters:
+    AuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      description: Beckn Signature authentication header. See `#/components/schemas/Signature` for the expected structure.
+      schema:
+        $ref: 'https://schema.beckn.io/Signature/ref'
+
+    AuthorizationQuery:
+      name: Authorization
+      in: query
+      required: false
+      description: Beckn Signature passed as a query parameter (GET Query Mode only). See `#/components/schemas/Signature` for the expected structure.
+      schema:
+        $ref: 'https://schema.beckn.io/Signature/ref'
+
+    RequestActionQuery:
+      name: RequestAction
+      in: query
+      required: false
+      description: Beckn action payload passed as a query parameter (GET Query Mode only). See `https://schema.beckn.io/RequestActionQuery/ref` for the expected structure.
+      schema:
+        $ref: 'https://schema.beckn.io/RequestActionQuery/ref'
