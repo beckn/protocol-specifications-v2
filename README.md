@@ -11,7 +11,7 @@ This repository is intentionally kept **minimal and stable by design** — analo
 | Version | Status | Key Changes |
 |---------|--------|-------------|
 | **v2.0.1** | **LTS (Long Term Support)** | Universal `/beckn/{action}` endpoint (GET + POST), GET Query Mode for QR/deep-link interactions, all schemas externalized to `schema.beckn.io` / [`core_schema`](https://github.com/beckn/core_schema), consolidated `schema/v2.0.1/` |
-| v2.0.0 | Superseded | Initial v2 architecture — JSON-LD alignment, CDS/CPS and DeDi architecture introduced |
+| v2.0.0 | Superseded | Initial v2 architecture — JSON-LD alignment, CDS/CPS and DeDi protocol based Registry architecture introduced |
 | v1.x | End of Support | Original Beckn protocol — OpenAPI/JSON Schema based, Beckn Gateway for discovery, bespoke registry APIs |
 
 ---
