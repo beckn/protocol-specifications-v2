@@ -1,5 +1,0 @@
-{
-  "$comment": "This file defines HTML templates and rendering hints for client-side display of EV charging service data. It will specify how to render discovery listings, offer cards, and session status displays on the client side.",
-  "description": "Renderer configuration for EV Charging Service UI components - defines HTML templates and rendering hints for client-side display",
-  "version": "1.0.0"
-}
