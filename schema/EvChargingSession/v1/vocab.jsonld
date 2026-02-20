@@ -297,6 +297,15 @@
         },
         {
           "@id": "beckn:ConnectorTypeIEC60309"
+        },
+        {
+          "@id": "beckn:ConnectorTypeAnderson"
+        },
+        {
+          "@id": "beckn:ConnectorTypeType6"
+        },
+        {
+          "@id": "beckn:ConnectorTypeType1"
         }
       ]
     },
@@ -383,6 +392,33 @@
       "schema:name": "IEC 60309",
       "schema:identifier": "IEC_60309",
       "schema:alternateName": "IEC 60309"
+    },
+    {
+      "@id": "beckn:ConnectorTypeAnderson",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "Anderson",
+      "schema:identifier": "Anderson"
+    },
+    {
+      "@id": "beckn:ConnectorTypeType6",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "Type6",
+      "schema:identifier": "Type6"
+    },
+    {
+      "@id": "beckn:ConnectorTypeType1",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "Type1",
+      "schema:identifier": "Type1"
     },
     {
       "@id": "beckn:TelemetryMetric",
