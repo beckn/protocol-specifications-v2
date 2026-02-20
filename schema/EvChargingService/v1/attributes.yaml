@@ -41,7 +41,7 @@ components:
         # EV-specific technicals
         connectorType:
           type: string
-          enum: [CCS2, Type2, CHAdeMO, GB_T]
+          enum: [CCS2, Type2, CHAdeMO, GB_T, AC-001, DC-001, 15A, IEC_AC, IEC_60309]
           description: Physical connector type supported by this EVSE.
           example: CCS2
           x-jsonld: { "@id": connectorType }

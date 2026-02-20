@@ -201,7 +201,12 @@
         { "@id": "beckn:ConnectorTypeCCS2" },
         { "@id": "beckn:ConnectorTypeType2" },
         { "@id": "beckn:ConnectorTypeCHAdeMO" },
-        { "@id": "beckn:ConnectorTypeGBT" }
+        { "@id": "beckn:ConnectorTypeGBT" },
+        { "@id": "beckn:ConnectorTypeAC001" },
+        { "@id": "beckn:ConnectorTypeDC001" },
+        { "@id": "beckn:ConnectorType15A" },
+        { "@id": "beckn:ConnectorTypeIECAC" },
+        { "@id": "beckn:ConnectorTypeIEC60309" }
       ]
     },
     {
@@ -240,6 +245,53 @@
       "schema:name": "GB/T",
       "schema:identifier": "GB_T",
       "schema:alternateName": "GB-T"
+    },
+    {
+      "@id": "beckn:ConnectorTypeAC001",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "AC-001",
+      "schema:identifier": "AC-001"
+    },
+    {
+      "@id": "beckn:ConnectorTypeDC001",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "DC-001",
+      "schema:identifier": "DC-001"
+    },
+    {
+      "@id": "beckn:ConnectorType15A",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "15A",
+      "schema:identifier": "15A"
+    },
+    {
+      "@id": "beckn:ConnectorTypeIECAC",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "IEC AC",
+      "schema:identifier": "IEC_AC",
+      "schema:alternateName": "IEC AC"
+    },
+    {
+      "@id": "beckn:ConnectorTypeIEC60309",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "IEC 60309",
+      "schema:identifier": "IEC_60309",
+      "schema:alternateName": "IEC 60309"
     },
     {
       "@id": "beckn:PowerType",

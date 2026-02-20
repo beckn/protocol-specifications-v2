@@ -93,7 +93,10 @@
       "rdfs:label": "Metrics",
       "rdfs:comment": "Array of telemetry metrics using schema.org QuantitativeValue (name, value, unitCode).",
       "rdfs:domain": "beckn:ChargingSession",
-      "schema:rangeIncludes": ["schema:QuantitativeValue", "schema:ItemList"]
+      "schema:rangeIncludes": [
+        "schema:QuantitativeValue",
+        "schema:ItemList"
+      ]
     },
     {
       "@id": "beckn:totalCost",
@@ -141,7 +144,10 @@
       "rdfs:label": "Vehicle make",
       "rdfs:comment": "Vehicle make/brand recorded for the session.",
       "rdfs:domain": "beckn:ChargingSession",
-      "schema:rangeIncludes": ["schema:Brand", "schema:Text"]
+      "schema:rangeIncludes": [
+        "schema:Brand",
+        "schema:Text"
+      ]
     },
     {
       "@id": "beckn:vehicleModel",
@@ -159,17 +165,24 @@
       "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Thing"
     },
-
     {
       "@id": "beckn:SessionStatus",
       "@type": "schema:Enumeration",
       "schema:name": "Session Status",
       "rdfs:comment": "Enumeration of supported charging session lifecycle states.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:SessionStatusPending" },
-        { "@id": "beckn:SessionStatusActive" },
-        { "@id": "beckn:SessionStatusCompleted" },
-        { "@id": "beckn:SessionStatusInterrupted" }
+        {
+          "@id": "beckn:SessionStatusPending"
+        },
+        {
+          "@id": "beckn:SessionStatusActive"
+        },
+        {
+          "@id": "beckn:SessionStatusCompleted"
+        },
+        {
+          "@id": "beckn:SessionStatusInterrupted"
+        }
       ]
     },
     {
@@ -214,9 +227,15 @@
       "schema:name": "Connector Status",
       "rdfs:comment": "Enumeration of charging connector statuses (from OCPP status codes).",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorStatusAvailable" },
-        { "@id": "beckn:ConnectorStatusPreparing" },
-        { "@id": "beckn:ConnectorStatusUnavailable" }
+        {
+          "@id": "beckn:ConnectorStatusAvailable"
+        },
+        {
+          "@id": "beckn:ConnectorStatusPreparing"
+        },
+        {
+          "@id": "beckn:ConnectorStatusUnavailable"
+        }
       ]
     },
     {
@@ -252,10 +271,33 @@
       "schema:name": "Connector Type",
       "rdfs:comment": "Enumeration of electric vehicle connector interface types.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorTypeCCS2" },
-        { "@id": "beckn:ConnectorTypeType2" },
-        { "@id": "beckn:ConnectorTypeCHAdeMO" },
-        { "@id": "beckn:ConnectorTypeGBT" }
+        {
+          "@id": "beckn:ConnectorTypeCCS2"
+        },
+        {
+          "@id": "beckn:ConnectorTypeType2"
+        },
+        {
+          "@id": "beckn:ConnectorTypeCHAdeMO"
+        },
+        {
+          "@id": "beckn:ConnectorTypeGBT"
+        },
+        {
+          "@id": "beckn:ConnectorTypeAC001"
+        },
+        {
+          "@id": "beckn:ConnectorTypeDC001"
+        },
+        {
+          "@id": "beckn:ConnectorType15A"
+        },
+        {
+          "@id": "beckn:ConnectorTypeIECAC"
+        },
+        {
+          "@id": "beckn:ConnectorTypeIEC60309"
+        }
       ]
     },
     {
@@ -296,16 +338,73 @@
       "schema:alternateName": "GB-T"
     },
     {
+      "@id": "beckn:ConnectorTypeAC001",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "AC-001",
+      "schema:identifier": "AC-001"
+    },
+    {
+      "@id": "beckn:ConnectorTypeDC001",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "DC-001",
+      "schema:identifier": "DC-001"
+    },
+    {
+      "@id": "beckn:ConnectorType15A",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "15A",
+      "schema:identifier": "15A"
+    },
+    {
+      "@id": "beckn:ConnectorTypeIECAC",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "IEC AC",
+      "schema:identifier": "IEC_AC",
+      "schema:alternateName": "IEC AC"
+    },
+    {
+      "@id": "beckn:ConnectorTypeIEC60309",
+      "@type": [
+        "beckn:ConnectorType",
+        "schema:Enumeration"
+      ],
+      "schema:name": "IEC 60309",
+      "schema:identifier": "IEC_60309",
+      "schema:alternateName": "IEC 60309"
+    },
+    {
       "@id": "beckn:TelemetryMetric",
       "@type": "schema:Enumeration",
       "schema:name": "Telemetry Metric",
       "rdfs:comment": "Enumeration of telemetry metric names used in session telemetry.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:TelemetryMetricEnergy" },
-        { "@id": "beckn:TelemetryMetricPower" },
-        { "@id": "beckn:TelemetryMetricCurrent" },
-        { "@id": "beckn:TelemetryMetricVoltage" },
-        { "@id": "beckn:TelemetryMetricStateOfCharge" }
+        {
+          "@id": "beckn:TelemetryMetricEnergy"
+        },
+        {
+          "@id": "beckn:TelemetryMetricPower"
+        },
+        {
+          "@id": "beckn:TelemetryMetricCurrent"
+        },
+        {
+          "@id": "beckn:TelemetryMetricVoltage"
+        },
+        {
+          "@id": "beckn:TelemetryMetricStateOfCharge"
+        }
       ]
     },
     {
