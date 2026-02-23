@@ -54,7 +54,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+                  - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
                   - $ref: '#/components/schemas/DiscoverResponse'
               examples:
                 discover_electronics_catalog:
@@ -91,7 +91,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+                $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
               examples:
                 success_ack:
                   $ref: '#/components/examples/ack_success'
@@ -240,7 +240,7 @@ paths:
                     - order
                   properties:
                     order:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -274,7 +274,7 @@ paths:
                     - order
                   properties:
                     order:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -308,7 +308,7 @@ paths:
                     - order
                   properties:
                     order:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -342,7 +342,7 @@ paths:
                     - order
                   properties:
                     order:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -377,7 +377,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -412,7 +412,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                         - type: object
                           required:
                             - beckn:id
@@ -456,9 +456,9 @@ paths:
                             - beckn:id
                           properties:
                             beckn:id:
-                              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order/properties/beckn:id'
+                              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order/properties/beckn:id'
                         - allOf:
-                            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                             - type: object
                               required:
                                 - beckn:id
@@ -494,7 +494,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                         - type: object
                           required:
                             - beckn:id
@@ -536,7 +536,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                         - type: object
                           required:
                             - beckn:id
@@ -574,7 +574,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                         - type: object
                           required:
                             - beckn:id
@@ -618,7 +618,7 @@ paths:
                             - beckn:id
                           properties:
                             beckn:id:
-                              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order/properties/beckn:id'
+                              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order/properties/beckn:id'
                             beckn:orderItems:
                               type: array
                               minItems: 1
@@ -629,15 +629,15 @@ paths:
                                       - beckn:orderedItem
                                     properties:
                                       beckn:orderedItem:
-                                        $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Item/properties/beckn:id'
+                                        $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Item/properties/beckn:id'
                                       beckn:lineId:
                                         type: string
                                         description: Unique line id within order
                                       beckn:quantity:
-                                        $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Quantity'
-                                  - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
+                                        $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Quantity'
+                                  - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
                         - allOf:
-                            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                             - type: object
                               required:
                                 - beckn:id
@@ -675,7 +675,7 @@ paths:
                   properties:
                     order:
                       allOf:
-                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
                         - type: object
                           required:
                             - beckn:id
@@ -716,7 +716,7 @@ paths:
                       description: Entity type for which support is requested.
                       enum: [ORDER, FULFILLMENT, ITEM, PROVIDER, AGENT, OTHER]
                     support:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -747,7 +747,7 @@ paths:
                   required: [support]
                   properties:
                     support:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -825,7 +825,7 @@ paths:
                     - tracking
                   properties:
                     tracking:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/TrackAction'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/TrackAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -855,7 +855,7 @@ paths:
                   ratings:
                     type: array
                     items:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/RatingInput'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/RatingInput'
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -904,7 +904,7 @@ paths:
                           type: number
                           minimum: 0
                     feedbackForm:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Form'
+                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Form'
                       description: Optional feedback form for additional detailed feedback collection
       responses:
         '200':
@@ -941,7 +941,7 @@ paths:
                     bap_uri: "https://bpp.example.com/callbacks" # where /on_catalog_publish is exposed
                     ttl: "PT30S"
                   catalogs:
-                    - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/EvChargingOffer/v1/context.jsonld"
+                    - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/EvChargingOffer/v1/context.jsonld"
                       "@type": "beckn:Catalog"
                       "beckn:id": "catalog-001"
                       "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "BPP Test Catalog"}
@@ -1082,11 +1082,11 @@ components:
                 format: uri
               description: Optional JSON-LD context URLs indicating item types to search across
     GeoJSONGeometry:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/GeoJSONGeometry'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/GeoJSONGeometry'
     Address:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Address'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Address'
     Location:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Location'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Location'
     SpatialConstraint:
       type: object
       description: >
@@ -1291,33 +1291,33 @@ components:
 
       additionalProperties: false
     AckResponse:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
     Catalog:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Catalog'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Catalog'
     Item:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Item'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Item'
     Offer:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Offer'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Offer'
     Attributes:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Attributes'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Attributes'
     Provider:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Provider'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Provider'
     PriceSpecification:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/PriceSpecification'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/PriceSpecification'
     Eligibility:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Eligibility'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Eligibility'
     Descriptor:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Descriptor'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Descriptor'
     CategoryCode:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/CategoryCode'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/CategoryCode'
     TimePeriod:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/TimePeriod'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/TimePeriod'
     Rating:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Rating'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Rating'
     ErrorResponse:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/ErrorResponse'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/ErrorResponse'
     Error:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Error'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Error'
     TransactionContext:
       allOf:
         - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications/refs/heads/master/api/transaction/build/transaction.yaml#/components/schemas/Context'
@@ -1340,25 +1340,25 @@ components:
     # Core schemas (referenced from attributes.yaml)
     # --------------------------------
     Order:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Order'
     OrderItem:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/OrderItem'
     Invoice:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Invoice'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Invoice'
     Fulfillment:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Fulfillment'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Fulfillment'
     TrackAction:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/TrackAction'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/TrackAction'
     Payment:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Payment'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Payment'
     Buyer:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Buyer'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Buyer'
     SupportInfo:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/SupportInfo'
     Tracking:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Tracking'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Tracking'
     RatingInput:
-      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/RatingInput'
+      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/RatingInput'
     # ---------- Envelopes ----------
     CatalogPublishRequest:
       type: object
@@ -1380,7 +1380,7 @@ components:
               type: array
               description: Array of catalogs containing items
               items:
-                $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Catalog'
+                $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Catalog'
               minItems: 1
       description: |
         Catalog Publish request envelope.
@@ -1427,7 +1427,7 @@ components:
           items:
             $ref: '#/components/schemas/ProcessingNotice'
         error:
-          $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/Error'
+          $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/Error'
     ProcessingNotice:
       type: object
       required: [code, message]
@@ -1549,11 +1549,11 @@ components:
           ttl: "PT30S"
         message:
           catalogs:
-            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld"
+            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld"
               "@type": "beckn:Catalog"
               "beckn:id": "catalog-electronics-001"
               "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Tech Electronics Store"}
-              "beckn:items": [{"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "laptop-item-002", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Gaming Laptop Pro 15”", "beckn:shortDesc": "Intel i7, 16GB RAM, 512GB SSD, RTX 4060"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "electronics", "schema:name": "Electronics"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.7, "beckn:ratingCount": 932}, "beckn:networkId": ["bap.net/electronics"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld", "@type": "beckn:ElectronicItem", "electronic:brand": "Premium Tech", "electronic:model": "G15-Pro-2025", "electronic:processor": "Intel Core i7-13700H", "electronic:ram": "16GB DDR5", "electronic:storage": "512GB NVMe SSD", "electronic:graphics": "NVIDIA GeForce RTX 4060", "electronic:display": "15.6\" 240Hz QHD", "electronic:warranty": "24 months"}, "beckn:provider": {"beckn:id": "tech-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Tech Electronics Store"}}}, {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "headphones-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Aurora X200 Noise-Cancelling Headphones", "beckn:shortDesc": "Over-ear ANC, 40h battery, BT 5.3, multipoint"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "electronics", "schema:name": "Electronics"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.5, "beckn:ratingCount": 1543}, "beckn:networkId": ["bap.net/electronics"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld", "@type": "beckn:ElectronicItem", "electronic:brand": "Aurora", "electronic:model": "X200", "electronic:wirelessTech": "Bluetooth 5.3", "electronic:features": ["ANC", "Transparency Mode", "Multipoint"], "electronic:batteryLifeHours": 40, "electronic:chargingPort": "USB-C", "electronic:warranty": "12 months"}, "beckn:provider": {"beckn:id": "tech-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Tech Electronics Store"}}}]
+              "beckn:items": [{"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "laptop-item-002", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Gaming Laptop Pro 15”", "beckn:shortDesc": "Intel i7, 16GB RAM, 512GB SSD, RTX 4060"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "electronics", "schema:name": "Electronics"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.7, "beckn:ratingCount": 932}, "beckn:networkId": ["bap.net/electronics"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld", "@type": "beckn:ElectronicItem", "electronic:brand": "Premium Tech", "electronic:model": "G15-Pro-2025", "electronic:processor": "Intel Core i7-13700H", "electronic:ram": "16GB DDR5", "electronic:storage": "512GB NVMe SSD", "electronic:graphics": "NVIDIA GeForce RTX 4060", "electronic:display": "15.6\" 240Hz QHD", "electronic:warranty": "24 months"}, "beckn:provider": {"beckn:id": "tech-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Tech Electronics Store"}}}, {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "headphones-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Aurora X200 Noise-Cancelling Headphones", "beckn:shortDesc": "Over-ear ANC, 40h battery, BT 5.3, multipoint"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "electronics", "schema:name": "Electronics"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.5, "beckn:ratingCount": 1543}, "beckn:networkId": ["bap.net/electronics"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/ElectronicItem/schema-context.jsonld", "@type": "beckn:ElectronicItem", "electronic:brand": "Aurora", "electronic:model": "X200", "electronic:wirelessTech": "Bluetooth 5.3", "electronic:features": ["ANC", "Transparency Mode", "Multipoint"], "electronic:batteryLifeHours": 40, "electronic:chargingPort": "USB-C", "electronic:warranty": "12 months"}, "beckn:provider": {"beckn:id": "tech-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Premium Tech Electronics Store"}}}]
     on_discover_grocery_catalog:
       summary: Grocery catalog callback
       value:
@@ -1568,11 +1568,11 @@ components:
           ttl: "PT30S"
         message:
           catalogs:
-            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld"
+            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld"
               "@type": "beckn:Catalog"
               "beckn:id": "catalog-grocery-001"
               "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Fresh Grocery Store"}
-              "beckn:items": [{"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "apples-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Organic Fuji Apples (1 kg)", "beckn:shortDesc": "Crisp, sweet USDA Organic apples — farm fresh"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "grocery", "schema:name": "Grocery"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.6, "beckn:ratingCount": 387}, "beckn:networkId": ["bap.net/grocery"], "beckn:itemAttributes": {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld", "@type": "beckn:GroceryItem", "grocery:brand": "Fresh Fields", "grocery:organicCertification": "USDA Organic", "grocery:variety": "Fuji", "grocery:unitSize": "1 kg", "grocery:origin": "Himachal Pradesh, IN", "grocery:shelfLifeDays": 10}, "beckn:provider": {"beckn:id": "grocery-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Fresh Grocery Store"}}}, {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "bread-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Whole Wheat Bread (500 g)", "beckn:shortDesc": "High-fiber artisan loaf, no added sugar"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "grocery", "schema:name": "Grocery"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.3, "beckn:ratingCount": 812}, "beckn:networkId": ["bap.net/grocery"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/GroceryItem/schema-context.jsonld", "@type": "beckn:GroceryItem", "grocery:brand": "BakeHouse", "grocery:unitSize": "500 g", "grocery:ingredients": ["Whole wheat flour", "Yeast", "Salt", "Olive oil"], "grocery:allergens": ["Gluten"], "grocery:shelfLifeDays": 5}, "beckn:provider": {"beckn:id": "grocery-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Fresh Grocery Store"}}}]
+              "beckn:items": [{"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "apples-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Organic Fuji Apples (1 kg)", "beckn:shortDesc": "Crisp, sweet USDA Organic apples — farm fresh"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "grocery", "schema:name": "Grocery"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.6, "beckn:ratingCount": 387}, "beckn:networkId": ["bap.net/grocery"], "beckn:itemAttributes": {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld", "@type": "beckn:GroceryItem", "grocery:brand": "Fresh Fields", "grocery:organicCertification": "USDA Organic", "grocery:variety": "Fuji", "grocery:unitSize": "1 kg", "grocery:origin": "Himachal Pradesh, IN", "grocery:shelfLifeDays": 10}, "beckn:provider": {"beckn:id": "grocery-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Fresh Grocery Store"}}}, {"@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld", "@type": "beckn:Item", "beckn:id": "bread-item-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Whole Wheat Bread (500 g)", "beckn:shortDesc": "High-fiber artisan loaf, no added sugar"}, "beckn:category": {"@type": "schema:CategoryCode", "schema:codeValue": "grocery", "schema:name": "Grocery"}, "beckn:rateable": true, "beckn:rating": {"@type": "beckn:Rating", "beckn:ratingValue": 4.3, "beckn:ratingCount": 812}, "beckn:networkId": ["bap.net/grocery"], "beckn:itemAttributes": {"@context": "https://example.org/schema/items/v1/GroceryItem/schema-context.jsonld", "@type": "beckn:GroceryItem", "grocery:brand": "BakeHouse", "grocery:unitSize": "500 g", "grocery:ingredients": ["Whole wheat flour", "Yeast", "Salt", "Olive oil"], "grocery:allergens": ["Gluten"], "grocery:shelfLifeDays": 5}, "beckn:provider": {"beckn:id": "grocery-store-001", "beckn:descriptor": {"@type": "beckn:Descriptor", "schema:name": "Fresh Grocery Store"}}}]
     # ---------- ACK / NACK examples ----------
     ack_success:
       summary: ACK
@@ -1615,7 +1615,7 @@ components:
             version: "2.0.0"
             action: "on_discover"
           catalogs:
-            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld"
+            - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld"
               "@type": "beckn:Catalog"
               "beckn:id": "catalog-electronics-001"
               "beckn:descriptor":
@@ -1627,7 +1627,7 @@ components:
                 "schema:startDate": "2025-01-27T09:00:00Z"
                 "schema:endDate": "2026-12-31T23:59:59Z"
               "beckn:items":
-                - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/context.jsonld"
+                - "@context": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/context.jsonld"
                   "@type": "beckn:Item"
                   "beckn:id": "laptop-item-001"
                   "beckn:descriptor":
@@ -1664,7 +1664,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
           examples:
             success_ack:
               $ref: '#/components/examples/ack_success'
@@ -1673,7 +1673,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
           examples:
             bad_request:
               $ref: '#/components/examples/ack_bad_request'
@@ -1682,7 +1682,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
+            $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/AckResponse'
           examples:
             server_error:
               $ref: '#/components/examples/ack_server_error'
