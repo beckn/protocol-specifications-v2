@@ -1,7 +1,7 @@
 {
   "@context": {
     "@version": 1.1,
-    "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/EvChargingOffer/v1/#",
+    "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/core-2.0.0-eos/schema/EvChargingOffer/v1/#",
     "schema": "https://schema.org/",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
