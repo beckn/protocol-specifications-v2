@@ -4,13 +4,17 @@ This repository contains the reference specification for Beckn Protocol Version 
 
 This repository is intentionally kept **minimal and stable by design** — analogous to how HTTP defines a small, stable message envelope that underpins a vast ecosystem. Domain-agnostic transaction schemas and detailed type definitions are maintained in the [core_schema](https://github.com/beckn/core_schema) repository. Domain-specific schema packs are maintained in separate repositories per vertical.
 
+> [!IMPORTANT]
+> **v2.0.0-rc1 has reached End of Support.** The frozen snapshot of the specification as it existed during the RC1 phase is preserved on the [`core-2.0.0-eos`](https://github.com/beckn/protocol-specifications-v2/tree/core-2.0.0-eos) branch. Implementors who wish to continue working with or referencing the RC1 version can check out that branch. No further updates will be made to it.
+
 ---
 
 ## Version History
 
 | Version | Status | Key Changes |
 |---------|--------|-------------|
-| **v2.0.1** | **LTS (Long Term Support)** | Universal `/beckn/{action}` endpoint (GET + POST), GET Query Mode for QR/deep-link interactions, all schemas externalized to `schema.beckn.io` / [`core_schema`](https://github.com/beckn/core_schema), consolidated `schema/v2.0.1/` |
+| **v2.0.1** | **LTS (Long Term Support)** | Universal `/beckn/{becknEndpoint}` endpoint (GET + POST), GET Body Mode and Query Mode, transport schemas inlined in `beckn.yaml`, non-repudiation types added (`CounterSignature`, `InReplyTo`, `LineageEntry`) |
+| v2.0.0-rc1 | **End of Support (EoS)** | Frozen on [`core-2.0.0-eos`](https://github.com/beckn/protocol-specifications-v2/tree/core-2.0.0-eos) branch — no further updates |
 | v2.0.0 | Superseded | Initial v2 architecture — JSON-LD alignment, CDS/CPS and DeDi protocol based Registry architecture introduced |
 | v1.x | End of Support | Original Beckn protocol — OpenAPI/JSON Schema based, Beckn Gateway for discovery, bespoke registry APIs |
 
@@ -25,20 +29,39 @@ protocol-specifications-v2/
 │   ├── v2/
 │   │   └── beckn.yaml          # OpenAPI 3.1.1 — Beckn Protocol API envelope v2.0.0
 │   └── v2.0.1/
-│       ├── beckn.yaml          # OpenAPI 3.1.1 — Beckn Protocol API envelope v2.0.1
-│       └── README.md
-├── schema/
-│   ├── README.md
-│   └── v2.0.1/
-│       ├── vocab.jsonld        # Beckn core OWL vocabulary
-│       ├── context.jsonld      # Beckn core JSON-LD context
+│       ├── beckn.yaml          # OpenAPI 3.1.1 — Beckn Protocol API envelope v2.0.1 (LTS)
 │       └── README.md
 ├── GOVERNANCE.md
 ├── LICENSE
 └── README.md
 ```
 
-> Detailed schema type definitions (`RequestAction`, `CallbackAction`, `Ack`, `Nack`, etc.) are published in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository and referenced via `$ref` in the OpenAPI spec.
+> Transport-level schemas (`Context`, `RequestContainer`, `CallbackContainer`, `Signature`, `Ack`, `Nack`, etc.) are defined inline in `api/v2.0.1/beckn.yaml`. Domain-level schemas (`RequestAction`, `CallbackAction`, `Catalog`, `Item`, `Offer`, etc.) are published in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository. There is **no `schema/` directory** in this repository by design.
+
+---
+
+## Design Principles
+
+### No Schema Folder — By Design
+
+This repository deliberately contains **no `schema/` directory**. All transaction-level schemas — `Catalog`, `Contract`, `Intent`, `Fulfillment`, `Item`, `Provider`, and all action types (`DiscoverAction`, `ConfirmAction`, etc.) — are defined exclusively in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository and referenced via external `$ref` URIs at runtime. This repository owns the **transport contract only**. If a `schema/` folder appears anywhere in this repository, it is an error and should be removed.
+
+### All API Fields Are Mandatory and Non-Negotiable
+
+Every field defined within `beckn.yaml` is a mandatory part of the **protocol transport contract**. Fields such as `context`, `message`, `inReplyTo`, `status`, and `signature` MUST be present exactly as specified. Implementations MUST NOT redefine, alias, or override these fields using linked data mechanisms (e.g. rewiring field names or types via a JSON-LD `@context`). The container schema is fixed at the protocol level and is not subject to semantic extension or substitution. Linked data annotations — OWL definitions, JSON-LD `@context`, and vocabulary bindings — belong exclusively inside the `Message` payload as defined in `core_schema`.
+
+### Container Schemas vs. Payload Schemas
+
+The schemas in `beckn.yaml` are **container schemas**. They define the transport envelope, authentication contract, and message framing — nothing more. They carry no domain semantics. The `Message` object is intentionally an open container (`additionalProperties: true`) precisely because its contents — the actual transaction payload — are defined and governed by `core_schema`, not this repository. The separation is deliberate:
+
+| Layer | Lives in | Purpose |
+|-------|----------|---------|
+| Transport envelope | This repo (`beckn.yaml`) | Mandatory, stable, version-locked |
+| Transaction payload | `core_schema` | Domain-specific, evolvable, externally referenced |
+
+### Transaction Schemas Are Kept External to Allow Independent Evolution
+
+Domain-level schemas such as `Catalog`, `Contract`, `Fulfillment`, and all action schemas are expected to evolve continuously as new interaction domains emerge and existing ones mature. Keeping them in a separate repository (`core_schema`) means the **API envelope can maintain long-term stability** while the ecosystem schema layer evolves freely — new fields can be added to `Catalog`, new action types can be defined, and entirely new domains can be onboarded without requiring a version bump to this API spec.
 
 ---
 
@@ -82,8 +105,8 @@ The v2 schema is distributed across three tiers:
 
 | Tier | Repository | Contents |
 |------|-----------|----------|
-| **Protocol envelope** | This repo (`schema/v2.0.1/`) | Extremely minimal container schemas — core OWL vocabulary and JSON-LD context for the protocol envelope types only. Intentionally kept minimal for long-term stability. |
-| **Core transaction schema** | [`beckn/core_schema`](https://github.com/beckn/core_schema) | Domain-agnostic transaction schemas (`RequestAction`, `CallbackAction`, `Ack`, `Nack`, `Action`, `Signature`, `NetworkParticipant`, etc.) with full type definitions and JSON-LD annotations. |
+| **Protocol envelope** | This repo (`api/v2.0.1/beckn.yaml`) | Transport container schemas defined inline — `Context`, `RequestContainer`, `CallbackContainer`, `Signature`, `CounterSignature`, `Ack`, `Nack`, `InReplyTo`, `LineageEntry`, etc. Intentionally minimal for long-term stability. No `schema/` directory. |
+| **Core transaction schema** | [`beckn/core_schema`](https://github.com/beckn/core_schema) | Domain-agnostic transaction schemas (`RequestAction`, `CallbackAction`, `Action`, `Catalog`, `Item`, `Offer`, `NetworkParticipant`, etc.) with full type definitions and JSON-LD annotations. |
 | **Domain schema packs** | Per-vertical repositories | Use-case specific attribute packs with their own `@context`, `@type` definitions, examples, and validations. |
 
 This tiered design means:
@@ -104,38 +127,66 @@ This tiered design means:
 
 ## 3. API changes
 
-### 3.1 v2.0.1: Universal `/beckn/{action}` endpoint
+### 3.1 v2.0.1: Universal `/beckn/{becknEndpoint}` endpoint
 
 v2.0.1 introduces a single universal endpoint that handles all Beckn protocol actions across all interaction domains:
 
 ```
-GET  /beckn/{action}   — Body Mode or Query Mode
-POST /beckn/{action}   — Request or Callback actions
+GET  /beckn/{becknEndpoint}   — Body Mode or Query Mode
+POST /beckn/{becknEndpoint}   — RequestContainer or CallbackContainer
 ```
+
+The `{becknEndpoint}` path parameter follows the pattern `beckn/<action>` (e.g. `beckn/search`, `beckn/confirm`). Any Beckn Network Participant — BAP, BPP, CDS, CPS, or Registry — may implement this endpoint, selectively supporting the subset of actions relevant to their role.
 
 #### GET — Body Mode
-The action payload is sent as a JSON request body; the Beckn Signature is transmitted in the `Authorization` header. Used for server-to-server interactions where the caller has a registered callback endpoint.
 
-#### GET — Query Mode *(new in v2.0.1)*
-The action payload and signature are both expressed as URL query parameters:
+The action payload is sent as a JSON request body (`RequestContainer`); the Beckn Signature is transmitted in the `Authorization` header. Used for server-to-server interactions where the caller has a registered callback endpoint and expects an asynchronous callback in return.
+
 ```
-GET /beckn/{action}?Authorization={Signature}&RequestAction={RequestActionQuery}
+GET /beckn/{becknEndpoint}
+Authorization: Signature keyId="...",...
+Content-Type: application/json
+
+{ "context": {...}, "message": {...} }
 ```
-This makes the entire request a self-contained URL suitable for **QR codes**, **deep links**, **bookmarkable pages**, **frontend UIs**, and **IoT/embedded clients**. In Query Mode, the caller MUST NOT expect an asynchronous callback; the server acknowledges with `Ack` (HTTP 200) only.
+
+#### GET — Query Mode
+
+The action payload and signature are both expressed as URL query parameters, making the entire request a **self-contained URL**:
+
+```
+GET /beckn/{becknEndpoint}?Authorization={Signature}&RequestAction={RequestActionQuery}
+```
+
+Suitable for **QR codes**, **deep links**, **bookmarkable pages**, **frontend UIs**, **IoT/embedded clients**, and any context where the caller cannot send an HTTP request body. In Query Mode, the caller MUST NOT expect an asynchronous callback; the server acknowledges receipt with `Ack` (HTTP 200) only.
+
+> **Body Mode and Query Mode are mutually exclusive.** If `Authorization` and `RequestAction` are present as query parameters, the request body MUST be absent and the `Authorization` header MUST be absent. If the request body is present, both query parameters MUST be absent.
 
 #### POST
-Handles both forward actions (`RequestAction`) and callback actions (`CallbackAction`). The `action` path parameter determines which variant applies.
+
+Handles both forward requests (`RequestContainer`) and asynchronous callbacks (`CallbackContainer`). The `{becknEndpoint}` path parameter determines the action. The `CallbackContainer` includes an `inReplyTo` field that cryptographically binds the callback to the originating request (see `CounterSignature` and `InReplyTo` schemas).
+
+#### Authentication
+
+All requests (except GET Query Mode) MUST carry a Beckn Signature in the `Authorization` header:
+
+```
+Authorization: Signature keyId="{subscriberId}|{keyId}|{algorithm}",algorithm="{algorithm}",created="{unixTs}",expires="{unixTs}",headers="(created) (expires) digest",signature="{base64Sig}"
+```
+
+Receivers validate the signature against the sender's public key resolved from the [DeDi](https://dedi.global)-compliant Registry using the `keyId` field.
 
 #### Response semantics
-| Code | Meaning |
-|------|---------|
-| `200 Ack` | Receipt confirmed; signature valid; async callback will follow |
-| `409 AckNoCallback` | Received but no callback due to a business constraint |
-| `400 NackBadRequest` | Malformed or invalid request |
-| `401 NackUnauthorized` | Invalid or missing authentication |
-| `500 ServerError` | Internal error on the network participant's platform |
 
-Full schema definitions for all request/response types are in [`beckn/core_schema`](https://github.com/beckn/core_schema), referenced via `$ref` in `api/v2.0.1/beckn.yaml`.
+| Code | Schema | Meaning |
+|------|--------|---------|
+| `200` | `Ack` | Receipt confirmed; signature valid; async callback will follow |
+| `409` | `AckNoCallback` | Received but no callback due to a business constraint |
+| `400` | `NackBadRequest` | Malformed or invalid request |
+| `401` | `NackUnauthorized` | Invalid or missing authentication |
+| `500` | `ServerError` | Internal error on the network participant's platform |
+
+All transport schema types (`Context`, `RequestContainer`, `CallbackContainer`, `Signature`, `CounterSignature`, `InReplyTo`, `LineageEntry`, `Ack`, `Nack`, etc.) are defined inline in `api/v2.0.1/beckn.yaml`. Domain payload schemas (`RequestAction`, `CallbackAction`, `Catalog`, etc.) are in [`beckn/core_schema`](https://github.com/beckn/core_schema).
 
 ### 3.2 Discovery: BG multicast → CPS + CDS
 
@@ -280,12 +331,12 @@ Define, per network:
 ## 8. How to use this repository
 
 Use this repo as the reference baseline for:
-- **Understanding the Beckn v2 protocol envelope** — see `api/v2.0.1/beckn.yaml` for the universal API endpoint and `schema/v2.0.1/` for the core vocabulary and JSON-LD context.
+- **Understanding the Beckn v2 protocol envelope** — see `api/v2.0.1/beckn.yaml` for the universal API endpoint definition, transport schemas, and authentication contract.
 - **Implementing Beckn v2.0.1-compatible network participants** (BAP, BPP, CPS, CDS, Registry).
 - **Designing Beckn v2-compatible CPS and CDS implementations**.
 - **Prototyping [DeDi](https://dedi.global)-backed Beckn registries**.
 
-For detailed schema types, refer to [beckn/core_schema](https://github.com/beckn/core_schema).
+For domain-level schema types (`RequestAction`, `CallbackAction`, `Catalog`, `Item`, etc.), refer to [beckn/core_schema](https://github.com/beckn/core_schema).
 For domain-specific schema packs, refer to the relevant vertical repositories.
 
 ### When contributing:
@@ -304,8 +355,6 @@ For domain-specific schema packs, refer to the relevant vertical repositories.
 | Beckn schema registry | https://schema.beckn.io |
 | DeDi protocol | https://dedi.global |
 | Beckn website | https://beckn.io |
-
-> To observe the latest developments on this specification, check out the `core-2.0.0-rc2-alt` branch of this repo.
 
 ---
 

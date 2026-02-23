@@ -9,108 +9,55 @@
 
 ## Overview
 
-`beckn.yaml` defines the **universal API envelope** for Beckn Protocol v2. It specifies a single endpoint — `/beckn/{action}` — that handles all Beckn protocol actions across all interaction domains (Discovery, Ordering, Fulfillment, Post-Fulfillment, and future domains).
+`beckn.yaml` defines the **universal API transport envelope** for Beckn Protocol v2.0.1. It specifies a single endpoint — `/beckn/{becknEndpoint}` — that handles all Beckn protocol actions across all interaction domains.
 
-This spec is intentionally **minimal by design**. It defines the message transport envelope and authentication contract only. The semantics of specific actions (`search`, `select`, `init`, `confirm`, etc.) and the schemas for their payloads are defined in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository, which is referenced via `$ref` throughout this file.
+This spec is intentionally **minimal by design**. It defines the message transport envelope and authentication contract only. The semantics of specific actions (`search`, `select`, `init`, `confirm`, etc.) and the schemas for their payloads are defined in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository.
 
----
-
-## Endpoint
-
-```
-GET  /beckn/{action}
-POST /beckn/{action}
-```
-
-The `{action}` path parameter identifies the specific Beckn protocol operation being performed. Any Beckn Network Participant — BAP, BPP, Catalog Discovery Service (CDS), Catalog Publishing Service (CPS), or Registry — may implement this endpoint, selectively supporting the subset of actions relevant to their role.
+Full documentation — including Design Principles, API modes, authentication, response semantics, and architecture — is in the [**root README**](../../README.md).
 
 ---
 
-## Modes
+## Quick Reference
 
-### POST — Standard server-to-server mode
-
-Handles both forward actions and callbacks:
-
-- **`RequestAction`** — originated by a BAP directed at a BPP, CDS, or CPS.
-- **`CallbackAction`** — originated by a BPP or CPS directed back at a BAP.
-
-All POST requests MUST be authenticated using a Beckn Signature transmitted in the `Authorization` header. The receiver validates the signature against the sender's public key resolved from the Beckn Registry (DeDi-compliant).
-
-### GET — Body Mode
-
-The action payload is sent as a JSON request body; the signature is transmitted in the `Authorization` header. Used for server-to-server interactions where the caller has a registered callback endpoint, similar to POST.
-
-### GET — Query Mode
-
-The action payload and signature are both expressed as URL query parameters:
-
-```
-GET /beckn/{action}?Authorization={Signature}&RequestAction={RequestActionQuery}
-```
-
-Query Mode makes the entire request a **self-contained URL** — suitable for:
-- QR codes
-- Deep links
-- Bookmarkable pages
-- Frontend UIs and single-page applications
-- IoT and embedded clients
-- Browser-triggered interactions
-
-> **Important**: In Query Mode, the caller MUST NOT expect an asynchronous callback. The server acknowledges receipt with `Ack` (HTTP 200) but will not send a callback to the caller. Query Mode is designed for stateless, one-way interactions where the originating client has no registered callback endpoint.
-
-The two modes (Body Mode and Query Mode) are mutually exclusive. If `Authorization` and `RequestAction` are present as query parameters, the request body MUST be absent and the `Authorization` header MUST be absent.
+| Topic | Section in root README |
+|-------|----------------------|
+| Design Principles (No Schema Folder, Mandatory Fields, Container vs Payload) | [Design Principles](../../README.md#design-principles) |
+| Endpoint, GET Body Mode, GET Query Mode, POST | [Section 3.1](../../README.md#31-v201-universal-beckn-becknendpoint-endpoint) |
+| Authentication (Signature format) | [Section 3.1 — Authentication](../../README.md#authentication) |
+| Response semantics (Ack, Nack, AckNoCallback) | [Section 3.1 — Response semantics](../../README.md#response-semantics) |
+| Schema distribution model | [Section 2.2](../../README.md#22-schema-distribution-model) |
+| Version history & EoS announcement | [Version History](../../README.md#version-history) |
 
 ---
 
-## Response Semantics
+## Transport Schemas (inline in `beckn.yaml`)
 
-| HTTP Code | Schema | Meaning |
-|-----------|--------|---------|
-| `200` | `Ack` | Receipt confirmed; signature valid; asynchronous callback will follow |
-| `409` | `AckNoCallback` | Received but no callback will follow (e.g. agents not found, inventory unavailable) |
-| `400` | `NackBadRequest` | Malformed or invalid request |
-| `401` | `NackUnauthorized` | Invalid or missing authentication credentials |
-| `500` | `ServerError` | Internal failure on the network participant's platform |
+All transport-level schemas are defined directly in `beckn.yaml` — no external `$ref` to `schema.beckn.io`:
 
----
-
-## Schema References
-
-All schema types used in this spec are externalized and resolved at runtime:
-
-| Schema | Source |
-|--------|--------|
-| `Action` | `https://schema.beckn.io/Action/ref` |
-| `Signature` | `https://schema.beckn.io/Signature/ref` |
-| `RequestAction` | `https://schema.beckn.io/RequestAction/ref` |
-| `RequestActionQuery` | `https://schema.beckn.io/RequestActionQuery/ref` |
-| `CallbackAction` | `https://schema.beckn.io/CallbackAction/ref` |
-| `Ack` | `https://schema.beckn.io/Ack/ref` |
-| `AckNoCallback` | `https://schema.beckn.io/AckNoCallback/ref` |
-| `NackBadRequest` | `https://schema.beckn.io/NackBadRequest/ref` |
-| `NackUnauthorized` | `https://schema.beckn.io/NackUnauthorized/ref` |
-| `ServerError` | `https://schema.beckn.io/ServerError/ref` |
-
-Full OWL definitions, JSON-LD annotations, and examples for these types are maintained in the [**beckn/core_schema**](https://github.com/beckn/core_schema) repository.
-
----
-
-## Authentication
-
-All requests (except GET Query Mode) MUST carry a Beckn Signature in the `Authorization` header:
-
-```
-Authorization: Signature keyId="{subscriber_id}|{key_id}|{algorithm}",algorithm="{algorithm}",created="{created}",expires="{expires}",headers="(created) (expires) digest",signature="{base64_signature}"
-```
-
-The receiver resolves the sender's public key from the Beckn Registry ([DeDi](https://dedi.global)-compliant) using the `keyId` field and validates the signature before processing the request.
+| Schema | Purpose |
+|--------|---------|
+| `BecknEndpoint` | Path parameter type — pattern-validated endpoint identifier |
+| `Context` | Mandatory transaction context (BAP/BPP IDs, messageId, transactionId, timestamp, etc.) |
+| `RequestContainer` | Envelope for forward actions (BAP → BPP/CDS/CPS) |
+| `CallbackContainer` | Envelope for async callbacks (BPP → BAP), includes `inReplyTo` |
+| `Message` | Open container for the domain payload (`additionalProperties: true`) |
+| `Signature` | HTTP Signature credential (`Authorization` header format, Ed25519) |
+| `CounterSignature` | Signed receipt in `Ack` response body — proves receipt (Issue #69) |
+| `InReplyTo` | Cryptographic request–response binding in callbacks (Issue #69) |
+| `LineageEntry` | Cross-transaction causal attribution record (Issue #69) |
+| `Ack` | `200` — receipt confirmed, async callback will follow |
+| `AckNoCallback` | `409` — received but no callback will follow |
+| `NackBadRequest` | `400` — malformed or invalid request |
+| `NackUnauthorized` | `401` — invalid or missing authentication |
+| `ServerError` | `500` — internal error on the participant's platform |
+| `Error` | Base error container |
+| `AsyncError` | Error returned inside a `CallbackContainer` |
 
 ---
 
 ## Related
 
-- [Beckn Protocol v2 — Main README](../../README.md)
+- [Beckn Protocol v2 — Full Documentation](../../README.md)
 - [Beckn core schema](https://github.com/beckn/core_schema)
 - [Beckn schema registry](https://schema.beckn.io)
 - [DeDi protocol](https://dedi.global)
