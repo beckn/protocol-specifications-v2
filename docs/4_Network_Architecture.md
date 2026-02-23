@@ -168,7 +168,7 @@ Before sending a request, a participant resolves the recipient's endpoint and pu
 
 ## 7. Further Reading
 
-- [3_Communication_Protocol.md](./3_Communication_Protocol.md) — how messages flow between actors
-- [5_Discovery_Architecture.md](./5_Discovery_Architecture.md) — CPS and CDS in depth
-- [6_Registry_and_Identity.md](./6_Registry_and_Identity.md) — DeDi registry in depth
-- [RFC-002: Core API Envelope](./12_Core_API_Envelope.md)
+- [7_Communication_Protocol.md](./7_Communication_Protocol.md) — how messages flow between actors
+- [14_Discovery_Architecture.md](./14_Discovery_Architecture.md) — CPS and CDS in depth
+- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md) — DeDi registry in depth
+- [RFC-002: Core API Envelope](./8_Core_API_Envelope.md)

@@ -193,8 +193,8 @@ Networks MAY be stricter than the core and domain specifications. Networks MUST 
 
 ## 9. References
 
-- [2_Network_Architecture.md](./2_Network_Architecture.md)
-- [7_Schema_Distribution_Model.md](./7_Schema_Distribution_Model.md)
+- [4_Network_Architecture.md](./4_Network_Architecture.md)
+- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
 - [GOVERNANCE.md](../GOVERNANCE.md) — Section 11: Core–Domain–Network interaction rules
 
 ---

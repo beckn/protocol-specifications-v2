@@ -199,7 +199,7 @@ LineageEntry:
 ## 6. References
 
 - `api/v2.0.1/beckn.yaml` — authoritative schema definitions
-- [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md)
+- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
 - GitHub Issue #69
 
 ---

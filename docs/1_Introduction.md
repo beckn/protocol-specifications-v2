@@ -63,7 +63,7 @@ v2 is a **new protocol line**, not an in-place upgrade. v1.x networks continue t
 3. Convert v1 catalog models to v2 `Item` + `Offer` JSON-LD graphs.
 4. Deprecate v1 infrastructure once v2 equivalents are stable.
 
-See [8_Versioning_and_Compatibility.md](./8_Versioning_and_Compatibility.md) for the full migration guide.
+See [5_Versioning_and_Compatibility.md](./5_Versioning_and_Compatibility.md) for the full migration guide.
 
 ---
 
@@ -99,13 +99,13 @@ The base protocol specification (this repository) is intended to change extremel
 
 | Goal | Start Here |
 |---|---|
-| Understand the overall system | [2_Network_Architecture.md](./2_Network_Architecture.md) |
-| Implement the API endpoint | [3_Communication_Protocol.md](./3_Communication_Protocol.md) |
-| Implement request signing | [4_Authentication_and_Security.md](./4_Authentication_and_Security.md) and [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md) |
-| Build a CPS or CDS | [5_Discovery_Architecture.md](./5_Discovery_Architecture.md) |
-| Build a DeDi-compliant registry | [6_Registry_and_Identity.md](./6_Registry_and_Identity.md) |
-| Design a domain schema pack | [7_Schema_Distribution_Model.md](./7_Schema_Distribution_Model.md) and [23_Schema_Pack_Contract.md](./23_Schema_Pack_Contract.md) |
-| Understand conformance | [9_Conformance_and_Testing.md](./9_Conformance_and_Testing.md) |
+| Understand the overall system | [4_Network_Architecture.md](./4_Network_Architecture.md) |
+| Implement the API endpoint | [7_Communication_Protocol.md](./7_Communication_Protocol.md) |
+| Implement request signing | [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) and [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md) |
+| Build a CPS or CDS | [14_Discovery_Architecture.md](./14_Discovery_Architecture.md) |
+| Build a DeDi-compliant registry | [12_Registry_and_Identity.md](./12_Registry_and_Identity.md) |
+| Design a domain schema pack | [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md) and [21_Schema_Pack_Contract.md](./21_Schema_Pack_Contract.md) |
+| Understand conformance | [24_Conformance_and_Testing.md](./24_Conformance_and_Testing.md) |
 
 ---
 

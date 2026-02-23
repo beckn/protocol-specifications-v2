@@ -34,7 +34,7 @@ All API calls are asynchronous. The immediate response in a session is an `Ack` 
 
 ### 2.3 Digitally Signed
 
-Every message is digitally signed by the sender. See [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md).
+Every message is digitally signed by the sender. See [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md).
 
 ---
 
@@ -146,9 +146,9 @@ The callback action name is always the request action name prefixed with `on_`:
 
 ## 7. References
 
-- [3_Communication_Protocol.md](./3_Communication_Protocol.md)
-- [5_Discovery_Architecture.md](./5_Discovery_Architecture.md)
-- [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md)
+- [7_Communication_Protocol.md](./7_Communication_Protocol.md)
+- [14_Discovery_Architecture.md](./14_Discovery_Architecture.md)
+- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
 
 ---
 

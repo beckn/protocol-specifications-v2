@@ -166,6 +166,6 @@ A BPP chooses which CPS instance(s) to publish to. Network policy governs which 
 
 ## 7. Further Reading
 
-- [16_Catalog_Publishing_Service.md](./16_Catalog_Publishing_Service.md) — normative CPS spec (RFC)
-- [17_Catalog_Discovery_Service.md](./17_Catalog_Discovery_Service.md) — normative CDS spec (RFC)
-- [2_Network_Architecture.md](./2_Network_Architecture.md) — overall network topology
+- [15_Catalog_Publishing_Service.md](./15_Catalog_Publishing_Service.md) — normative CPS spec (RFC)
+- [16_Catalog_Discovery_Service.md](./16_Catalog_Discovery_Service.md) — normative CDS spec (RFC)
+- [4_Network_Architecture.md](./4_Network_Architecture.md) — overall network topology

@@ -147,9 +147,9 @@ Participants SHOULD cache lookup results for the duration of `validUntil - now` 
 ## 5. References
 
 - [DeDi protocol](https://dedi.global)
-- [6_Registry_and_Identity.md](./6_Registry_and_Identity.md)
-- [4_Authentication_and_Security.md](./4_Authentication_and_Security.md)
-- [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md)
+- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md)
+- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md)
+- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
 
 ---
 

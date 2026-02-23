@@ -48,7 +48,7 @@ _List the Beckn constitutional principles (from GOVERNANCE.md) that apply to thi
 
 ## 5. Specification (Normative)
 
-_The normative text of this RFC. Use MUST / SHOULD / MAY as defined in [11_Keyword_Definitions.md](./11_Keyword_Definitions.md). Organize into subsections as needed._
+_The normative text of this RFC. Use MUST / SHOULD / MAY as defined in [2_Keyword_Definitions.md](./2_Keyword_Definitions.md). Organize into subsections as needed._
 
 ### 5.1 ...
 
@@ -103,7 +103,7 @@ _List any unresolved issues or design choices that require further discussion be
 ## 11. References
 
 - [GOVERNANCE.md](../GOVERNANCE.md)
-- [11_Keyword_Definitions.md](./11_Keyword_Definitions.md)
+- [2_Keyword_Definitions.md](./2_Keyword_Definitions.md)
 - _Add any external standards, prior art, or related RFCs here_
 
 ---

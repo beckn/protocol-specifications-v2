@@ -165,8 +165,8 @@ Domain schema pack authors MUST:
 
 ## 10. References
 
-- [7_Schema_Distribution_Model.md](./7_Schema_Distribution_Model.md)
-- [22_JSONld_Context_and_Schema_Alignment.md](./22_JSONld_Context_and_Schema_Alignment.md)
+- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
+- [20_JSONld_Context_and_Schema_Alignment.md](./20_JSONld_Context_and_Schema_Alignment.md)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 - [schema.beckn.io](https://schema.beckn.io)
 

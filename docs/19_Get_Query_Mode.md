@@ -153,8 +153,8 @@ GET /beckn/discover
 
 ## 7. References
 
-- [12_Core_API_Envelope.md](./12_Core_API_Envelope.md)
-- [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md)
+- [8_Core_API_Envelope.md](./8_Core_API_Envelope.md)
+- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
 - [RFC 3986 — URI Generic Syntax](https://datatracker.ietf.org/doc/html/rfc3986)
 - `api/v2.0.1/beckn.yaml` — `RequestActionQuery` schema
 

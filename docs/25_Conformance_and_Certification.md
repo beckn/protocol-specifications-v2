@@ -6,7 +6,7 @@
 **Updated:**  
 **Conformance impact:** Informative for protocol; normative for certification programs  
 **Security/privacy implications:** Certification test suites MUST NOT expose or retain production signing keys or sensitive participant data used during testing.  
-**Replaces / Relates to:** New in v2. Provides the normative conformance framework referenced by [9_Conformance_and_Testing.md](./9_Conformance_and_Testing.md).
+**Replaces / Relates to:** New in v2. Provides the normative conformance framework referenced by [24_Conformance_and_Testing.md](./24_Conformance_and_Testing.md).
 
 ---
 
@@ -153,8 +153,8 @@ Certification is voluntary at the protocol level. Networks MAY make certificatio
 
 ## 10. References
 
-- [9_Conformance_and_Testing.md](./9_Conformance_and_Testing.md)
-- [11_Keyword_Definitions.md](./11_Keyword_Definitions.md)
+- [24_Conformance_and_Testing.md](./24_Conformance_and_Testing.md)
+- [2_Keyword_Definitions.md](./2_Keyword_Definitions.md)
 - [GOVERNANCE.md](../GOVERNANCE.md) — Section 9: Specification change lifecycle
 - `api/v2.0.1/beckn.yaml`
 

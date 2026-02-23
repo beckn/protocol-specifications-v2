@@ -85,7 +85,7 @@ The key resolution step is a mandatory part of the request verification flow:
 5. Accept or reject request
 ```
 
-See [4_Authentication_and_Security.md](./4_Authentication_and_Security.md) for the full verification flow.
+See [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) for the full verification flow.
 
 ---
 
@@ -104,6 +104,6 @@ See [4_Authentication_and_Security.md](./4_Authentication_and_Security.md) for t
 
 ## 7. Further Reading
 
-- [18_DeDi_Registry_Integration.md](./18_DeDi_Registry_Integration.md) — normative DeDi registry spec (RFC)
-- [4_Authentication_and_Security.md](./4_Authentication_and_Security.md) — how keys are used for signing and verification
+- [13_DeDi_Registry_Integration.md](./13_DeDi_Registry_Integration.md) — normative DeDi registry spec (RFC)
+- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) — how keys are used for signing and verification
 - [DeDi protocol](https://dedi.global)

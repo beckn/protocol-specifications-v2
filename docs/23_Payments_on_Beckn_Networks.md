@@ -165,7 +165,7 @@ The `Payment` object is defined in `core_schema`. Key fields:
 
 - [RFC 8905 — The `payto` URI Scheme](https://datatracker.ietf.org/doc/html/rfc8905)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema) — `Payment` schema definition
-- [19_Network_Policy_Profiles.md](./19_Network_Policy_Profiles.md)
+- [22_Network_Policy_Profiles.md](./22_Network_Policy_Profiles.md)
 
 ---
 

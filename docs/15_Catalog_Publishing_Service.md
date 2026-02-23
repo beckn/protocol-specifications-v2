@@ -127,8 +127,8 @@ Publication requests MUST be idempotent. Re-publishing the same item with the sa
 
 ## 5. References
 
-- [5_Discovery_Architecture.md](./5_Discovery_Architecture.md)
-- [17_Catalog_Discovery_Service.md](./17_Catalog_Discovery_Service.md)
+- [14_Discovery_Architecture.md](./14_Discovery_Architecture.md)
+- [16_Catalog_Discovery_Service.md](./16_Catalog_Discovery_Service.md)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 
 ---

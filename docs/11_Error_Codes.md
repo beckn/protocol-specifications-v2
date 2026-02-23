@@ -156,7 +156,7 @@ When an error occurs during asynchronous processing and must be communicated via
 ## 7. References
 
 - `api/v2.0.1/beckn.yaml` — `NackBadRequest`, `NackUnauthorized`, `ServerError`, `Error`, `AsyncError` schemas
-- [12_Core_API_Envelope.md](./12_Core_API_Envelope.md)
+- [8_Core_API_Envelope.md](./8_Core_API_Envelope.md)
 
 ---
 

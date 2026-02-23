@@ -197,8 +197,8 @@ Signature keyId="bap.example.com|ae3ea24b-cfec-495e-81f8-044aaef164ac|ed25519",a
 - [RFC 8032 — Ed25519 signature scheme](https://datatracker.ietf.org/doc/html/rfc8032)
 - [RFC 7693 — BLAKE2b hashing](https://datatracker.ietf.org/doc/html/rfc7693)
 - [draft-cavage-http-signatures-12 — HTTP Signatures](https://datatracker.ietf.org/doc/html/draft-cavage-http-signatures-12)
-- [4_Authentication_and_Security.md](./4_Authentication_and_Security.md)
-- [6_Registry_and_Identity.md](./6_Registry_and_Identity.md)
+- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md)
+- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md)
 
 ---
 

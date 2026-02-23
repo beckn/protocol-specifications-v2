@@ -77,7 +77,7 @@ At design time, a network defines:
 - Which domain schema packs are required, optional, or prohibited.
 - The JSON-LD `@context` documents to be used by participants.
 
-This produces the network's **schema profile**, published as a Network Profile document (see [19_Network_Policy_Profiles.md](./19_Network_Policy_Profiles.md)).
+This produces the network's **schema profile**, published as a Network Profile document (see [22_Network_Policy_Profiles.md](./22_Network_Policy_Profiles.md)).
 
 ### Run-Time Composability
 
@@ -125,7 +125,7 @@ This repository intentionally contains **no `schema/` directory**. All transacti
 
 ## 7. Further Reading
 
-- [22_JSONld_Context_and_Schema_Alignment.md](./22_JSONld_Context_and_Schema_Alignment.md) — JSON-LD context design rules
-- [23_Schema_Pack_Contract.md](./23_Schema_Pack_Contract.md) — how domain schema packs are authored and versioned
+- [20_JSONld_Context_and_Schema_Alignment.md](./20_JSONld_Context_and_Schema_Alignment.md) — JSON-LD context design rules
+- [21_Schema_Pack_Contract.md](./21_Schema_Pack_Contract.md) — how domain schema packs are authored and versioned
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 - [schema.beckn.io](https://schema.beckn.io)

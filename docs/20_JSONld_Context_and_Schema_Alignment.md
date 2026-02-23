@@ -208,8 +208,8 @@ Networks MAY define network-specific terms using their own namespace:
 - [JSON-LD 1.1 Specification](https://www.w3.org/TR/json-ld11/)
 - [schema.org](https://schema.org)
 - [schema.beckn.io](https://schema.beckn.io)
-- [7_Schema_Distribution_Model.md](./7_Schema_Distribution_Model.md)
-- [23_Schema_Pack_Contract.md](./23_Schema_Pack_Contract.md)
+- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
+- [21_Schema_Pack_Contract.md](./21_Schema_Pack_Contract.md)
 
 ---
 

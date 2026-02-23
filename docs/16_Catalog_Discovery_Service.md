@@ -146,8 +146,8 @@ Networks MAY configure the CDS to return results synchronously (HTTP 200 with ca
 
 ## 5. References
 
-- [5_Discovery_Architecture.md](./5_Discovery_Architecture.md)
-- [16_Catalog_Publishing_Service.md](./16_Catalog_Publishing_Service.md)
+- [14_Discovery_Architecture.md](./14_Discovery_Architecture.md)
+- [15_Catalog_Publishing_Service.md](./15_Catalog_Publishing_Service.md)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 
 ---

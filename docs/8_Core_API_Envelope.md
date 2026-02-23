@@ -141,9 +141,9 @@ Implementations upgrading from v2.0.0 must add:
 ## 7. References
 
 - `api/v2.0.1/beckn.yaml` — authoritative transport schemas
-- [3_Communication_Protocol.md](./3_Communication_Protocol.md)
-- [4_Authentication_and_Security.md](./4_Authentication_and_Security.md)
-- [14_Non_Repudiation_and_Lineage.md](./14_Non_Repudiation_and_Lineage.md)
+- [7_Communication_Protocol.md](./7_Communication_Protocol.md)
+- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md)
+- [17_Non_Repudiation_and_Lineage.md](./17_Non_Repudiation_and_Lineage.md)
 
 ---
 

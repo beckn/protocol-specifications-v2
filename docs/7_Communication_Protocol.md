@@ -198,8 +198,8 @@ The `Context` object is mandatory on every request and callback. Key fields:
 
 ## 9. Further Reading
 
-- [4_Authentication_and_Security.md](./4_Authentication_and_Security.md) — Beckn Signature construction
-- [13_Signing_Beckn_APIs_in_HTTP.md](./13_Signing_Beckn_APIs_in_HTTP.md) — Step-by-step signing guide
-- [14_Non_Repudiation_and_Lineage.md](./14_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry`
-- [24_Get_Query_Mode.md](./24_Get_Query_Mode.md) — GET Query Mode specification
+- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) — Beckn Signature construction
+- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md) — Step-by-step signing guide
+- [17_Non_Repudiation_and_Lineage.md](./17_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry`
+- [19_Get_Query_Mode.md](./19_Get_Query_Mode.md) — GET Query Mode specification
 - `api/v2.0.1/beckn.yaml` — authoritative transport schema definitions
