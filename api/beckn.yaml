@@ -776,24 +776,33 @@ paths:
                 message:
                   type: object
                   required:
-                    - tracking
+                    - order
                   properties:
-                    tracking:
-                      type: object
-                      required:
-                        - id
-                      properties:
-                        id:
-                          type: string
-                          description: Tracking identifier
-                        callbackUrl:
-                          type: string
-                          format: uri
-                          description: Optional callback URL for streaming tracking coordinates/updates
-                        mode_hint:
-                          type: string
-                          description: Optional delivery mode for the tracking handle.
-                          enum: [link_only, deep_link, webhook, ws_handle]
+                    order:
+                      oneOf:
+                        - type: object
+                          additionalProperties: false
+                          required:
+                            - beckn:id
+                          properties:
+                            beckn:id:
+                              $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order/properties/beckn:id'
+                            fulfillment:
+                              oneOf:
+                                - type: object
+                                  properties:
+                                    beckn:id:
+                                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Fulfillment/properties/beckn:id'
+                                - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Fulfillment'
+                        - allOf:
+                            - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                            - type: object
+                              required:
+                                - beckn:id
+                    mode_hint:
+                      type: string
+                      description: Optional delivery mode for the tracking handle.
+                      enum: [link_only, deep_link, webhook, ws_handle]
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
@@ -822,10 +831,14 @@ paths:
                 message:
                   type: object
                   required:
-                    - tracking
+                    - order
                   properties:
-                    tracking:
-                      $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/heads/core-2.0.0-rc1-eos/schema/core/v2/attributes.yaml#/components/schemas/TrackAction'
+                    order:
+                      allOf:
+                        - $ref: 'https://raw.githubusercontent.com/beckn/protocol-specifications-new/refs/heads/main/schema/core/v2/attributes.yaml#/components/schemas/Order'
+                        - type: object
+                          required:
+                            - beckn:id
       responses:
         '200':
           $ref: '#/components/responses/Ack200'
