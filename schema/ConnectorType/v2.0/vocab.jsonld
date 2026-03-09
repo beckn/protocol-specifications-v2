@@ -1,0 +1,129 @@
+{
+    "@context": {
+        "@version": 1.1,
+        "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-2.0.0-rc-eos-release/schema/ConnectorType/v2.0/#",
+        "schema": "https://schema.org/",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@graph": [
+        {
+            "@id": "beckn:ConnectorType",
+            "@type": "schema:Enumeration",
+            "schema:name": "Connector Type",
+            "rdfs:comment": "Enumeration of electric vehicle connector interface types.",
+            "schema:hasEnumerationMember": [
+                {
+                    "@id": "beckn:ConnectorTypeCCS2"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeType2"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeCHAdeMO"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeGBT"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeAC001"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeDC001"
+                },
+                {
+                    "@id": "beckn:ConnectorType15A"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeIECAC"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeIEC60309"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeAnderson"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeType6"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeType1"
+                }
+            ]
+        },
+        {
+            "@id": "beckn:ConnectorTypeCCS2",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "CCS2",
+            "schema:identifier": "CCS2"
+        },
+        {
+            "@id": "beckn:ConnectorTypeType2",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Type2",
+            "schema:identifier": "Type2"
+        },
+        {
+            "@id": "beckn:ConnectorTypeCHAdeMO",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "CHAdeMO",
+            "schema:identifier": "CHAdeMO"
+        },
+        {
+            "@id": "beckn:ConnectorTypeGBT",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "GB/T",
+            "schema:identifier": "GB_T",
+            "schema:alternateName": "GB-T"
+        },
+        {
+            "@id": "beckn:ConnectorTypeAC001",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "AC-001",
+            "schema:identifier": "AC-001"
+        },
+        {
+            "@id": "beckn:ConnectorTypeDC001",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "DC-001",
+            "schema:identifier": "DC-001"
+        },
+        {
+            "@id": "beckn:ConnectorType15A",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "15A",
+            "schema:identifier": "15A"
+        },
+        {
+            "@id": "beckn:ConnectorTypeIECAC",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "IEC AC",
+            "schema:identifier": "IEC_AC"
+        },
+        {
+            "@id": "beckn:ConnectorTypeIEC60309",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "IEC 60309",
+            "schema:identifier": "IEC_60309"
+        },
+        {
+            "@id": "beckn:ConnectorTypeAnderson",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Anderson",
+            "schema:identifier": "Anderson"
+        },
+        {
+            "@id": "beckn:ConnectorTypeType6",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Type6",
+            "schema:identifier": "Type6"
+        },
+        {
+            "@id": "beckn:ConnectorTypeType1",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Type1",
+            "schema:identifier": "Type1"
+        }
+    ]
+}

@@ -146,10 +146,18 @@
       "schema:name": "Amenity Feature",
       "rdfs:comment": "Enumeration of amenity features available near the charging service.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:AmenityRestaurant" },
-        { "@id": "beckn:AmenityRestroom" },
-        { "@id": "beckn:AmenityWiFi" },
-        { "@id": "beckn:AmenityParking" }
+        {
+          "@id": "beckn:AmenityRestaurant"
+        },
+        {
+          "@id": "beckn:AmenityRestroom"
+        },
+        {
+          "@id": "beckn:AmenityWiFi"
+        },
+        {
+          "@id": "beckn:AmenityParking"
+        }
       ]
     },
     {
@@ -180,7 +188,10 @@
       ],
       "schema:name": "WI-FI",
       "schema:identifier": "WI-FI",
-      "schema:alternateName": ["Wi-Fi", "WiFi"]
+      "schema:alternateName": [
+        "Wi-Fi",
+        "WiFi"
+      ]
     },
     {
       "@id": "beckn:AmenityParking",
@@ -193,63 +204,20 @@
       "schema:alternateName": "Parking"
     },
     {
-      "@id": "beckn:ConnectorType",
-      "@type": "schema:Enumeration",
-      "schema:name": "Connector Type",
-      "rdfs:comment": "Enumeration of electric vehicle connector interface types.",
-      "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorTypeCCS2" },
-        { "@id": "beckn:ConnectorTypeType2" },
-        { "@id": "beckn:ConnectorTypeCHAdeMO" },
-        { "@id": "beckn:ConnectorTypeGBT" }
-      ]
-    },
-    {
-      "@id": "beckn:ConnectorTypeCCS2",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "CCS2",
-      "schema:identifier": "CCS2"
-    },
-    {
-      "@id": "beckn:ConnectorTypeType2",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "Type2",
-      "schema:identifier": "Type2"
-    },
-    {
-      "@id": "beckn:ConnectorTypeCHAdeMO",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "CHAdeMO",
-      "schema:identifier": "CHAdeMO"
-    },
-    {
-      "@id": "beckn:ConnectorTypeGBT",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "GB/T",
-      "schema:identifier": "GB_T",
-      "schema:alternateName": "GB-T"
-    },
-    {
       "@id": "beckn:PowerType",
       "@type": "schema:Enumeration",
       "schema:name": "Power Type",
       "rdfs:comment": "Enumeration of supported electrical power types.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:PowerTypeACSinglePhase" },
-        { "@id": "beckn:PowerTypeAC3Phase" },
-        { "@id": "beckn:PowerTypeDC" }
+        {
+          "@id": "beckn:PowerTypeACSinglePhase"
+        },
+        {
+          "@id": "beckn:PowerTypeAC3Phase"
+        },
+        {
+          "@id": "beckn:PowerTypeDC"
+        }
       ]
     },
     {
@@ -286,8 +254,12 @@
       "schema:name": "Connector Format",
       "rdfs:comment": "Enumeration of connector presentation formats.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorFormatSocket" },
-        { "@id": "beckn:ConnectorFormatCable" }
+        {
+          "@id": "beckn:ConnectorFormatSocket"
+        },
+        {
+          "@id": "beckn:ConnectorFormatCable"
+        }
       ]
     },
     {
@@ -314,10 +286,18 @@
       "schema:name": "Charging Speed",
       "rdfs:comment": "Enumeration of marketing charging speed bands.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ChargingSpeedSlow" },
-        { "@id": "beckn:ChargingSpeedNormal" },
-        { "@id": "beckn:ChargingSpeedFast" },
-        { "@id": "beckn:ChargingSpeedUltraFast" }
+        {
+          "@id": "beckn:ChargingSpeedSlow"
+        },
+        {
+          "@id": "beckn:ChargingSpeedNormal"
+        },
+        {
+          "@id": "beckn:ChargingSpeedFast"
+        },
+        {
+          "@id": "beckn:ChargingSpeedUltraFast"
+        }
       ]
     },
     {
@@ -363,13 +343,27 @@
       "schema:name": "Parking Type",
       "rdfs:comment": "Enumeration of parking facility types available at the charging location.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ParkingTypeOnStreet" },
-        { "@id": "beckn:ParkingTypeOffStreet" },
-        { "@id": "beckn:ParkingTypeBasement" },
-        { "@id": "beckn:ParkingTypeMall" },
-        { "@id": "beckn:ParkingTypeFuelStation" },
-        { "@id": "beckn:ParkingTypeOffice" },
-        { "@id": "beckn:ParkingTypeHotel" }
+        {
+          "@id": "beckn:ParkingTypeOnStreet"
+        },
+        {
+          "@id": "beckn:ParkingTypeOffStreet"
+        },
+        {
+          "@id": "beckn:ParkingTypeBasement"
+        },
+        {
+          "@id": "beckn:ParkingTypeMall"
+        },
+        {
+          "@id": "beckn:ParkingTypeFuelStation"
+        },
+        {
+          "@id": "beckn:ParkingTypeOffice"
+        },
+        {
+          "@id": "beckn:ParkingTypeHotel"
+        }
       ]
     },
     {
@@ -444,9 +438,15 @@
       "schema:name": "Vehicle Type",
       "rdfs:comment": "Enumeration of vehicle types that can use the charging service.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:VehicleType2Wheeler" },
-        { "@id": "beckn:VehicleType3Wheeler" },
-        { "@id": "beckn:VehicleType4Wheeler" }
+        {
+          "@id": "beckn:VehicleType2Wheeler"
+        },
+        {
+          "@id": "beckn:VehicleType3Wheeler"
+        },
+        {
+          "@id": "beckn:VehicleType4Wheeler"
+        }
       ]
     },
     {
