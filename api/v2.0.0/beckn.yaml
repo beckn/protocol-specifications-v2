@@ -39,11 +39,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -72,11 +67,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -105,11 +95,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -138,11 +123,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -171,11 +151,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -204,11 +179,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -237,11 +207,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -270,11 +235,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -303,11 +263,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -336,11 +291,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -369,11 +319,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -402,11 +347,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -435,11 +375,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -468,11 +403,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -501,11 +431,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -534,11 +459,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -567,11 +487,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -600,11 +515,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -633,11 +543,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
@@ -666,11 +571,6 @@ paths:
         All requests MUST be authenticated using a valid Beckn Signature in the `Authorization` header.
       parameters:
         - $ref: '#/components/parameters/AuthorizationHeader'
-        - name: becknEndpoint
-          in: path
-          required: true
-          schema:
-            $ref: https://schema.beckn.io/BecknEndpoint/v2.0
       requestBody:
         required: true
         content:
