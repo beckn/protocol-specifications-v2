@@ -1450,7 +1450,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1460,6 +1470,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1542,7 +1654,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1552,6 +1674,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1634,7 +1858,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1644,6 +1878,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1726,7 +2062,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1736,6 +2082,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1816,7 +2264,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1826,6 +2284,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1906,7 +2466,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -1916,6 +2486,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -1996,7 +2668,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2006,6 +2688,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2086,7 +2870,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2096,6 +2890,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2176,7 +3072,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2186,6 +3092,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2266,7 +3274,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2276,6 +3294,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2356,7 +3476,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2366,6 +3496,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2446,7 +3678,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2456,6 +3698,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2536,7 +3880,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2546,6 +3900,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2626,7 +4082,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2636,6 +4102,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2716,7 +4284,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2726,6 +4304,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2806,7 +4486,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2816,6 +4506,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2896,7 +4688,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2906,6 +4708,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -2986,7 +4890,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -2996,6 +4910,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3076,7 +5092,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3086,6 +5112,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3166,7 +5294,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3176,6 +5314,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3256,7 +5496,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3266,6 +5516,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3346,7 +5698,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3356,6 +5718,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3436,7 +5900,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3446,6 +5920,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3526,7 +6102,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3536,6 +6122,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3616,7 +6304,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3626,6 +6324,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3706,7 +6506,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3716,6 +6526,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3796,7 +6708,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3806,6 +6728,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3886,7 +6910,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3896,6 +6930,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -3976,7 +7112,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -3986,6 +7132,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4066,7 +7314,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4076,6 +7334,108 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-dip-cheesy",
+              "item-dip-cheesy-jalapeno",
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4156,7 +7516,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4166,6 +7536,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4246,7 +7711,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4256,6 +7731,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4336,7 +7906,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4346,6 +7926,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4426,7 +8101,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4436,6 +8121,106 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4516,7 +8301,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4526,6 +8321,106 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "addOnItems": [
+              "item-side-garlic-breadsticks",
+              "item-side-stuffed-garlic-breadsticks",
+              "item-side-crinkle-fries"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4606,7 +8501,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4616,6 +8521,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4696,7 +8696,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4706,6 +8716,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4786,7 +8891,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4796,6 +8911,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4876,7 +9086,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4886,6 +9106,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -4966,7 +9281,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -4976,6 +9301,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           },
           {
@@ -5056,7 +9476,17 @@
                     }
                   }
                 ]
-              }
+              },
+              "timeRange": {
+                "start": "11:00",
+                "end": "23:30"
+              },
+              "holidays": [
+                "2026-01-26",
+                "2026-08-15",
+                "2026-10-02",
+                "2026-12-25"
+              ]
             },
             "validity": {
               "@type": "TimePeriod",
@@ -5066,6 +9496,101 @@
             "acceptedPaymentMethod": [
               "UPI",
               "CASH"
+            ],
+            "eligibleRegion": [
+              {
+                "@type": "Location",
+                "address": "MG Road & Central Bangalore, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.58,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.96
+                      ],
+                      [
+                        77.605,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.98
+                      ],
+                      [
+                        77.58,
+                        12.96
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Koramangala, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.61,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.925
+                      ],
+                      [
+                        77.64,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.945
+                      ],
+                      [
+                        77.61,
+                        12.925
+                      ]
+                    ]
+                  ]
+                }
+              },
+              {
+                "@type": "Location",
+                "address": "Indiranagar, Bangalore, Karnataka, IN",
+                "geo": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        77.63,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.97
+                      ],
+                      [
+                        77.655,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.99
+                      ],
+                      [
+                        77.63,
+                        12.97
+                      ]
+                    ]
+                  ]
+                }
+              }
             ]
           }
         ]
