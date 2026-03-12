@@ -1,0 +1,234 @@
+{
+  "$schema": "https://schema.beckn.io/InitAction/v2.0",
+  "context": {
+    "action": "beckn/init",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "init-msg-010",
+    "timestamp": "2026-03-10T17:02:00.000Z",
+    "transactionId": "txn-0010-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "meena.iyer@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Meena Iyer",
+          "telephone": "+911098765432",
+          "email": "meena.iyer@example.com",
+          "billingAddress": {
+            "streetAddress": "No. 17, 4th Main, Jayanagar",
+            "addressLocality": "Jayanagar",
+            "addressRegion": "Karnataka",
+            "postalCode": "560041",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-mgroad",
+          "role": "provider",
+          "displayName": "Domino's — MG Road"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-veg-farmhouse",
+          "offerId": "offer-farmhouse-large",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 895,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 895,
+                "currency": "INR",
+                "description": "Large Farmhouse"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-side-garlic-breadsticks",
+          "offerId": "offer-garlic-breadsticks",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 99,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 99,
+                "currency": "INR",
+                "description": "Garlic Breadsticks"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-003",
+          "itemId": "item-bev-pepsi-300ml",
+          "offerId": "offer-pepsi-300ml",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 30,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 30,
+                "currency": "INR",
+                "description": "Pepsi 300ml"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-no.1",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "meena.iyer@food-app.example.com",
+              "role": "recipient"
+            }
+          ],
+          "stages": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:FulfillmentStage",
+              "id": "stage-delivery",
+              "start": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "id": "store-dominos-blr-mgroad",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.5946,
+                      12.9716
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "No. 15, Ground Floor, MG Road",
+                    "addressLocality": "Bangalore",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560001",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T17:30:00.000Z",
+                  "end": "2026-03-10T17:35:00.000Z"
+                }
+              },
+              "end": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.5846,
+                      12.9302
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "No. 17, 4th Main, Jayanagar",
+                    "addressLocality": "Jayanagar",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560041",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T17:40:00.000Z",
+                  "end": "2026-03-10T17:55:00.000Z"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 1064,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 895,
+            "currency": "INR",
+            "description": "1x Large Farmhouse"
+          },
+          {
+            "type": "UNIT",
+            "value": 99,
+            "currency": "INR",
+            "description": "1x Garlic Breadsticks"
+          },
+          {
+            "type": "UNIT",
+            "value": 30,
+            "currency": "INR",
+            "description": "1x Pepsi 300ml"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      }
+    }
+  }
+}

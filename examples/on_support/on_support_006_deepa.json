@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.beckn.io/OnSupportAction/v2.0",
+  "context": {
+    "action": "beckn/on_support",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "onsupp-msg-006",
+    "timestamp": "2026-03-10T13:30:01.800Z",
+    "transactionId": "txn-0006-2026-dominos-pizza"
+  },
+  "message": {
+    "supportResponse": {
+      "@context": "https://schema.beckn.io/",
+      "@type": "beckn:SupportResponse",
+      "refId": "ord-2026031000006",
+      "ticketId": "TKT-2026-10006",
+      "descriptor": {
+        "@type": "beckn:Descriptor",
+        "name": "Support — Late Delivery",
+        "shortDesc": "Ticket TKT-2026-10006 raised for: My order is 45 minutes late beyond the promised time"
+      },
+      "channels": [
+        {
+          "type": "PHONE",
+          "value": "+918069081111",
+          "label": "Zomato Customer Care (24×7)"
+        },
+        {
+          "type": "EMAIL",
+          "value": "support@zomato.com",
+          "label": "Email Support"
+        },
+        {
+          "type": "CHAT",
+          "value": "https://zomato.com/support/chat",
+          "label": "Live Chat"
+        },
+        {
+          "type": "CALLBACK",
+          "value": "https://zomato.com/support/callback",
+          "label": "Request Callback"
+        }
+      ],
+      "sla": {
+        "responseTime": "PT2H",
+        "resolutionTime": "P1D"
+      },
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "id": "deepa.krishna@food-app.example.com",
+        "descriptor": {
+          "@type": "beckn:Descriptor",
+          "name": "Deepa Krishna"
+        }
+      }
+    }
+  }
+}

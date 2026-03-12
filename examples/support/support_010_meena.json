@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.beckn.io/SupportAction/v2.0",
+  "context": {
+    "action": "beckn/support",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "supp-msg-010",
+    "timestamp": "2026-03-10T17:30:00.000Z",
+    "transactionId": "txn-0010-2026-dominos-pizza"
+  },
+  "message": {
+    "supportRequest": {
+      "@context": "https://schema.beckn.io/",
+      "@type": "beckn:SupportRequest",
+      "refId": "ord-2026031000010",
+      "descriptor": {
+        "@type": "beckn:Descriptor",
+        "name": "General Query",
+        "shortDesc": "I have a question about a future order"
+      },
+      "category": "GENERAL_QUERY",
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "id": "meena.iyer@food-app.example.com",
+        "descriptor": {
+          "@type": "beckn:Descriptor",
+          "name": "Meena Iyer"
+        },
+        "telephone": "+911098765432",
+        "email": "meena.iyer@example.com"
+      }
+    }
+  }
+}

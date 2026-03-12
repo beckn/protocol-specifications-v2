@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.beckn.io/SupportAction/v2.0",
+  "context": {
+    "action": "beckn/support",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "supp-msg-005",
+    "timestamp": "2026-03-10T12:30:00.000Z",
+    "transactionId": "txn-0005-2026-dominos-pizza"
+  },
+  "message": {
+    "supportRequest": {
+      "@context": "https://schema.beckn.io/",
+      "@type": "beckn:SupportRequest",
+      "refId": "ord-2026031000005",
+      "descriptor": {
+        "@type": "beckn:Descriptor",
+        "name": "Payment Not Credited",
+        "shortDesc": "Payment was debited from my account but order failed"
+      },
+      "category": "PAYMENT_ISSUE",
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "id": "vikram.patel@food-app.example.com",
+        "descriptor": {
+          "@type": "beckn:Descriptor",
+          "name": "Vikram Patel"
+        },
+        "telephone": "+916543210987",
+        "email": "vikram.patel@example.com"
+      }
+    }
+  }
+}

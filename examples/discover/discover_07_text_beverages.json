@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.beckn.io/DiscoverAction/v2.0",
+  "context": {
+    "action": "beckn/discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "disc-0007-07_text_-msg",
+    "timestamp": "2026-03-10T08:00:06.000Z",
+    "transactionId": "txn-disc-0007-2026"
+  },
+  "message": {
+    "intent": {
+      "textSearch": "cold drinks pepsi 7up",
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "id": "kiran.joshi@food-app.example.com",
+        "descriptor": {
+          "@type": "beckn:Descriptor",
+          "name": "Kiran Joshi"
+        },
+        "location": {
+          "@type": "beckn:Location",
+          "geo": {
+            "type": "Point",
+            "coordinates": [
+              77.6461,
+              12.9121
+            ]
+          },
+          "address": {
+            "streetAddress": "Plot 12, Sector 3, HSR Layout",
+            "addressLocality": "HSR Layout",
+            "addressRegion": "Karnataka",
+            "postalCode": "560102",
+            "addressCountry": "IN"
+          }
+        }
+      }
+    }
+  }
+}

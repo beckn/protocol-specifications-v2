@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.beckn.io/CancelAction/v2.0",
+  "context": {
+    "action": "beckn/cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "canc-msg-007",
+    "timestamp": "2026-03-10T14:05:00.000Z",
+    "transactionId": "txn-0007-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000007",
+      "status": "CANCELLATION_REQUESTED",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "kiran.joshi@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Kiran Joshi"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-mgroad",
+          "role": "provider",
+          "displayName": "Domino's — MG Road"
+        }
+      ],
+      "entitlements": [
+        {
+          "type": "CANCELLATION_REASON",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Reason",
+            "shortDesc": "Item out of stock"
+          },
+          "id": "ORDER_BY_MISTAKE"
+        }
+      ]
+    }
+  }
+}

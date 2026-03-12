@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.beckn.io/SupportAction/v2.0",
+  "context": {
+    "action": "beckn/support",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "supp-msg-007",
+    "timestamp": "2026-03-10T14:30:00.000Z",
+    "transactionId": "txn-0007-2026-dominos-pizza"
+  },
+  "message": {
+    "supportRequest": {
+      "@context": "https://schema.beckn.io/",
+      "@type": "beckn:SupportRequest",
+      "refId": "ord-2026031000007",
+      "descriptor": {
+        "@type": "beckn:Descriptor",
+        "name": "Refund Status",
+        "shortDesc": "I cancelled my order but haven't received the refund"
+      },
+      "category": "REFUND_STATUS",
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "id": "kiran.joshi@food-app.example.com",
+        "descriptor": {
+          "@type": "beckn:Descriptor",
+          "name": "Kiran Joshi"
+        },
+        "telephone": "+914321098765",
+        "email": "kiran.joshi@example.com"
+      }
+    }
+  }
+}
