@@ -128,57 +128,6 @@
               "id": "session-consumer-52685",
               "role": "recipient"
             }
-          ],
-          "stages": [
-            {
-              "@context": "https://schema.beckn.io/",
-              "@type": "beckn:FulfillmentStage",
-              "id": "stage-delivery",
-              "start": {
-                "@context": "https://schema.beckn.io/",
-                "@type": "beckn:FulfillmentStageEndpoint",
-                "location": {
-                  "@type": "beckn:Location",
-                  "id": "store-dominos-blr-koramangala",
-                  "geo": {
-                    "type": "Point",
-                    "coordinates": [
-                      77.6245,
-                      12.9352
-                    ]
-                  },
-                  "address": {
-                    "streetAddress": "No. 80/1, 5th Block, 80 Feet Road",
-                    "addressLocality": "Koramangala",
-                    "addressRegion": "Karnataka",
-                    "postalCode": "560034",
-                    "addressCountry": "IN"
-                  }
-                },
-                "time": {
-                  "start": "2026-03-10T15:30:00.000Z",
-                  "end": "2026-03-10T15:35:00.000Z"
-                }
-              },
-              "end": {
-                "@context": "https://schema.beckn.io/",
-                "@type": "beckn:FulfillmentStageEndpoint",
-                "location": {
-                  "@type": "beckn:Location",
-                  "geo": {
-                    "type": "Point",
-                    "coordinates": [
-                      77.5973,
-                      12.9655
-                    ]
-                  }
-                },
-                "time": {
-                  "start": "2026-03-10T15:40:00.000Z",
-                  "end": "2026-03-10T15:55:00.000Z"
-                }
-              }
-            }
           ]
         }
       ]

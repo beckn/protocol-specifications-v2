@@ -107,57 +107,6 @@
               "id": "session-consumer-98742",
               "role": "recipient"
             }
-          ],
-          "stages": [
-            {
-              "@context": "https://schema.beckn.io/",
-              "@type": "beckn:FulfillmentStage",
-              "id": "stage-delivery",
-              "start": {
-                "@context": "https://schema.beckn.io/",
-                "@type": "beckn:FulfillmentStageEndpoint",
-                "location": {
-                  "@type": "beckn:Location",
-                  "id": "store-dominos-blr-mgroad",
-                  "geo": {
-                    "type": "Point",
-                    "coordinates": [
-                      77.5946,
-                      12.9716
-                    ]
-                  },
-                  "address": {
-                    "streetAddress": "No. 15, Ground Floor, MG Road",
-                    "addressLocality": "Bangalore",
-                    "addressRegion": "Karnataka",
-                    "postalCode": "560001",
-                    "addressCountry": "IN"
-                  }
-                },
-                "time": {
-                  "start": "2026-03-10T08:30:00.000Z",
-                  "end": "2026-03-10T08:35:00.000Z"
-                }
-              },
-              "end": {
-                "@context": "https://schema.beckn.io/",
-                "@type": "beckn:FulfillmentStageEndpoint",
-                "location": {
-                  "@type": "beckn:Location",
-                  "geo": {
-                    "type": "Point",
-                    "coordinates": [
-                      77.5946,
-                      12.9716
-                    ]
-                  }
-                },
-                "time": {
-                  "start": "2026-03-10T08:40:00.000Z",
-                  "end": "2026-03-10T08:55:00.000Z"
-                }
-              }
-            }
           ]
         }
       ]
