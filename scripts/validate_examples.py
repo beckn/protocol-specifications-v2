@@ -52,7 +52,7 @@ from jsonschema.exceptions import ValidationError, SchemaError
 # ─────────────────────────────────────────────────────────────────────────────
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXAMPLES_DIR = os.path.join(BASE_DIR, "examples")
+EXAMPLES_DIR = os.path.join(BASE_DIR, "examples", "retail")
 REPORT_PATH = os.path.join(BASE_DIR, "docs", "schema_compliance_report.md")
 
 SCHEMA_BASE_URL = "https://schema.beckn.io"
