@@ -11,7 +11,7 @@
 # Style rules:
 #   - Property names: camelCase (e.g. bapId, bapUri, transactionId, textSearch, callbackUrl)
 #   - Schema names: PascalCase (e.g. Contract, Catalog, TrackingRequest)
-#   - All data-model $refs point to https://schema.beckn.io/{SchemaName}/v2.0
+#   - All data-model $refs point to #/components/schemas/{SchemaName}/v2.0
 #   - Status fields use oneOf [string, object] — not bare string enums — to support
 #     domain-specific status objects (e.g. beckn:OrderConfirmed, retail:Delivered, etc.)
 #   - context.try is a first-class property of the Context schema (not overridden inline)
@@ -25,13 +25,13 @@ info:
 
     ## Design Philosophy
     - **Minimalism**: Transport-layer schemas are inline. All data-model schemas
-      (Catalog, Contract, Intent, etc.) are resolved from https://schema.beckn.io.
+      (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.
     - **Pragmatism**: Every transaction endpoint carries both `order` (legacy, backward-compatible)
       and `contract` (new, generalized) in its message envelope via `oneOf`.
-    - **Backward compatibility**: Implementations conformant with 2.0-rc1 (`order`-based) interoperate
+    - **Backward compatibility**: Implementations conformant with previous versions interoperate
       seamlessly with new implementations using the `contract` model.
 
-    ## Transaction Lifecycle
+    ## Typical Transaction Lifecycle
     ```
     discover → on_discover
     select → on_select → init → on_init → confirm → on_confirm
@@ -39,10 +39,10 @@ info:
     → [track / on_track]* → rate / on_rate → support / on_support
     ```
 
-    ## `context.try` — Two-Phase Pattern
-    The `try` flag on the `Context` object (defined in `https://schema.beckn.io/Context/v2.0`)
-    enables a two-phase negotiation pattern for state-changing actions:
-    - `context.try: true` — Request to preview consequences (terms, pricing, refund policy)
+    ## (NEW) `context.try` — Sandbox Mode
+    The `try` flag on the `Context` object (defined in `#/components/schemas/Context/v2.0`)
+    indicates a sandbox mode being enabled on the network participant:
+    - `context.try: true` — Request to test an endpoint without liabilities
       **before** committing. The receiver responds with expected consequences without changing state.
     - `context.try: false` (default) — Commit the action.
     This pattern is applicable to `update`, `cancel`, `rate`, and `support` actions.
@@ -104,14 +104,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: discover
                 message:
-                  $ref: '#/components/schemas/DiscoverMessage'
+                  $ref: '#/components/schemas/DiscoverAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -144,7 +144,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
@@ -187,14 +187,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: select
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/SelectAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -227,14 +227,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_select
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/OnSelectAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -266,14 +266,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: init
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/InitAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -306,14 +306,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_init
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/OnInitAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -344,14 +344,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: confirm
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/ConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -384,14 +384,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_confirm
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/OnConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -427,14 +427,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: status
                 message:
-                  $ref: '#/components/schemas/StatusMessage'
+                  $ref: '#/components/schemas/StatusAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -470,14 +470,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_status
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  $ref: '#/components/schemas/OnStatusAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -509,14 +509,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: track
                 message:
-                  $ref: '#/components/schemas/TrackMessage'
+                  $ref: '#/components/schemas/TrackAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -546,14 +546,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_track
                 message:
-                  $ref: '#/components/schemas/OnTrackMessage'
+                  $ref: '#/components/schemas/OnTrackAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -589,9 +589,11 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  oneOf:
+                    - $ref: '#/components/schemas/UpdateInitAction'
+                    - $ref: '#/components/schemas/UpdateConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -625,9 +627,11 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  oneOf:
+                    - $ref: '#/components/schemas/OnUpdateInitAction'
+                    - $ref: '#/components/schemas/OnUpdateConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -660,9 +664,11 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/CancelMessage'
+                  oneOf:
+                    - $ref: '#/components/schemas/CancelInitAction'
+                    - $ref: '#/components/schemas/CancelConfirmction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -695,9 +701,11 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/TransactionMessage'
+                  oneOf:
+                    - $ref: '#/components/schemas/OnCancelInitAction'
+                    - $ref: '#/components/schemas/OnCancelConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -734,9 +742,9 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/RateMessage'
+                  $ref: '#/components/schemas/RateAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -768,9 +776,9 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/OnRateMessage'
+                  $ref: '#/components/schemas/OnRateAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -804,9 +812,9 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/SupportMessage'
+                  $ref: '#/components/schemas/SupportAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -838,9 +846,9 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: 'https://schema.beckn.io/Context/v2.0'
+                  $ref: '#/components/schemas/Context/v2.0'
                 message:
-                  $ref: '#/components/schemas/OnSupportMessage'
+                  $ref: '#/components/schemas/OnSupportAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -876,14 +884,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: catalog/publish
                 message:
-                  $ref: '#/components/schemas/CatalogPublishMessage'
+                  $ref: '#/components/schemas/CatalogPublishAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -913,14 +921,14 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - $ref: '#/components/schemas/Context/v2.0'
                     - type: object
                       properties:
                         action:
                           type: string
                           const: catalog/on_publish
                 message:
-                  $ref: '#/components/schemas/CatalogOnPublishMessage'
+                  $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -954,47 +962,18 @@ components:
 
     # ── Discovery Messages ──────────────────────────────────────────
 
-    DiscoverMessage:
-      $id: https://schema.beckn.io/DiscoverMessage/v2.0
+    DiscoverAction:
       description: |
-        The discover request payload. At least one of `textSearch`, `filters`, or `spatial`
-        MUST be present. An `Intent` object may be used alongside or instead of these fields
-        for structured discovery. Property names are camelCase per v2.0 style guide.
+        The discover request payload. Contains an `Intent` object for structured 
+        or unstructured discovery.
       type: object
       properties:
         intent:
           description: Structured intent object for discovery
-          $ref: 'https://schema.beckn.io/Intent/v2.0'
-        textSearch:
-          type: string
-          description: Free-text search query. Augments or replaces structured intent.
-        filters:
-          type: object
-          description: JSONPath-based filter per RFC 9535
-          required: [type, expression]
-          properties:
-            type:
-              type: string
-              enum: [jsonpath]
-              default: jsonpath
-            expression:
-              type: string
-              description: JSONPath expression to filter catalog entries
-        spatial:
-          type: array
-          description: Geo-spatial constraints applied to the discovery
-          items:
-            $ref: 'https://schema.beckn.io/SpatialConstraint/v2.0'
-        mediaSearch:
-          $ref: 'https://schema.beckn.io/MediaSearch/v2.0'
-      oneOf:
-        - required: [intent]
-        - required: [textSearch]
-        - required: [filters]
-        - required: [spatial]
+      required:
+        - intent
 
-    OnDiscoverMessage:
-      $id: https://schema.beckn.io/OnDiscoverMessage/v2.0
+    OnDiscoverAction:
       description: The on_discover response payload containing matching catalogs.
       type: object
       required: [catalogs]
@@ -1007,14 +986,366 @@ components:
             - `Item` — legacy 2.0-rc1 catalog item (backward compatible)
             - `Resource` — new cross-domain resource abstraction (generalized)
             Both types share the common `id` + `descriptor` surface for display rendering.
-            See `https://schema.beckn.io/Catalog/v2.0` for the full Catalog schema.
+            See `#/components/schemas/Catalog/v2.0` for the full Catalog schema.
+          items:
+            $ref: '#/components/schemas/Catalog/v2.0'
+
+    # ── External xAction Envelope Schemas (from schema.beckn.io) ───
+    # These are the full-envelope schemas as published at schema.beckn.io.
+    # The context + message wrapper has been stripped; only the message
+    # payload content is inlined here (since context is already declared
+    # inline on each endpoint's requestBody). The $id points to the
+    # canonical URI at schema.beckn.io.
+
+    DiscoverActionExternal:
+      $id: https://schema.beckn.io/DiscoverAction/v2.0
+      title: Discover Action (External)
+      description: |
+        Beckn /beckn/discover message payload as published at schema.beckn.io.
+        Contains the Intent object for structured or unstructured discovery.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        intent:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Intent/v2.0'
+      required:
+        - intent
+
+    OnDiscoverActionExternal:
+      $id: https://schema.beckn.io/OnDiscoverAction/v2.0
+      title: On Discover Action (External)
+      description: |
+        Beckn /beckn/on_discover message payload as published at schema.beckn.io.
+        Contains the array of matching Catalog objects.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        catalogs:
+          type: array
           items:
             $ref: 'https://schema.beckn.io/Catalog/v2.0'
+      required:
+        - catalogs
+
+    # ── xAction Message Schemas (from schema.beckn.io, message-content only) ──
+
+    SelectAction:
+      $id: https://schema.beckn.io/SelectAction/v2.0
+      title: Select Action
+      description: |
+        Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
+        items and offers from a catalog, initiating the negotiation cycle.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    OnSelectAction:
+      $id: https://schema.beckn.io/OnSelectAction/v2.0
+      title: On Select Action
+      description: |
+        Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
+        response to a /beckn/select call, with updated contract terms.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    InitAction:
+      $id: https://schema.beckn.io/InitAction/v2.0
+      title: Init Action
+      description: |
+        Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
+        a contract with consumer details (billing address, fulfillment preferences, etc.).
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    OnInitAction:
+      $id: https://schema.beckn.io/OnInitAction/v2.0
+      title: On Init Action
+      description: |
+        Beckn /beckn/on_init message payload. Sent by a BPP to a BAP in response
+        to a /beckn/init call, with the updated contract including payment terms
+        and billing confirmation.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    ConfirmAction:
+      $id: https://schema.beckn.io/ConfirmAction/v2.0
+      title: Confirm Action
+      description: |
+        Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
+        a contract, finalising the transaction terms agreed during the
+        select–init negotiation cycle.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    OnConfirmAction:
+      $id: https://schema.beckn.io/OnConfirmAction/v2.0
+      title: On Confirm Action
+      description: |
+        Beckn /beckn/on_confirm message payload. Sent by a BPP to a BAP in
+        response to a /beckn/confirm call, returning the confirmed contract
+        with status set to CONFIRMED.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    StatusAction:
+      $id: https://schema.beckn.io/StatusAction/v2.0
+      title: Status Action
+      description: |
+        Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
+        the current state of a contract/order by its identifier.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        order:
+          type: object
+          description: Minimal contract/order reference for the status query.
+          properties:
+            id:
+              description: Identifier of the contract/order whose status is being queried.
+              allOf:
+                - $ref: 'https://schema.beckn.io/Contract/v2.0#/properties/id'
+          required:
+            - id
+      required:
+        - order
+
+    OnStatusAction:
+      $id: https://schema.beckn.io/OnStatusAction/v2.0
+      title: On Status Action
+      description: |
+        Beckn /beckn/on_status message payload. Sent by a BPP to a BAP in
+        response to a /beckn/status call (or as an unsolicited status push),
+        returning the current state of the contract.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    TrackAction:
+      $id: https://schema.beckn.io/TrackAction/v2.0
+      title: Track Action
+      description: |
+        Beckn /beckn/track message payload. Sent by a BAP to a BPP to request
+        a real-time tracking handle for a fulfillment within an active contract.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        tracking:
+          allOf:
+            - $ref: 'https://schema.beckn.io/TrackingRequest/v2.0'
+      required:
+        - tracking
+
+    OnTrackAction:
+      $id: https://schema.beckn.io/OnTrackAction/v2.0
+      title: On Track Action
+      description: |
+        Beckn /beckn/on_track message payload. Sent by a BPP to a BAP in
+        response to a /beckn/track call, returning a Tracking handle with
+        the URL and/or WebSocket endpoint for real-time fulfillment tracking.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        tracking:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Tracking/v2.0'
+      required:
+        - tracking
+
+    UpdateAction:
+      $id: https://schema.beckn.io/UpdateAction/v2.0
+      title: Update Action
+      description: |
+        Beckn /beckn/update message payload. Sent by a BAP to a BPP to request
+        changes to an active contract (e.g., update fulfillment address, add items,
+        change quantities). The context.try flag must be true during negotiation.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    OnUpdateAction:
+      $id: https://schema.beckn.io/OnUpdateAction/v2.0
+      title: On Update Action
+      description: |
+        Beckn /beckn/on_update message payload. Sent by a BPP to a BAP in
+        response to a /beckn/update call (or as an unsolicited update push),
+        returning the updated contract state.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    CancelAction:
+      $id: https://schema.beckn.io/CancelAction/v2.0
+      title: Cancel Action
+      description: |
+        Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request
+        cancellation of an active contract. Set context.try to true to first
+        retrieve cancellation terms and fees before committing.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    OnCancelAction:
+      $id: https://schema.beckn.io/OnCancelAction/v2.0
+      title: On Cancel Action
+      description: |
+        Beckn /beckn/on_cancel message payload. Sent by a BPP to a BAP in
+        response to a /beckn/cancel call, returning the contract with status
+        set to CANCELLED and any applicable cancellation outcome.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+      required:
+        - contract
+
+    RateAction:
+      $id: https://schema.beckn.io/RateAction/v2.0
+      title: Rate Action
+      description: |
+        Beckn /beckn/rate message payload. Sent by a BAP to a BPP to submit
+        one or more rating inputs for entities in a completed contract
+        (order, fulfillment, item, provider, agent, support).
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        ratingInputs:
+          type: array
+          items:
+            $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+      required:
+        - ratingInputs
+
+    OnRateAction:
+      $id: https://schema.beckn.io/OnRateAction/v2.0
+      title: On Rate Action
+      description: |
+        Beckn /beckn/on_rate message payload. Sent by a BPP to a BAP in
+        response to a /beckn/rate call, optionally returning rating forms
+        to collect structured feedback from the consumer.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        ratingForms:
+          type: array
+          items:
+            $ref: 'https://schema.beckn.io/RatingForm/v2.0'
+      required:
+        - ratingForms
+
+    SupportAction:
+      $id: https://schema.beckn.io/SupportAction/v2.0
+      title: Support Action
+      description: |
+        Beckn /beckn/support message payload. Sent by a BAP to a BPP to request
+        support contact information or to open a support ticket for an existing
+        order/contract.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        supportRequest:
+          allOf:
+            - $ref: 'https://schema.beckn.io/SupportRequest/v2.0'
+      required:
+        - supportRequest
+
+    OnSupportAction:
+      $id: https://schema.beckn.io/OnSupportAction/v2.0
+      title: On Support Action
+      description: |
+        Beckn /beckn/on_support message payload. Sent by a BPP to a BAP in
+        response to a /beckn/support call, returning support contact details
+        and available channels.
+        (Context wrapper stripped; only the message-content portion is inlined.)
+      type: object
+      additionalProperties: true
+      properties:
+        supportInfo:
+          allOf:
+            - $ref: 'https://schema.beckn.io/SupportInfo/v2.0'
+      required:
+        - supportInfo
 
     # ── Transaction Messages (backward-compatible) ──────────────────
 
     TransactionMessage:
-      $id: https://schema.beckn.io/TransactionMessage/v2.0
+      $id: #/components/schemas/TransactionMessage/v2.0
       description: |
         Backward-compatible transaction message envelope.
 
@@ -1027,10 +1358,10 @@ components:
       properties:
         order:
           description: Legacy order object (2.0-rc1 backward compatibility)
-          $ref: 'https://schema.beckn.io/Contract/v2.0'
+          $ref: '#/components/schemas/Contract/v2.0'
         contract:
           description: Generalized contract object (v2.0 new model)
-          $ref: 'https://schema.beckn.io/Contract/v2.0'
+          $ref: '#/components/schemas/Contract/v2.0'
       oneOf:
         - required: [order]
         - required: [contract]
@@ -1038,7 +1369,7 @@ components:
     # ── Status Message ──────────────────────────────────────────────
 
     StatusMessage:
-      $id: https://schema.beckn.io/StatusMessage/v2.0
+      $id: #/components/schemas/StatusMessage/v2.0
       description: |
         Minimal status request — provide the `order.id` or `contract.id`.
         Only the ID field is required; additional fields MUST NOT be sent in a status request.
@@ -1067,7 +1398,7 @@ components:
     # ── Track Messages ──────────────────────────────────────────────
 
     TrackMessage:
-      $id: https://schema.beckn.io/TrackMessage/v2.0
+      $id: #/components/schemas/TrackMessage/v2.0
       description: |
         Real-time tracking request. The `tracking.id` is the tracking identifier
         (typically the order/contract ID or a specific fulfillment stage ID).
@@ -1077,21 +1408,21 @@ components:
       required: [tracking]
       properties:
         tracking:
-          $ref: 'https://schema.beckn.io/TrackingRequest/v2.0'
+          $ref: '#/components/schemas/TrackingRequest/v2.0'
 
     OnTrackMessage:
-      $id: https://schema.beckn.io/OnTrackMessage/v2.0
+      $id: #/components/schemas/OnTrackMessage/v2.0
       description: Real-time tracking response with URL or tracking handle.
       type: object
       required: [tracking]
       properties:
         tracking:
-          $ref: 'https://schema.beckn.io/Tracking/v2.0'
+          $ref: '#/components/schemas/Tracking/v2.0'
 
     # ── Cancel Message ──────────────────────────────────────────────
 
     CancelMessage:
-      $id: https://schema.beckn.io/CancelMessage/v2.0
+      $id: #/components/schemas/CancelMessage/v2.0
       description: |
         Cancellation request payload. Provide the `order.id` or `contract.id` and
         optionally a `cancellationReason`. When `context.try: true`, only the ID is
@@ -1107,7 +1438,7 @@ components:
               type: string
               description: ID of the order to cancel
             cancellationReason:
-              $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
+              $ref: '#/components/schemas/CancellationReason/v2.0'
         contract:
           type: object
           required: [id]
@@ -1116,7 +1447,7 @@ components:
               type: string
               description: ID of the contract to cancel
             cancellationReason:
-              $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
+              $ref: '#/components/schemas/CancellationReason/v2.0'
       oneOf:
         - required: [order]
         - required: [contract]
@@ -1124,7 +1455,7 @@ components:
     # ── Rate Messages ───────────────────────────────────────────────
 
     RateMessage:
-      $id: https://schema.beckn.io/RateMessage/v2.0
+      $id: #/components/schemas/RateMessage/v2.0
       description: |
         Rating submission payload.
         - `context.try: true` — BAP requests the rating form/criteria (preview).
@@ -1137,10 +1468,10 @@ components:
           minItems: 1
           description: One or more rating inputs for different aspects of the transaction
           items:
-            $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+            $ref: '#/components/schemas/RatingInput/v2.0'
 
     OnRateMessage:
-      $id: https://schema.beckn.io/OnRateMessage/v2.0
+      $id: #/components/schemas/OnRateMessage/v2.0
       description: |
         Rating acknowledgement with optional aggregate snapshot.
         - `context.try: true` — returns the rating form/criteria.
@@ -1168,14 +1499,14 @@ components:
               type: number
               minimum: 0
         feedbackForm:
-          $ref: 'https://schema.beckn.io/Form/v2.0'
+          $ref: '#/components/schemas/Form/v2.0'
         ratingForm:
-          $ref: 'https://schema.beckn.io/RatingForm/v2.0'
+          $ref: '#/components/schemas/RatingForm/v2.0'
 
     # ── Support Messages ────────────────────────────────────────────
 
     SupportMessage:
-      $id: https://schema.beckn.io/SupportMessage/v2.0
+      $id: #/components/schemas/SupportMessage/v2.0
       description: |
         Support request payload. Identifies the entity for which support is needed
         using a domain-agnostic `refType` enum. Applicable to ALL value-exchange use cases:
@@ -1203,21 +1534,21 @@ components:
             - AGENT
             - OTHER
         supportRequest:
-          $ref: 'https://schema.beckn.io/SupportRequest/v2.0'
+          $ref: '#/components/schemas/SupportRequest/v2.0'
 
     OnSupportMessage:
-      $id: https://schema.beckn.io/OnSupportMessage/v2.0
+      $id: #/components/schemas/OnSupportMessage/v2.0
       description: Support response with available channels and/or ticket details.
       type: object
       required: [support]
       properties:
         support:
-          $ref: 'https://schema.beckn.io/Support/v2.0'
+          $ref: '#/components/schemas/Support/v2.0'
 
     # ── Catalog Publishing Messages ─────────────────────────────────
 
     CatalogPublishMessage:
-      $id: https://schema.beckn.io/CatalogPublishMessage/v2.0
+      $id: #/components/schemas/CatalogPublishMessage/v2.0
       description: Catalog publish request payload.
       type: object
       required: [catalogs]
@@ -1227,10 +1558,10 @@ components:
           minItems: 1
           description: One or more catalogs to be indexed by the CDS
           items:
-            $ref: 'https://schema.beckn.io/Catalog/v2.0'
+            $ref: '#/components/schemas/Catalog/v2.0'
 
     CatalogOnPublishMessage:
-      $id: https://schema.beckn.io/CatalogOnPublishMessage/v2.0
+      $id: #/components/schemas/CatalogOnPublishMessage/v2.0
       description: Catalog publish processing results from CDS to BPP.
       type: object
       required: [results]
@@ -1242,7 +1573,7 @@ components:
             $ref: '#/components/schemas/CatalogProcessingResult'
 
     CatalogProcessingResult:
-      $id: https://schema.beckn.io/CatalogProcessingResult/v2.0
+      $id: #/components/schemas/CatalogProcessingResult/v2.0
       description: Processing result for a single catalog submission.
       type: object
       required: [catalogId, status]
@@ -1267,7 +1598,7 @@ components:
                 '@context':
                   type: string
                   format: uri
-                  const: 'https://schema.beckn.io/'
+                  const: '#/components/schemas/'
                 '@type':
                   type: string
                   pattern: '^beckn:[A-Za-z0-9._~-]+$'
@@ -1295,7 +1626,7 @@ components:
     # These are protocol-transport concerns — NOT in schemas/schema.
 
     Ack:
-      $id: https://schema.beckn.io/Ack/v2.0
+      $id: #/components/schemas/Ack/v2.0
       title: Acknowledgement
       description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
       type: object
@@ -1315,7 +1646,7 @@ components:
             Counter-signature proving the receiver authenticated and processed the inbound request.
 
     AckNoCallback:
-      $id: https://schema.beckn.io/AckNoCallback/v2.0
+      $id: #/components/schemas/AckNoCallback/v2.0
       title: Acknowledgement — No Callback
       description: |
         Request received and valid, but no asynchronous callback will follow.
@@ -1339,7 +1670,7 @@ components:
           properties:
             '@context':
               type: string
-              default: 'https://schema.beckn.io/'
+              default: '#/components/schemas/'
             '@type':
               type: string
               default: AsyncError
@@ -1369,7 +1700,7 @@ components:
         - $ref: '#/components/schemas/Signature'
 
     Error:
-      $id: https://schema.beckn.io/Error/v2.0
+      $id: #/components/schemas/Error/v2.0
       title: Error
       description: |
         Base error container returned in NACK responses and async error callbacks.
@@ -1394,7 +1725,7 @@ components:
               additionalProperties: true
 
     InReplyTo:
-      $id: https://schema.beckn.io/InReplyTo/v2.0
+      $id: #/components/schemas/InReplyTo/v2.0
       title: In-Reply-To Reference
       description: |
         A cryptographic binding that ties an asynchronous `on_<action>` callback to the
@@ -1447,7 +1778,7 @@ components:
               $ref: '#/components/schemas/Error'
 
     ServerError:
-      $id: https://schema.beckn.io/ServerError/v2.0
+      $id: #/components/schemas/ServerError/v2.0
       title: Server Error
       description: |
         Internal failure on the network participant's platform; the request could not be processed.
