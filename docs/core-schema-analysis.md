@@ -12,12 +12,12 @@
 On 2026-03-13, the Beckn chief architect Pramod Varma reviewed three competing versions of the v2.0 API specification and concluded:
 
 - **[`beckn-ravis-original-version.yaml`](../api/v2.0.0/beckn-ravis-original-version.yaml)** — Author: Ravi Prakash. Stress-tested across multiple domains (retail, mobility, logistics, energy, healthcare). Uses the `Order` schema from the v2.0-rc1 release. Introduces a two-phase `context.try` pattern for cancellation, update, rate, and support actions.
-- **[`beckn-v2-abhisheks-version.yaml`](../api/v2.0.0/beckn-v2-abhisheks-version.yaml)** — Author: Abhishek. More developer-friendly structure. Introduces the generalized `Contract` model with `commitments`, `consideration`, `performance`, and `settlements`. Uses `anyOf: [order, contract]` on every transaction message for explicit backward compatibility.
+- **[`beckn-v2-abhisheks-version.yaml`](../api/v2.0.0/beckn-v2-abhisheks-version.yaml)** — Author: Abhishek. More developer-friendly structure. Introduces the generalized `Contract` model with `commitments`, `consideration`, `performance`, and `settlements`. Uses `oneOf: [order, contract]` on every transaction message for explicit backward compatibility.
 - **[`beckn.yaml`](../api/v2.0.0/beckn.yaml)** — Auto-generated transport skeleton. Delegates all payload schema to `https://schema.beckn.io` via external `$ref`. No inline schemas. Includes important transport-layer schemas: `Signature`, `CounterSignature`, `InReplyTo`, `Ack`, `AckNoCallback`, `NackBadRequest`, `NackUnauthorized`, `ServerError`.
 
 The verdict: merge all three into a single `beckn-proposed.yaml` that is:
 1. **Minimalist** — only what is essential in the core API spec; everything else deferred to `schema.beckn.io`.
-2. **Pragmatic / Developer-friendly** — clear naming, explicit backward-compatible `anyOf`/`oneOf` constructs.
+2. **Pragmatic / Developer-friendly** — clear naming, explicit backward-compatible `oneOf` constructs.
 3. **Backward compatible** with the previous 2.0-rc1 release.
 
 ---
@@ -27,7 +27,7 @@ The verdict: merge all three into a single `beckn-proposed.yaml` that is:
 | # | Principle | Notes |
 |---|-----------|-------|
 | 1 | All domain-agnostic schemas are sourced from `schemas/schema` (the `beckn/core_schema` repo) | Check each schema: does it **really** belong in the API spec, or does it live entirely in `schemas/schema`? |
-| 2 | Full backward compatibility with 2.0-rc1 | Transaction message envelopes MUST carry `anyOf: [order, contract]` (not just `contract`) |
+| 2 | Full backward compatibility with 2.0-rc1 | Transaction message envelopes MUST carry `oneOf: [order, contract]` (not just `contract`) |
 | 3 | New APIs ⇒ new version (2.x), but MUST be backward compatible with 2.0 | Applies to any new endpoints added |
 | 4 | Extended protocol modules (IGM, R&S, Reputation) go in `beckn-extended.yaml` | Not in the core spec |
 | 5 | Remove the `/beckn/{endPoint}` generator module | No auto-generated abstract endpoint; concrete named paths only |
@@ -88,8 +88,8 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 |----------|------|----------|---------------|
 | `id` | `string` | ✅ | Unique catalog identifier. Required for catalog-level operations (publish, index, reference). |
 | `descriptor` | `Descriptor` | ✅ | Human-readable name and description. Required for display in all UIs. |
-| `bpp_id` | `string` | ✅ | Links catalog to its owning BPP. Required for routing `select` after discovery. |
-| `bpp_uri` | `string (uri)` | ✅ | BPP endpoint for all post-discovery actions. |
+| `bppId` | `string` | ✅ | Links catalog to its owning BPP. Required for routing `select` after discovery. |
+| `bppUri` | `string (uri)` | ✅ | BPP endpoint for all post-discovery actions. |
 | `items` | `Item[]` | ✅ (bc compat) | Backward compatible with 2.0-rc1. MUST remain to preserve interoperability with existing BAPs. |
 | `offers` | `Offer[]` | ✅ (bc compat) | Backward compatible with 2.0-rc1. |
 | `providers` | `Provider[]` | ✅ | A catalog may be hosted by a CDS on behalf of multiple BPPs. Provider association is required. |
@@ -120,12 +120,12 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 
 | Property | Type | Required | Justification |
 |----------|------|----------|---------------|
-| `text_search` | `string` | ❌ (one of) | Free-text search query. Required for discovery to be practically usable by non-technical consumers. |
+| `textSearch` | `string` | ❌ (one of) | Free-text search query. Required for discovery to be practically usable by non-technical consumers. |
 | `filters` | JSONPath expression | ❌ (one of) | Structured filtering via RFC 9535 JSONPath. Required for programmatic consumers. |
 | `spatial` | `SpatialConstraint[]` | ❌ (one of) | Geo-spatial filtering. Required for location-based discovery (mobility, logistics). |
-| `media_search` | `MediaSearch` | ❌ | Optional visual/audio search input. |
+| `mediaSearch` | `MediaSearch` | ❌ | Optional visual/audio search input. |
 
-**Source:** Ravi's version for `text_search`, `filters`, `spatial`, `media_search`. Abhishek's version for the structural `anyOf` validation pattern.  
+**Source:** Ravi's version for `textSearch`, `filters`, `spatial`, `mediaSearch`. Abhishek's version for the structural `oneOf` validation pattern.  
 **Authors:** Ravi Prakash (search fields), Abhishek (validation pattern)  
 **Proposed `$id`:** `https://schema.beckn.io/Intent/v2.0`
 
@@ -144,11 +144,11 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 | `payment` | `Payment` | ✅ (confirm+) | Payment terms. An unconfirmed order has no payment; a confirmed order MUST have payment terms. |
 | `quote` | `Quote` | ✅ (on_select+) | Price breakdown. Required for the BAP to display the price to the consumer. |
 | `status` | `string (enum)` | ✅ (confirm+) | Order lifecycle state. Required for fulfillment tracking. |
-| `cancellation_policy` | `CancellationPolicy` | ❌ | Optional. Referenced from `schemas/schema`. |
+| `cancellationPolicy` | `CancellationPolicy` | ❌ | Optional. Referenced from `schemas/schema`. |
 | `documents` | `Document[]` | ❌ | Optional. Referenced from `schemas/schema`. |
 | `tags` | `Tag[]` | ❌ | Optional. |
 
-**Deprecation note:** `Order` is deprecated in v2.0. Its IRI is `beckn:Contract` in the JSON-LD context. New implementations SHOULD use `Contract`. The `order` key in message envelopes MUST be retained in `beckn-proposed.yaml` via `anyOf: [order, contract]`.  
+**Deprecation note:** `Order` is deprecated in v2.0. Its IRI is `beckn:Contract` in the JSON-LD context. New implementations SHOULD use `Contract`. The `order` key in message envelopes MUST be retained in `beckn-proposed.yaml` via `oneOf: [order, contract]`.  
 **Source:** Ravi's version ([`beckn-ravis-original-version.yaml`](../api/v2.0.0/beckn-ravis-original-version.yaml)) — `$ref` to `schema/core/v2.1/attributes.yaml#Order`  
 **Author:** Ravi Prakash  
 **Proposed `$id`:** `https://schema.beckn.io/Order/v2.0` (alias for `Contract`)
@@ -248,7 +248,7 @@ The key abstraction decisions from Abhishek's version:
 
 | Property (`TrackingRequest`) | Type | Required | Justification |
 |------------------------------|------|----------|---------------|
-| `id` | `string` | ✅ | Tracking identifier (maps to `order_id` or `contract_id`). Required to identify what is being tracked. |
+| `id` | `string` | ✅ | Tracking identifier (maps to `orderId` or `contractId`). Required to identify what is being tracked. |
 | `callbackUrl` | `string (uri)` | ❌ | Optional webhook for push-based tracking updates. |
 
 | Property (`Tracking`) | Type | Required | Justification |
@@ -391,18 +391,18 @@ This allows JSON Schema 2020-12 validators to resolve schemas by their canonical
 |------|-------------|--------------------------|
 | `/beckn/discover` | `POST` | `{ context, message: { intent: Intent } }` |
 | `/beckn/on_discover` | `POST` | `{ context, message: { catalogs: Catalog[] } }` |
-| `/beckn/select` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_select` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/init` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_init` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/confirm` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_confirm` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/status` | `POST` | `{ context, message: anyOf[ { order: { id } }, { contract: { id } } ] }` |
-| `/beckn/on_status` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/update` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_update` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/cancel` | `POST` | `{ context, message: anyOf[ { order: { id, reason } }, { contract: { id, reason } } ] }` |
-| `/beckn/on_cancel` | `POST` | `{ context, message: anyOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/on_select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/on_init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/on_confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/status` | `POST` | `{ context, message: oneOf[ { order: { id } }, { contract: { id } } ] }` |
+| `/beckn/on_status` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/on_update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/beckn/cancel` | `POST` | `{ context, message: oneOf[ { order: { id, reason } }, { contract: { id, reason } } ] }` |
+| `/beckn/on_cancel` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
 | `/beckn/track` | `POST` | `{ context, message: { tracking: TrackingRequest } }` |
 | `/beckn/on_track` | `POST` | `{ context, message: { tracking: Tracking } }` |
 | `/beckn/rate` | `POST` | `{ context, message: { ratings: RatingInput[] } }` |
@@ -424,7 +424,7 @@ This allows JSON Schema 2020-12 validators to resolve schemas by their canonical
 
 | Decision | Rationale |
 |----------|-----------|
-| Use `anyOf: [order, contract]` (not `oneOf`) on all transaction message envelopes | `anyOf` allows both fields to be present during migration. Abhishek's approach. |
+| Use `oneOf: [order, contract]` on all transaction message envelopes | `oneOf` enforces exactly one of `order` or `contract` per message — cleaner validation semantics while retaining backward compatibility. |
 | Adopt Abhishek's `Contract` model (`commitments`, `consideration`, `performance`, `settlements`) | More abstract, domain-neutral, cross-industry applicable. |
 | Retain `Order` as a first-class message field (not deprecated at the API level) | Breaking change otherwise. `Order` → `Contract` is a semantic rename; backward compat MUST be maintained. |
 | Drop `context.try` two-phase pattern for `rate` and `support` | Adds complexity without sufficient gain. Flat single-phase pattern is simpler and more developer-friendly. |

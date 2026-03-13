@@ -5,7 +5,7 @@
 #
 # Sources merged:
 #   beckn-ravis-original-version.yaml  (Ravi Prakash)  — search fields, tracking, catalog publish
-#   beckn-v2-abhisheks-version.yaml    (Abhishek)      — Contract model, anyOf backward compat
+#   beckn-v2-abhisheks-version.yaml    (Abhishek)      — Contract model, oneOf backward compat
 #   beckn.yaml / components/schema/core.yaml           — transport schemas (Ack, Signature, etc.)
 #
 # Style rules:
@@ -27,7 +27,7 @@ info:
     - **Minimalism**: Transport-layer schemas are inline. All data-model schemas
       (Catalog, Contract, Intent, etc.) are resolved from https://schema.beckn.io.
     - **Pragmatism**: Every transaction endpoint carries both `order` (legacy, backward-compatible)
-      and `contract` (new, generalized) in its message envelope via `anyOf`.
+      and `contract` (new, generalized) in its message envelope via `oneOf`.
     - **Backward compatibility**: Implementations conformant with 2.0-rc1 (`order`-based) interoperate
       seamlessly with new implementations using the `contract` model.
 
@@ -987,7 +987,7 @@ components:
             $ref: 'https://schema.beckn.io/SpatialConstraint/v2.0'
         mediaSearch:
           $ref: 'https://schema.beckn.io/MediaSearch/v2.0'
-      anyOf:
+      oneOf:
         - required: [intent]
         - required: [textSearch]
         - required: [filters]
@@ -1025,7 +1025,7 @@ components:
         contract:
           description: Generalized contract object (v2.0 new model)
           $ref: 'https://schema.beckn.io/Contract/v2.0'
-      anyOf:
+      oneOf:
         - required: [order]
         - required: [contract]
 
@@ -1054,7 +1054,7 @@ components:
             id:
               type: string
               description: ID of the contract to query
-      anyOf:
+      oneOf:
         - required: [order]
         - required: [contract]
 
@@ -1111,7 +1111,7 @@ components:
               description: ID of the contract to cancel
             cancellationReason:
               $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
-      anyOf:
+      oneOf:
         - required: [order]
         - required: [contract]
 
