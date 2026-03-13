@@ -1,0 +1,1545 @@
+# beckn-proposed.yaml
+# Merged, developer-friendly, backward-compatible Beckn Protocol v2.0 API Specification.
+#
+# Design decisions: see docs/core-schema-analysis.md
+#
+# Sources merged:
+#   beckn-ravis-original-version.yaml    (Ravi Prakash) — domain stress-testing, search fields, tracking, catalog publish
+#   beckn-v2-abhisheks-version.yaml      (Abhishek)     — Contract model, anyOf backward compat, support refType, flat rate
+#   beckn.yaml / components/schema/core.yaml            — transport schemas (Ack, Signature, CounterSignature, etc.)
+#
+# Key principles:
+#   1. Minimalism — only schemas required for API-level interoperability are inline; everything else $ref → schema.beckn.io
+#   2. Backward compatibility — every transaction message carries anyOf: [order, contract]
+#   3. No /beckn/{endPoint} abstract path — concrete named paths only
+#   4. All data-model schema $refs point to https://schema.beckn.io/{SchemaName}/v2.0
+
+openapi: 3.1.1
+info:
+  title: Beckn Protocol API
+  description: |
+    The Beckn Protocol API Specification v2.0 — a concrete, developer-friendly OpenAPI specification
+    with one named path per Beckn protocol action.
+
+    ## Design Philosophy
+    - **Minimalism**: Only transport-layer schemas are defined inline. All data-model schemas
+      (Catalog, Contract, Intent, etc.) are resolved from https://schema.beckn.io.
+    - **Pragmatism**: Every transaction endpoint carries both `order` (legacy, backward-compatible)
+      and `contract` (new, generalized) in its message envelope via `anyOf`.
+    - **Backward compatibility**: Implementations conformant with 2.0-rc1 (`order`-based) interoperate
+      seamlessly with new implementations using the `contract` model.
+
+    ## Transaction Lifecycle
+    ```
+    discover → on_discover → select → on_select → init → on_init → confirm → on_confirm
+    → [status / on_status]* → [update / on_update]* → [cancel / on_cancel]?
+    → [track / on_track]* → rate / on_rate → support / on_support
+    ```
+
+    ## Catalog Publishing (independent of transaction lifecycle)
+    ```
+    catalog/publish → catalog/on_publish
+    ```
+
+    ## Authentication
+    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.
+    The `Ack` response body MUST carry a `CounterSignature` proving receipt.
+
+    See `docs/10_Signing_Beckn_APIs_in_HTTP.md` for the signing specification.
+  version: 2.0.0
+  contact:
+    name: Beckn Protocol
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+
+tags:
+  - name: Discovery
+    description: Discover catalogs across a Beckn network
+  - name: Transaction
+    description: Select, negotiate, confirm and manage contracts/orders
+  - name: Fulfillment
+    description: Track, update and cancel active contracts/orders
+  - name: Post-Fulfillment
+    description: Rate and support completed contracts/orders
+  - name: Catalog Publishing
+    description: Publish catalogs to a Catalog Discovery Service (CDS)
+
+paths:
+
+  # ─────────────────────────────────────────────────────────────────────
+  # DISCOVERY
+  # ─────────────────────────────────────────────────────────────────────
+
+  /beckn/discover:
+    post:
+      summary: Discover catalogs on a network
+      description: |
+        Search and discover catalogs on an open network. Supports text search,
+        JSONPath-based filtering (RFC 9535), spatial (geo) constraints, and media search.
+        Returns an **ACK** confirming receipt; actual catalogs arrive via `/beckn/on_discover`.
+        Can be implemented by Catalog Discovery Services (CDS) and BPPs.
+      operationId: discover
+      tags: [Discovery]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: discover
+                message:
+                  $ref: '#/components/schemas/DiscoverMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_discover:
+    post:
+      summary: Callback — return catalogs to the BAP
+      description: |
+        Callback from a BPP or CDS containing catalogs matching the discovery request.
+        Returns an **ACK** confirming receipt of the catalog payload.
+      operationId: onDiscover
+      tags: [Discovery]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_discover
+                message:
+                  $ref: '#/components/schemas/OnDiscoverMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # TRANSACTION — ORDERING
+  # ─────────────────────────────────────────────────────────────────────
+
+  /beckn/select:
+    post:
+      summary: BAP selects items/resources and requests a quote
+      description: |
+        The BAP selects catalog items, item quantities, associated offers, and requests
+        the BPP to provide a priced quote. No PII is shared at this stage.
+        Supports both the legacy `order` model (2.0-rc1) and the new `contract` model.
+      operationId: select
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: select
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_select:
+    post:
+      summary: BPP returns a priced quote
+      description: |
+        The BPP calculates the total cost, evaluates offers, and returns a priced quote.
+        Supports both the legacy `order` model and the new `contract` model.
+      operationId: onSelect
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_select
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/init:
+    post:
+      summary: BAP initiates final order — submits billing, fulfillment and payment intent
+      description: |
+        BAP provides billing, fulfillment, and payment information for the BPP to generate
+        final order terms. The BPP responds via `on_init` with the final draft including
+        payment terms. Supports both `order` (legacy) and `contract` (new) models.
+      operationId: init
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: init
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_init:
+    post:
+      summary: BPP returns final draft order/contract with payment terms
+      description: |
+        BPP returns the final draft order or contract with personalized payment terms.
+        The BPP MUST NOT request payment before this stage.
+      operationId: onInit
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_init
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/confirm:
+    post:
+      summary: BAP confirms the order/contract
+      description: |
+        BAP accepts all terms and provides payment proof/reference, then requests the BPP
+        to confirm the order or contract into a binding commitment.
+      operationId: confirm
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: confirm
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_confirm:
+    post:
+      summary: BPP returns the confirmed order/contract
+      description: |
+        BPP validates all terms, payment, and returns a confirmed order or contract with
+        its assigned ID and the initial fulfillment/performance state.
+      operationId: onConfirm
+      tags: [Transaction]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_confirm
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # FULFILLMENT
+  # ─────────────────────────────────────────────────────────────────────
+
+  /beckn/status:
+    post:
+      summary: BAP requests the current state of an order/contract
+      description: |
+        BAP requests the latest state of an active order or contract by providing its ID.
+        The BPP responds via `on_status`. BAPs SHOULD NOT long-poll with `status` —
+        use `on_status` push notifications for real-time state changes.
+      operationId: status
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: status
+                message:
+                  $ref: '#/components/schemas/StatusMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_status:
+    post:
+      summary: BPP returns the current state of the order/contract
+      description: |
+        BPP returns the latest state of the order or contract including fulfillment/performance
+        updates. The BPP MAY call this endpoint proactively without the BAP requesting it,
+        but MUST have received at least one `status` request first to initiate the push stream.
+        This endpoint is for significant state changes worth a push notification — NOT for
+        real-time location tracking (use `track`/`on_track` for that).
+      operationId: onStatus
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_status
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/track:
+    post:
+      summary: BAP requests a real-time tracking handle for an active order/contract
+      description: |
+        BAP requests a tracking handle (URL, WebSocket endpoint, or webhook) for real-time
+        tracking of an active fulfillment or performance stage. This is for real-time
+        position/progress updates — NOT for order state change notifications (use `status`).
+      operationId: track
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: track
+                message:
+                  $ref: '#/components/schemas/TrackMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_track:
+    post:
+      summary: BPP returns real-time tracking handle and status
+      operationId: onTrack
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_track
+                message:
+                  $ref: '#/components/schemas/OnTrackMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/update:
+    post:
+      summary: BAP requests a mutation to an active order/contract
+      description: |
+        BAP requests the BPP to update an active order or contract. Updates may involve
+        change of items, quantities, billing, fulfillment/performance, or payment.
+
+        **Two-phase pattern (context.try):**
+        - `context.try: true` — BAP requests updated terms before committing (init-style).
+          BPP responds with recalculated quote and terms via `on_update`.
+        - `context.try: false` — BAP commits the update with payment proof.
+          BPP responds with the confirmed updated order/contract.
+      operationId: update
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - description: "Phase 1 — request updated terms (context.try = true)"
+                  type: object
+                  required: [context, message]
+                  properties:
+                    context:
+                      allOf:
+                        - $ref: 'https://schema.beckn.io/Context/v2.0'
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: update
+                            try:
+                              type: boolean
+                              const: true
+                    message:
+                      $ref: '#/components/schemas/TransactionMessage'
+                - description: "Phase 2 — commit the update (context.try = false)"
+                  type: object
+                  required: [context, message]
+                  properties:
+                    context:
+                      allOf:
+                        - $ref: 'https://schema.beckn.io/Context/v2.0'
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: update
+                            try:
+                              type: boolean
+                              const: false
+                    message:
+                      $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_update:
+    post:
+      summary: BPP returns the updated order/contract
+      description: |
+        BPP returns the updated order or contract with recalculated terms. Can be called
+        proactively by the BPP without the BAP requesting it.
+        - If `context.try: true` — returns updated terms (not yet committed).
+        - If `context.try: false` — returns committed updated order/contract.
+      operationId: onUpdate
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_update
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/cancel:
+    post:
+      summary: BAP requests cancellation of an order/contract
+      description: |
+        BAP requests full or partial cancellation.
+
+        **Two-phase pattern (context.try):**
+        - `context.try: true` — BAP requests cancellation terms (e.g., refund policy) before committing.
+          BPP responds with applicable cancellation policy via `on_cancel`.
+        - `context.try: false` — BAP commits the cancellation with supporting documents.
+          BPP confirms cancellation and returns cancelled order/contract.
+      operationId: cancel
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - description: "Phase 1 — request cancellation terms (context.try = true)"
+                  type: object
+                  required: [context, message]
+                  properties:
+                    context:
+                      allOf:
+                        - $ref: 'https://schema.beckn.io/Context/v2.0'
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: cancel
+                            try:
+                              type: boolean
+                              const: true
+                    message:
+                      $ref: '#/components/schemas/CancelInitMessage'
+                - description: "Phase 2 — commit cancellation (context.try = false)"
+                  type: object
+                  required: [context, message]
+                  properties:
+                    context:
+                      allOf:
+                        - $ref: 'https://schema.beckn.io/Context/v2.0'
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: cancel
+                            try:
+                              type: boolean
+                              const: false
+                    message:
+                      $ref: '#/components/schemas/CancelConfirmMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_cancel:
+    post:
+      summary: BPP returns cancellation terms or confirms cancellation
+      description: |
+        - If `context.try: true` — returns applicable cancellation policy, fees, refund timeline.
+        - If `context.try: false` — returns confirmed cancelled order/contract with refund/payment update.
+      operationId: onCancel
+      tags: [Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_cancel
+                message:
+                  $ref: '#/components/schemas/TransactionMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # POST-FULFILLMENT
+  # ─────────────────────────────────────────────────────────────────────
+
+  /beckn/rate:
+    post:
+      summary: BAP submits ratings for one or more entities
+      description: |
+        BAP submits ratings for any ratable entity (order, contract, fulfillment,
+        item, provider, agent, support interaction). Single-phase — no try/commit cycle.
+        The BPP acknowledges via `on_rate` with an optional aggregate snapshot.
+      operationId: rate
+      tags: [Post-Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: rate
+                message:
+                  $ref: '#/components/schemas/RateMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_rate:
+    post:
+      summary: BPP acknowledges rating and optionally returns aggregate
+      operationId: onRate
+      tags: [Post-Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_rate
+                message:
+                  $ref: '#/components/schemas/OnRateMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/support:
+    post:
+      summary: BAP requests support information for an entity
+      description: |
+        BAP requests support channels and/or raises a support ticket for any entity
+        (order, contract, performance, fulfillment, resource, offer, provider, agent).
+        The `refType` field abstracts over domain-specific entity types.
+      operationId: support
+      tags: [Post-Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: support
+                message:
+                  $ref: '#/components/schemas/SupportMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/on_support:
+    post:
+      summary: BPP returns support details
+      operationId: onSupport
+      tags: [Post-Fulfillment]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_support
+                message:
+                  $ref: '#/components/schemas/OnSupportMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # CATALOG PUBLISHING SERVICE
+  # ─────────────────────────────────────────────────────────────────────
+
+  /beckn/catalog/publish:
+    post:
+      summary: BPP publishes catalogs for indexing by a CDS
+      description: |
+        BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
+        Returns an **ACK** immediately if accepted for processing. The per-catalog processing
+        result arrives asynchronously via `/beckn/catalog/on_publish`.
+      operationId: catalogPublish
+      tags: [Catalog Publishing]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/publish
+                message:
+                  $ref: '#/components/schemas/CatalogPublishMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /beckn/catalog/on_publish:
+    post:
+      summary: CDS returns per-catalog processing results to the BPP
+      operationId: catalogOnPublish
+      tags: [Catalog Publishing]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'https://schema.beckn.io/Context/v2.0'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/on_publish
+                message:
+                  $ref: '#/components/schemas/CatalogOnPublishMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+# ─────────────────────────────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────────────────────────────
+components:
+
+  # ─── Parameters ──────────────────────────────────────────────────
+  parameters:
+    AuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      description: |
+        Beckn HTTP Signature authentication header.
+        See `#/components/schemas/Signature` for the expected format.
+      schema:
+        $ref: '#/components/schemas/Signature'
+
+  # ─── Message Schemas (API-level only — data models via $ref to schema.beckn.io) ───
+
+  schemas:
+
+    # ── Discovery Messages ──────────────────────────────────────────
+
+    DiscoverMessage:
+      $id: https://schema.beckn.io/DiscoverMessage/v2.0
+      description: |
+        The discover request payload. At least one of `intent`, `text_search`,
+        `filters`, or `spatial` MUST be present.
+      type: object
+      properties:
+        intent:
+          $ref: 'https://schema.beckn.io/Intent/v2.0'
+        text_search:
+          type: string
+          description: Free-text search query. Augments or replaces structured intent.
+        filters:
+          type: object
+          description: JSONPath-based filter (RFC 9535)
+          required: [type, expression]
+          properties:
+            type:
+              type: string
+              enum: [jsonpath]
+              default: jsonpath
+            expression:
+              type: string
+              description: JSONPath expression to filter catalog entries
+        spatial:
+          type: array
+          description: Geo-spatial constraints applied to the discovery
+          items:
+            $ref: 'https://schema.beckn.io/SpatialConstraint/v2.0'
+        media_search:
+          $ref: 'https://schema.beckn.io/MediaSearch/v2.0'
+      anyOf:
+        - required: [intent]
+        - required: [text_search]
+        - required: [filters]
+        - required: [spatial]
+
+    OnDiscoverMessage:
+      $id: https://schema.beckn.io/OnDiscoverMessage/v2.0
+      description: The on_discover response payload containing matching catalogs.
+      type: object
+      required: [catalogs]
+      properties:
+        catalogs:
+          type: array
+          description: Array of catalogs matching the discovery request
+          items:
+            $ref: 'https://schema.beckn.io/Catalog/v2.0'
+
+    # ── Transaction Messages (backward-compatible) ──────────────────
+
+    TransactionMessage:
+      $id: https://schema.beckn.io/TransactionMessage/v2.0
+      description: |
+        Backward-compatible transaction message envelope.
+
+        - New implementations: send `contract` (generalized, domain-neutral).
+        - Legacy implementations (2.0-rc1): send `order` (commerce-specific).
+        - Migration period: either or both MAY be present simultaneously.
+
+        Validators MUST accept any message carrying at least one of `order` or `contract`.
+      type: object
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/Order/v2.0'
+        contract:
+          $ref: 'https://schema.beckn.io/Contract/v2.0'
+      anyOf:
+        - required: [order]
+        - required: [contract]
+
+    # ── Status Message ──────────────────────────────────────────────
+
+    StatusMessage:
+      $id: https://schema.beckn.io/StatusMessage/v2.0
+      description: Minimal status request — provide the order or contract ID.
+      type: object
+      properties:
+        order:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: ID of the order to query
+        contract:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: ID of the contract to query
+      anyOf:
+        - required: [order]
+        - required: [contract]
+
+    # ── Track Messages ──────────────────────────────────────────────
+
+    TrackMessage:
+      $id: https://schema.beckn.io/TrackMessage/v2.0
+      description: Real-time tracking request.
+      type: object
+      required: [tracking]
+      properties:
+        tracking:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: |
+                Tracking identifier. Typically the order_id or contract_id, or a
+                specific fulfillment/performance stage ID.
+            callbackUrl:
+              type: string
+              format: uri
+              description: Optional webhook URL for push-based tracking updates.
+
+    OnTrackMessage:
+      $id: https://schema.beckn.io/OnTrackMessage/v2.0
+      description: Real-time tracking response with URL or handle.
+      type: object
+      required: [tracking]
+      properties:
+        tracking:
+          $ref: 'https://schema.beckn.io/Tracking/v2.0'
+
+    # ── Cancel Messages ─────────────────────────────────────────────
+
+    CancelInitMessage:
+      $id: https://schema.beckn.io/CancelInitMessage/v2.0
+      description: |
+        Phase 1 cancellation request (context.try = true).
+        BAP provides the order/contract ID and optional cancellation reason
+        to request applicable cancellation terms from the BPP.
+      type: object
+      properties:
+        order:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              type: string
+            reason:
+              $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
+        contract:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              type: string
+            reason:
+              $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
+      anyOf:
+        - required: [order]
+        - required: [contract]
+
+    CancelConfirmMessage:
+      $id: https://schema.beckn.io/CancelConfirmMessage/v2.0
+      description: |
+        Phase 2 cancellation request (context.try = false).
+        BAP provides the full order/contract with supporting cancellation documents.
+      type: object
+      properties:
+        order:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Order/v2.0'
+            - type: object
+              required: [id]
+        contract:
+          allOf:
+            - $ref: 'https://schema.beckn.io/Contract/v2.0'
+            - type: object
+              required: [id]
+      anyOf:
+        - required: [order]
+        - required: [contract]
+
+    # ── Rate Messages ───────────────────────────────────────────────
+
+    RateMessage:
+      $id: https://schema.beckn.io/RateMessage/v2.0
+      description: Rating submission payload (single-phase).
+      type: object
+      required: [ratings]
+      properties:
+        ratings:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+
+    OnRateMessage:
+      $id: https://schema.beckn.io/OnRateMessage/v2.0
+      description: Rating acknowledgement with optional aggregate snapshot.
+      type: object
+      properties:
+        received:
+          type: boolean
+          default: true
+          description: Confirms the rating was received and processed.
+        aggregate:
+          type: object
+          description: Optional aggregated rating snapshot for display
+          properties:
+            count:
+              type: integer
+              minimum: 0
+            value:
+              type: number
+              minimum: 0
+            best:
+              type: number
+              minimum: 0
+            worst:
+              type: number
+              minimum: 0
+        feedbackForm:
+          $ref: 'https://schema.beckn.io/Form/v2.0'
+
+    # ── Support Messages ────────────────────────────────────────────
+
+    SupportMessage:
+      $id: https://schema.beckn.io/SupportMessage/v2.0
+      description: |
+        Support request payload. Identifies the entity for which support is needed
+        using a domain-agnostic `refType` enum. Optionally includes an initial
+        support request or ticket.
+      type: object
+      required: [refId, refType]
+      properties:
+        refId:
+          type: string
+          description: ID of the entity for which support is requested
+        refType:
+          type: string
+          description: Type of the entity being referenced
+          enum: [CONTRACT, ORDER, PERFORMANCE, FULFILLMENT, RESOURCE, OFFER, PROVIDER, AGENT, OTHER]
+        support:
+          $ref: 'https://schema.beckn.io/SupportRequest/v2.0'
+
+    OnSupportMessage:
+      $id: https://schema.beckn.io/OnSupportMessage/v2.0
+      description: Support response with available channels and/or ticket details.
+      type: object
+      required: [support]
+      properties:
+        support:
+          $ref: 'https://schema.beckn.io/Support/v2.0'
+
+    # ── Catalog Publishing Messages ─────────────────────────────────
+
+    CatalogPublishMessage:
+      $id: https://schema.beckn.io/CatalogPublishMessage/v2.0
+      description: Catalog publish request payload.
+      type: object
+      required: [catalogs]
+      properties:
+        catalogs:
+          type: array
+          minItems: 1
+          description: One or more catalogs to be indexed by the CDS
+          items:
+            $ref: 'https://schema.beckn.io/Catalog/v2.0'
+
+    CatalogOnPublishMessage:
+      $id: https://schema.beckn.io/CatalogOnPublishMessage/v2.0
+      description: Catalog publish processing results.
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          description: Per-catalog processing results
+          items:
+            $ref: '#/components/schemas/CatalogProcessingResult'
+
+    CatalogProcessingResult:
+      $id: https://schema.beckn.io/CatalogProcessingResult/v2.0
+      description: Processing result for a single catalog submission.
+      type: object
+      required: [catalogId, status]
+      properties:
+        catalogId:
+          type: string
+          description: Identifier of the submitted catalog
+        status:
+          type: string
+          enum: [ACCEPTED, REJECTED, PARTIAL]
+          description: |
+            Processing outcome:
+            - ACCEPTED — catalog indexed successfully
+            - REJECTED — catalog rejected entirely (see errors)
+            - PARTIAL — some items accepted, some rejected (see errors)
+        errors:
+          type: array
+          description: Per-item or per-catalog errors (present when REJECTED or PARTIAL)
+          items:
+            $ref: '#/components/schemas/Error'
+        stats:
+          type: object
+          description: Optional statistics about the processed catalog
+          properties:
+            itemCount:
+              type: integer
+              description: Number of items accepted
+            providerCount:
+              type: integer
+              description: Number of providers in the catalog
+            categoryCount:
+              type: integer
+              description: Number of distinct categories
+
+    # ── Transport Layer Schemas (not data model — not in schemas/schema) ──
+
+    Ack:
+      $id: https://schema.beckn.io/Ack/v2.0
+      title: Acknowledgement
+      description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
+      type: object
+      required: [status, signature]
+      properties:
+        status:
+          type: string
+          enum: [ACK, NACK]
+          description: ACK if the request was accepted; NACK if rejected.
+        signature:
+          allOf:
+            - $ref: '#/components/schemas/CounterSignature'
+          description: Counter-signature proving the receiver authenticated and processed the inbound request.
+
+    AckNoCallback:
+      $id: https://schema.beckn.io/AckNoCallback/v2.0
+      title: Acknowledgement — No Callback
+      description: |
+        Request received and valid, but no asynchronous callback will follow.
+        Typical causes: no matching agents found, inventory unavailable, store closed.
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - properties:
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+              description: Optional error detail explaining why no callback will follow.
+
+    AsyncError:
+      title: Asynchronous Error
+      description: Error returned asynchronously during a callback.
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - properties:
+            '@context':
+              type: string
+              default: 'https://schema.beckn.io/'
+            '@type':
+              type: string
+              default: AsyncError
+          additionalProperties: true
+
+    CounterSignature:
+      title: Beckn HTTP Counter-Signature
+      description: |
+        A signed receipt transmitted in the synchronous `Ack` response body, proving that the
+        receiver authenticated, received, and processed the inbound request.
+
+        `CounterSignature` shares the same wire format as `Signature` but differs:
+        - Signed by the **response receiver** (not the request sender)
+        - Transmitted in the **`Ack` response body** (not in the `Authorization` header)
+        - The `digest` covers the **Ack response body** (not the inbound request body)
+        - MUST include `(request-digest)` and `(message-id)` in the signing string
+
+        Signing string format:
+        ```
+        (created): {unixTimestamp}
+        (expires): {unixTimestamp}
+        digest: BLAKE-512={base64DigestOfAckBody}
+        (request-digest): BLAKE-512={base64DigestOfInboundRequestBody}
+        (message-id): {messageId}
+        ```
+      allOf:
+        - $ref: '#/components/schemas/Signature'
+
+    Error:
+      title: Error
+      description: Base error container returned in NACK responses and async error callbacks.
+      type: object
+      properties:
+        errorCode:
+          type: string
+          description: Machine-readable error code.
+        errorMessage:
+          type: string
+          description: Human-readable error description.
+
+    InReplyTo:
+      title: In-Reply-To Reference
+      description: |
+        A cryptographic binding that ties an asynchronous `on_<action>` callback to the
+        specific inbound request that triggered it. Establishes bilateral non-repudiation
+        for the asynchronous leg of a Beckn interaction.
+
+        Verification steps:
+        1. Recompute BLAKE2b-512 digest of the original request body and compare to `digest`.
+        2. Confirm `messageId` matches the `messageId` from the original request `Context`.
+      type: object
+      required: [messageId, digest]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+          description: The `messageId` of the parent request from its `Context`.
+        digest:
+          type: string
+          pattern: '^BLAKE-512=[A-Za-z0-9+/]+=*$'
+          description: |
+            BLAKE2b-512 hash of the parent request body, Base64-encoded with algorithm prefix.
+            Format: `BLAKE-512={base64EncodedHash}`
+
+    NackBadRequest:
+      title: NACK — Bad Request
+      description: Malformed or invalid request; the server could not parse or validate the payload.
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+
+    NackUnauthorized:
+      title: NACK — Unauthorized
+      description: Invalid or missing authentication credentials; signature could not be verified.
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+
+    ServerError:
+      title: Server Error
+      description: Internal failure on the network participant's platform; the request could not be processed.
+      type: object
+
+    Signature:
+      title: Beckn HTTP Signature
+      description: |
+        A digitally signed authentication credential in the HTTP `Authorization` header.
+        Follows draft-cavage-http-signatures-12 as profiled by BECKN-006.
+
+        Format:
+        ```
+        Signature keyId="{subscriberId}|{uniqueKeyId}|{algorithm}",algorithm="{algorithm}",
+          created="{unixTimestamp}",expires="{unixTimestamp}",
+          headers="{signedHeaders}",signature="{base64Signature}"
+        ```
+
+        | Attribute | Description |
+        |-----------|-------------|
+        | `keyId` | `{subscriberId}|{uniqueKeyId}|{algorithm}` — FQDN, registry UUID, signing algorithm |
+        | `algorithm` | MUST be `ed25519` |
+        | `created` | Unix timestamp when the signature was created |
+        | `expires` | Unix timestamp when the signature expires |
+        | `headers` | Space-separated signed headers. MUST include `(created)`, `(expires)`, `digest` |
+        | `signature` | Base64-encoded Ed25519 signature over the signing string |
+
+        The signing string is formed by concatenating:
+        `(created): {value}\n(expires): {value}\ndigest: BLAKE-512={digest}`
+        where `digest` is a BLAKE2b-512 hash of the request body, Base64-encoded.
+      type: string
+      pattern: '^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$'
+
+  # ─── Responses ────────────────────────────────────────────────────
+  responses:
+    Ack:
+      description: Receipt confirmed; signature valid; asynchronous callback will follow.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Ack'
+
+    AckNoCallback:
+      description: Request received but no callback will follow (e.g. agents not found, inventory unavailable).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckNoCallback'
+
+    NackBadRequest:
+      description: Malformed or invalid request; the server could not parse or validate the payload.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NackBadRequest'
+
+    NackUnauthorized:
+      description: Invalid or missing authentication credentials; signature could not be verified.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NackUnauthorized'
+
+    ServerError:
+      description: Internal failure on the network participant's platform.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServerError'
