@@ -3,20 +3,28 @@
         "@version": 1.1,
         "beckn": "https://raw.githubusercontent.com/beckn/protocol-specifications-v2/refs/tags/core-2.0.0-rc-eos-release/schema/ConnectorType/v2.0/#",
         "ConnectorType": "beckn:ConnectorType",
-        "CCS2": "beckn:ConnectorTypeCCS2",
-        "Type2": "beckn:ConnectorTypeType2",
-        "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
-        "GB_T": "beckn:ConnectorTypeGBT",
-        "GB/T": "beckn:ConnectorTypeGBT",
-        "GB-T": "beckn:ConnectorTypeGBT",
-        "AC-001": "beckn:ConnectorTypeAC001",
-        "DC-001": "beckn:ConnectorTypeDC001",
-        "15A": "beckn:ConnectorType15A",
-        "IEC_AC": "beckn:ConnectorTypeIECAC",
-        "IEC_60309": "beckn:ConnectorTypeIEC60309",
-        "Anderson": "beckn:ConnectorTypeAnderson",
-        "Type6": "beckn:ConnectorTypeType6",
-        "Type1": "beckn:ConnectorTypeType1"
+        "connectorType": {
+            "@id": "beckn:connectorType",
+            "@type": "@id",
+            "@context": {
+                "CCS2": "beckn:ConnectorTypeCCS2",
+                "Type2": "beckn:ConnectorTypeType2",
+                "Type1": "beckn:ConnectorTypeType1",
+                "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
+                "GB_T": "beckn:ConnectorTypeGBT",
+                "GB/T": "beckn:ConnectorTypeGBT",
+                "GB-T": "beckn:ConnectorTypeGBT",
+                "GBT_AC": "beckn:ConnectorTypeGBT_AC",
+                "GBT_DC": "beckn:ConnectorTypeGBT_DC",
+                "AC-001": "beckn:ConnectorTypeAC001",
+                "DC-001": "beckn:ConnectorTypeDC001",
+                "15A": "beckn:ConnectorType15A",
+                "IEC_AC": "beckn:ConnectorTypeIECAC",
+                "IEC_60309": "beckn:ConnectorTypeIEC60309",
+                "Anderson": "beckn:ConnectorTypeAnderson",
+                "Type6": "beckn:ConnectorTypeType6"
+            }
+        }
     },
     "@graph": []
 }

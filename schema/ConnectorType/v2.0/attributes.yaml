@@ -20,6 +20,8 @@ components:
         - Type2
         - CHAdeMO
         - GB_T
+        - GBT_AC
+        - GBT_DC
         - AC-001
         - DC-001
         - 15A

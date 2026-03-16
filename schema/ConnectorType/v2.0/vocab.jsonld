@@ -27,6 +27,12 @@
                     "@id": "beckn:ConnectorTypeGBT"
                 },
                 {
+                    "@id": "beckn:ConnectorTypeGBT_AC"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeGBT_DC"
+                },
+                {
                     "@id": "beckn:ConnectorTypeAC001"
                 },
                 {
@@ -56,74 +62,108 @@
             "@id": "beckn:ConnectorTypeCCS2",
             "@type": "beckn:ConnectorType",
             "schema:name": "CCS2",
-            "schema:identifier": "CCS2"
+            "schema:identifier": "CCS2",
+            "rdfs:comment": "IEC 62196 Combo 2 (CCS2). Type 2 inlet with additional DC pins for DC fast charging.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
             "@id": "beckn:ConnectorTypeType2",
             "@type": "beckn:ConnectorType",
             "schema:name": "Type2",
-            "schema:identifier": "Type2"
+            "schema:identifier": "Type2",
+            "rdfs:comment": "IEC 62196 Type 2 (AC) connector, commonly called Type 2 or Mennekes, used for AC charging.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
             "@id": "beckn:ConnectorTypeCHAdeMO",
             "@type": "beckn:ConnectorType",
             "schema:name": "CHAdeMO",
-            "schema:identifier": "CHAdeMO"
+            "schema:identifier": "CHAdeMO",
+            "rdfs:comment": "CHAdeMO DC fast charging connector system.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
             "@id": "beckn:ConnectorTypeGBT",
             "@type": "beckn:ConnectorType",
             "schema:name": "GB/T",
             "schema:identifier": "GB_T",
-            "schema:alternateName": "GB-T"
+            "schema:alternateName": "GB-T",
+            "rdfs:comment": "GB/T connector family. OCPI distinguishes AC vs DC (GBT_AC vs GBT_DC). Consider splitting if the distinction matters for interoperability.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
-            "@id": "beckn:ConnectorTypeAC001",
+            "@id": "beckn:ConnectorTypeGBT_AC",
             "@type": "beckn:ConnectorType",
-            "schema:name": "AC-001",
-            "schema:identifier": "AC-001"
+            "schema:name": "GBT AC",
+            "schema:identifier": "GBT_AC",
+            "rdfs:comment": "GB/T AC connector type.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
-            "@id": "beckn:ConnectorTypeDC001",
+            "@id": "beckn:ConnectorTypeGBT_DC",
             "@type": "beckn:ConnectorType",
-            "schema:name": "DC-001",
-            "schema:identifier": "DC-001"
-        },
-        {
-            "@id": "beckn:ConnectorType15A",
-            "@type": "beckn:ConnectorType",
-            "schema:name": "15A",
-            "schema:identifier": "15A"
-        },
-        {
-            "@id": "beckn:ConnectorTypeIECAC",
-            "@type": "beckn:ConnectorType",
-            "schema:name": "IEC AC",
-            "schema:identifier": "IEC_AC"
-        },
-        {
-            "@id": "beckn:ConnectorTypeIEC60309",
-            "@type": "beckn:ConnectorType",
-            "schema:name": "IEC 60309",
-            "schema:identifier": "IEC_60309"
-        },
-        {
-            "@id": "beckn:ConnectorTypeAnderson",
-            "@type": "beckn:ConnectorType",
-            "schema:name": "Anderson",
-            "schema:identifier": "Anderson"
-        },
-        {
-            "@id": "beckn:ConnectorTypeType6",
-            "@type": "beckn:ConnectorType",
-            "schema:name": "Type6",
-            "schema:identifier": "Type6"
+            "schema:name": "GBT DC",
+            "schema:identifier": "GBT_DC",
+            "rdfs:comment": "GB/T DC connector type.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
         },
         {
             "@id": "beckn:ConnectorTypeType1",
             "@type": "beckn:ConnectorType",
             "schema:name": "Type1",
-            "schema:identifier": "Type1"
+            "schema:identifier": "Type1",
+            "rdfs:comment": "IEC 62196 Type 1 (SAE J1772) AC connector, common in North America and Japan.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
+        },
+        {
+            "@id": "beckn:ConnectorTypeAC001",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "AC-001",
+            "schema:identifier": "AC-001",
+            "rdfs:comment": "Bharat AC-001 charging specification and program."
+        },
+        {
+            "@id": "beckn:ConnectorTypeDC001",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "DC-001",
+            "schema:identifier": "DC-001",
+            "rdfs:comment": "Bharat DC-001 charging specification and program."
+        },
+        {
+            "@id": "beckn:ConnectorType15A",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "15A",
+            "schema:identifier": "15A",
+            "rdfs:comment": "15A is a current rating, not a connector family. Consider modeling this as rated or max current, not as ConnectorType."
+        },
+        {
+            "@id": "beckn:ConnectorTypeIECAC",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "IEC AC",
+            "schema:identifier": "IEC_AC",
+            "rdfs:comment": "Ambiguous shorthand. Prefer a specific IEC connector family (Type 1, Type 2, IEC 60309), or deprecate."
+        },
+        {
+            "@id": "beckn:ConnectorTypeIEC60309",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "IEC 60309",
+            "schema:identifier": "IEC_60309",
+            "rdfs:comment": "IEC 60309 industrial connector family. Multiple variants exist by phase and current rating. Consider narrowing or splitting into variants if needed.",
+            "rdfs:seeAlso": "https://github.com/ocpi/ocpi/blob/master/mod_locations.asciidoc"
+        },
+        {
+            "@id": "beckn:ConnectorTypeAnderson",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Anderson",
+            "schema:identifier": "Anderson",
+            "rdfs:comment": "Anderson-style DC connector family label. Not directly represented in OCPI ConnectorType list."
+        },
+        {
+            "@id": "beckn:ConnectorTypeType6",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Type6",
+            "schema:identifier": "Type6",
+            "rdfs:comment": "IEC 62196-6 or IS 17017-2-6 (Type 6) connector, typically referenced in LEV charging contexts."
         }
     ]
 }
