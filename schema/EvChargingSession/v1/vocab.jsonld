@@ -93,7 +93,10 @@
       "rdfs:label": "Metrics",
       "rdfs:comment": "Array of telemetry metrics using schema.org QuantitativeValue (name, value, unitCode).",
       "rdfs:domain": "beckn:ChargingSession",
-      "schema:rangeIncludes": ["schema:QuantitativeValue", "schema:ItemList"]
+      "schema:rangeIncludes": [
+        "schema:QuantitativeValue",
+        "schema:ItemList"
+      ]
     },
     {
       "@id": "beckn:totalCost",
@@ -141,7 +144,10 @@
       "rdfs:label": "Vehicle make",
       "rdfs:comment": "Vehicle make/brand recorded for the session.",
       "rdfs:domain": "beckn:ChargingSession",
-      "schema:rangeIncludes": ["schema:Brand", "schema:Text"]
+      "schema:rangeIncludes": [
+        "schema:Brand",
+        "schema:Text"
+      ]
     },
     {
       "@id": "beckn:vehicleModel",
@@ -159,17 +165,24 @@
       "rdfs:domain": "beckn:ChargingSession",
       "schema:rangeIncludes": "schema:Thing"
     },
-
     {
       "@id": "beckn:SessionStatus",
       "@type": "schema:Enumeration",
       "schema:name": "Session Status",
       "rdfs:comment": "Enumeration of supported charging session lifecycle states.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:SessionStatusPending" },
-        { "@id": "beckn:SessionStatusActive" },
-        { "@id": "beckn:SessionStatusCompleted" },
-        { "@id": "beckn:SessionStatusInterrupted" }
+        {
+          "@id": "beckn:SessionStatusPending"
+        },
+        {
+          "@id": "beckn:SessionStatusActive"
+        },
+        {
+          "@id": "beckn:SessionStatusCompleted"
+        },
+        {
+          "@id": "beckn:SessionStatusInterrupted"
+        }
       ]
     },
     {
@@ -214,9 +227,15 @@
       "schema:name": "Connector Status",
       "rdfs:comment": "Enumeration of charging connector statuses (from OCPP status codes).",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorStatusAvailable" },
-        { "@id": "beckn:ConnectorStatusPreparing" },
-        { "@id": "beckn:ConnectorStatusUnavailable" }
+        {
+          "@id": "beckn:ConnectorStatusAvailable"
+        },
+        {
+          "@id": "beckn:ConnectorStatusPreparing"
+        },
+        {
+          "@id": "beckn:ConnectorStatusUnavailable"
+        }
       ]
     },
     {
@@ -247,65 +266,26 @@
       "schema:identifier": "UNAVAILABLE"
     },
     {
-      "@id": "beckn:ConnectorType",
-      "@type": "schema:Enumeration",
-      "schema:name": "Connector Type",
-      "rdfs:comment": "Enumeration of electric vehicle connector interface types.",
-      "schema:hasEnumerationMember": [
-        { "@id": "beckn:ConnectorTypeCCS2" },
-        { "@id": "beckn:ConnectorTypeType2" },
-        { "@id": "beckn:ConnectorTypeCHAdeMO" },
-        { "@id": "beckn:ConnectorTypeGBT" }
-      ]
-    },
-    {
-      "@id": "beckn:ConnectorTypeCCS2",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "CCS2",
-      "schema:identifier": "CCS2"
-    },
-    {
-      "@id": "beckn:ConnectorTypeType2",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "Type2",
-      "schema:identifier": "Type2"
-    },
-    {
-      "@id": "beckn:ConnectorTypeCHAdeMO",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "CHAdeMO",
-      "schema:identifier": "CHAdeMO"
-    },
-    {
-      "@id": "beckn:ConnectorTypeGBT",
-      "@type": [
-        "beckn:ConnectorType",
-        "schema:Enumeration"
-      ],
-      "schema:name": "GB/T",
-      "schema:identifier": "GB_T",
-      "schema:alternateName": "GB-T"
-    },
-    {
       "@id": "beckn:TelemetryMetric",
       "@type": "schema:Enumeration",
       "schema:name": "Telemetry Metric",
       "rdfs:comment": "Enumeration of telemetry metric names used in session telemetry.",
       "schema:hasEnumerationMember": [
-        { "@id": "beckn:TelemetryMetricEnergy" },
-        { "@id": "beckn:TelemetryMetricPower" },
-        { "@id": "beckn:TelemetryMetricCurrent" },
-        { "@id": "beckn:TelemetryMetricVoltage" },
-        { "@id": "beckn:TelemetryMetricStateOfCharge" }
+        {
+          "@id": "beckn:TelemetryMetricEnergy"
+        },
+        {
+          "@id": "beckn:TelemetryMetricPower"
+        },
+        {
+          "@id": "beckn:TelemetryMetricCurrent"
+        },
+        {
+          "@id": "beckn:TelemetryMetricVoltage"
+        },
+        {
+          "@id": "beckn:TelemetryMetricStateOfCharge"
+        }
       ]
     },
     {

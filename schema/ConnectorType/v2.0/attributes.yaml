@@ -1,0 +1,35 @@
+openapi: 3.1.1
+info:
+  title: ConnectorType — EV Charging Connector Types (v2.0)
+  version: 2.0.0
+  x-profile-id: profiles/ev-charging/connector-type/v2.0
+  description: >
+    Enumeration of electric vehicle connector interface types used across
+    Beckn EV charging schemas. This is the single source of truth for
+    connector type definitions.
+
+components:
+  schemas:
+    ConnectorType:
+      type: string
+      x-jsonld:
+        "@context": ./context.jsonld
+        "@type": ConnectorType
+      enum:
+        - CCS2
+        - Type2
+        - CHAdeMO
+        - GB_T
+        - GBT_AC
+        - GBT_DC
+        - AC-001
+        - DC-001
+        - 15A
+        - IEC_AC
+        - IEC_60309
+        - Anderson
+        - Type6
+        - Type1
+      description: >
+        Physical connector type supported by the EVSE/charger.
+      example: "CCS2"

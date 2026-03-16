@@ -6,10 +6,8 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "beckn": "./vocab.jsonld#",
-    
     "ChargingService": "beckn:ChargingService",
     "ChargingStation": "beckn:ChargingStation",
-
     "name": "schema:name",
     "description": "schema:description",
     "price": "schema:price",
@@ -28,7 +26,6 @@
     "identifier": "schema:identifier",
     "areaServed": "schema:areaServed",
     "category": "schema:category",
-
     "chargingStation": "beckn:chargingStation",
     "amenityFeature": {
       "@id": "beckn:amenityFeature",
@@ -36,7 +33,25 @@
     },
     "connectorType": {
       "@id": "beckn:connectorType",
-      "@type": "@id"
+      "@type": "@id",
+      "@context": {
+        "CCS2": "beckn:ConnectorTypeCCS2",
+        "Type2": "beckn:ConnectorTypeType2",
+        "Type1": "beckn:ConnectorTypeType1",
+        "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
+        "GB_T": "beckn:ConnectorTypeGBT",
+        "GB/T": "beckn:ConnectorTypeGBT",
+        "GB-T": "beckn:ConnectorTypeGBT",
+        "GBT_AC": "beckn:ConnectorTypeGBT_AC",
+        "GBT_DC": "beckn:ConnectorTypeGBT_DC",
+        "AC-001": "beckn:ConnectorTypeAC001",
+        "DC-001": "beckn:ConnectorTypeDC001",
+        "15A": "beckn:ConnectorType15A",
+        "IEC_AC": "beckn:ConnectorTypeIECAC",
+        "IEC_60309": "beckn:ConnectorTypeIEC60309",
+        "Anderson": "beckn:ConnectorTypeAnderson",
+        "Type6": "beckn:ConnectorTypeType6"
+      }
     },
     "powerType": {
       "@id": "beckn:powerType",
@@ -58,7 +73,6 @@
       "@id": "beckn:parkingType",
       "@type": "@id"
     },
-
     "RESTAURANT": "beckn:AmenityRestaurant",
     "Restaurant": "beckn:AmenityRestaurant",
     "RESTROOM": "beckn:AmenityRestroom",
@@ -68,27 +82,16 @@
     "WiFi": "beckn:AmenityWiFi",
     "PARKING": "beckn:AmenityParking",
     "Parking": "beckn:AmenityParking",
-
-    "CCS2": "beckn:ConnectorTypeCCS2",
-    "Type2": "beckn:ConnectorTypeType2",
-    "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
-    "GB_T": "beckn:ConnectorTypeGBT",
-    "GB/T": "beckn:ConnectorTypeGBT",
-    "GB-T": "beckn:ConnectorTypeGBT",
-
     "AC_SINGLE_PHASE": "beckn:PowerTypeACSinglePhase",
     "AC_3_PHASE": "beckn:PowerTypeAC3Phase",
     "AC_THREE_PHASE": "beckn:PowerTypeAC3Phase",
     "DC": "beckn:PowerTypeDC",
-
     "SOCKET": "beckn:ConnectorFormatSocket",
     "CABLE": "beckn:ConnectorFormatCable",
-
     "SLOW": "beckn:ChargingSpeedSlow",
     "NORMAL": "beckn:ChargingSpeedNormal",
     "FAST": "beckn:ChargingSpeedFast",
     "ULTRAFAST": "beckn:ChargingSpeedUltraFast",
-
     "OnStreet": "beckn:ParkingTypeOnStreet",
     "OffStreet": "beckn:ParkingTypeOffStreet",
     "Basement": "beckn:ParkingTypeBasement",
@@ -97,11 +100,9 @@
     "Fuel Station": "beckn:ParkingTypeFuelStation",
     "Office": "beckn:ParkingTypeOffice",
     "Hotel": "beckn:ParkingTypeHotel",
-
     "2-WHEELER": "beckn:VehicleType2Wheeler",
     "3-WHEELER": "beckn:VehicleType3Wheeler",
     "4-WHEELER": "beckn:VehicleType4Wheeler"
   },
-
   "@graph": []
 }

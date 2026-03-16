@@ -6,9 +6,7 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "beckn": "./vocab.jsonld#",
-    
     "ChargingSession": "beckn:ChargingSession",
-
     "name": "schema:name",
     "description": "schema:description",
     "price": "schema:price",
@@ -17,7 +15,6 @@
     "endTime": "schema:endTime",
     "orderStatus": "schema:orderStatus",
     "lastUpdated": "schema:dateModified",
-
     "sessionStatus": {
       "@id": "beckn:sessionStatus",
       "@type": "@id"
@@ -29,7 +26,25 @@
     "buyerFinderFee": "beckn:buyerFinderFee",
     "connectorType": {
       "@id": "beckn:connectorType",
-      "@type": "@id"
+      "@type": "@id",
+      "@context": {
+        "CCS2": "beckn:ConnectorTypeCCS2",
+        "Type2": "beckn:ConnectorTypeType2",
+        "Type1": "beckn:ConnectorTypeType1",
+        "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
+        "GB_T": "beckn:ConnectorTypeGBT",
+        "GB/T": "beckn:ConnectorTypeGBT",
+        "GB-T": "beckn:ConnectorTypeGBT",
+        "GBT_AC": "beckn:ConnectorTypeGBT_AC",
+        "GBT_DC": "beckn:ConnectorTypeGBT_DC",
+        "AC-001": "beckn:ConnectorTypeAC001",
+        "DC-001": "beckn:ConnectorTypeDC001",
+        "15A": "beckn:ConnectorType15A",
+        "IEC_AC": "beckn:ConnectorTypeIECAC",
+        "IEC_60309": "beckn:ConnectorTypeIEC60309",
+        "Anderson": "beckn:ConnectorTypeAnderson",
+        "Type6": "beckn:ConnectorTypeType6"
+      }
     },
     "maxPowerKW": "beckn:maxPowerKW",
     "meteredEnergyKWh": "beckn:meteredEnergyKWh",
@@ -46,23 +61,13 @@
     "trackingId": "beckn:trackingId",
     "trackingUrl": "beckn:trackingUrl",
     "trackingStatus": "beckn:trackingStatus",
-
     "PENDING": "beckn:SessionStatusPending",
     "ACTIVE": "beckn:SessionStatusActive",
     "COMPLETED": "beckn:SessionStatusCompleted",
     "INTERRUPTED": "beckn:SessionStatusInterrupted",
-
     "AVAILABLE": "beckn:ConnectorStatusAvailable",
     "PREPARING": "beckn:ConnectorStatusPreparing",
     "UNAVAILABLE": "beckn:ConnectorStatusUnavailable",
-
-    "CCS2": "beckn:ConnectorTypeCCS2",
-    "Type2": "beckn:ConnectorTypeType2",
-    "CHAdeMO": "beckn:ConnectorTypeCHAdeMO",
-    "GB_T": "beckn:ConnectorTypeGBT",
-    "GB/T": "beckn:ConnectorTypeGBT",
-    "GB-T": "beckn:ConnectorTypeGBT",
-
     "ENERGY": "beckn:TelemetryMetricEnergy",
     "POWER": "beckn:TelemetryMetricPower",
     "CURRENT": "beckn:TelemetryMetricCurrent",
@@ -70,6 +75,5 @@
     "STATE_OF_CHARGE": "beckn:TelemetryMetricStateOfCharge",
     "SOC": "beckn:TelemetryMetricStateOfCharge"
   },
-
   "@graph": []
 }
