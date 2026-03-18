@@ -133,7 +133,7 @@ paths:
                           type: string
                           const: on_discover
                 message:
-                  $ref: '#/components/schemas/OnDiscoverMessage'
+                  $ref: '#/components/schemas/OnDiscoverAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -154,7 +154,7 @@ paths:
       description: |
         The BAP selects catalog items, item quantities, associated offers, and requests
         the BPP to provide a priced quote. No PII is shared at this stage.
-        Supports both the legacy `order` model (2.0-rc1) and the new `contract` model.
+        Supports both the legacy `order` and the new `contract` model.
       operationId: select
       tags: [Transaction]
       parameters:
@@ -574,8 +574,8 @@ paths:
                   $ref: 'https://schema.beckn.io/Context/v2.0'
                 message:
                   oneOf:
-                    - $ref: '#/components/schemas/UpdateAction'
-                    - $ref: '#/components/schemas/UpdateAction'
+                    - $ref: '#/components/schemas/UpdateInitAction'
+                    - $ref: '#/components/schemas/UpdateConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -612,8 +612,8 @@ paths:
                   $ref: 'https://schema.beckn.io/Context/v2.0'
                 message:
                   oneOf:
-                    - $ref: '#/components/schemas/OnUpdateAction'
-                    - $ref: '#/components/schemas/OnUpdateAction'
+                    - $ref: '#/components/schemas/OnUpdateInitAction'
+                    - $ref: '#/components/schemas/OnUpdateConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -650,7 +650,7 @@ paths:
                 message:
                   oneOf:
                     - $ref: '#/components/schemas/CancelInitAction'
-                    - $ref: '#/components/schemas/CancelAction'
+                    - $ref: '#/components/schemas/CancelConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -686,8 +686,8 @@ paths:
                   $ref: 'https://schema.beckn.io/Context/v2.0'
                 message:
                   oneOf:
-                    - $ref: '#/components/schemas/OnCancelAction'
-                    - $ref: '#/components/schemas/OnCancelAction'
+                    - $ref: '#/components/schemas/OnCancelInitAction'
+                    - $ref: '#/components/schemas/OnCancelConfirmAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
