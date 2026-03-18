@@ -574,8 +574,8 @@ paths:
                   $ref: 'https://schema.beckn.io/Context/v2.0'
                 message:
                   oneOf:
-                    - $ref: '#/components/schemas/UpdateInitAction'
-                    - $ref: '#/components/schemas/UpdateConfirmAction'
+                    - $ref: '#/components/schemas/UpdateInitMessage'
+                    - $ref: '#/components/schemas/UpdateConfirmMessage'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -613,7 +613,7 @@ paths:
                 message:
                   oneOf:
                     - $ref: '#/components/schemas/OnUpdateInitAction'
-                    - $ref: '#/components/schemas/OnUpdateConfirmAction'
+                    - $ref: '#/components/schemas/OnUpdateConfirmMessage'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -686,7 +686,7 @@ paths:
                   $ref: 'https://schema.beckn.io/Context/v2.0'
                 message:
                   oneOf:
-                    - $ref: '#/components/schemas/OnCancelInitAction'
+                    - $ref: '#/components/schemas/CancelInitAction'
                     - $ref: '#/components/schemas/OnCancelConfirmAction'
       responses:
         '200':
@@ -1348,7 +1348,7 @@ components:
               description: The items of value i.e resources, specified in this contract. Depending upon the context, these resources could be a combination physical objects, virtual objects, services, time slots, distance travelled, alloted space, and many more.
               type: array
               items:
-                $ref: '#/components/schemas/ContractItem'
+                $ref: 'https://schema.beckn.io/ContractItem/v2.0'
               minItems: 1
             resources:
               type: array
@@ -1532,7 +1532,7 @@ components:
             External transaction reference (e.g., payment gateway ID,
             blockchain tx hash, clearing reference).
         settlementAttributes:
-          $ref: '#/components/schemas/Attributes'       
+          $ref: 'https://schema.beckn.io/Attributes/v2.0'       
 
     CounterSignature:
       title: Beckn HTTP Counter-Signature
@@ -1919,28 +1919,40 @@ components:
         set to CANCELLED and any applicable cancellation outcome.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnCancelConfirmAction:
       description: |
-        On cancel confirm message from Ravi's version.
-        Source: beckn-ravis-original-version.yaml#OnCancelConfirmMessage
+        Response to a /beckn/cancel confirm request. The BPP returns either
+        the cancelled order (legacy v2.0-rc1 model) or cancelled contract (v2.0+)
+        with status = CANCELLED, plus cancellation action details.
       type: object
-      required:
-        - cancelAction
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               allOf:
                 - $ref: 'https://schema.beckn.io/Order/v2.0'
-                - 'beckn:orderStatus':
-                    const: 'CANCELLED'
-          - contract:
+                - type: object
+                  properties:
+                    'beckn:orderStatus':
+                      type: string
+                      const: CANCELLED
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               allOf:
                 - $ref: '#/components/schemas/Contract'
                 - if:
@@ -1969,13 +1981,15 @@ components:
                       status:
                         type: string
                         const: CANCELLED
+      properties:
         cancelAction:
           type: object
           properties:
             order:
               allOf:
                 - $ref: 'https://schema.beckn.io/Order/v2.0'
-                - required: [cancellationPolicy, cancellationOutcome, docs]
+                - type: object
+                  required: [cancellationPolicy, cancellationOutcome, docs]
             reason:
               $ref: 'https://schema.beckn.io/CancellationReason/v2.0'
 
@@ -1988,11 +2002,16 @@ components:
         with status set to CONFIRMED.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnDiscoverAction:
@@ -2023,11 +2042,16 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
       additionalProperties: true
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnRateAction:
@@ -2111,11 +2135,16 @@ components:
         response to a /beckn/select call, with updated contract terms.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnStatusAction:
@@ -2127,11 +2156,16 @@ components:
         returning the current state of the contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnSupportAction:
@@ -2221,11 +2255,16 @@ components:
         returning the updated contract state.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      properties:
-        oneOf:
-          - order:
+      oneOf:
+        - type: object
+          required: [order]
+          properties:
+            order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-          - contract:
+        - type: object
+          required: [contract]
+          properties:
+            contract:
               $ref: '#/components/schemas/Contract'
 
     OnUpdateConfirmMessage:
@@ -2267,7 +2306,7 @@ components:
 
     Provider:
       oneOf:
-        - 'https://schema.beckn.io/Provider/v2.0'
+        - $ref: 'https://schema.beckn.io/Provider/v2.0'
         - $id: "https://schema.beckn.io/Provider/v2.1"
           $schema: "https://json-schema.org/draft/2020-12/schema"
           description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2559,7 +2598,7 @@ components:
             geometry:
               $ref: 'https://schema.beckn.io/GeoJSONGeometry/v2.0'
             spatialConstraintAttributes:
-              $ref: '#/components/schemas/Attributes'
+              $ref: 'https://schema.beckn.io/Attributes/v2.0'
 
     StatusAction:
       $id: https://schema.beckn.io/StatusAction/v2.0
