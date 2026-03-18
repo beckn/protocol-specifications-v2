@@ -1,0 +1,105 @@
+{
+  "$schema": "https://schema.beckn.io/OnCancelAction/v2.0",
+  "context": {
+    "action": "beckn/on_cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "oncanc-msg-006",
+    "timestamp": "2026-03-10T13:05:02.300Z",
+    "transactionId": "txn-0006-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000006",
+      "displayId": "DOM-BLR-20260310-006",
+      "status": "CANCELLED",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "deepa.krishna@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Deepa Krishna"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-indiranagar",
+          "role": "provider",
+          "displayName": "Domino's — Indiranagar"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-pizza-mania-paneer-onion",
+          "offerId": "offer-pm-paneer-onion",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 3
+          },
+          "price": {
+            "currency": "INR",
+            "value": 285,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 95,
+                "currency": "INR",
+                "description": "Pizza Mania Paneer & Onion"
+              }
+            ]
+          }
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 315,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 285,
+            "currency": "INR",
+            "description": "3x Pizza Mania Paneer & Onion"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 30,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "entitlements": [
+        {
+          "type": "CANCELLATION_CONFIRMATION",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Confirmed",
+            "shortDesc": "Order DOM-BLR-20260310-006 has been cancelled"
+          },
+          "id": "canc-ord-2026031000006"
+        },
+        {
+          "type": "REFUND",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Refund Initiated",
+            "shortDesc": "Refund of INR 315 will be credited within 5-7 business days"
+          },
+          "id": "ref-UTR202603100006",
+          "value": {
+            "currency": "INR",
+            "amount": 315
+          }
+        }
+      ]
+    }
+  }
+}

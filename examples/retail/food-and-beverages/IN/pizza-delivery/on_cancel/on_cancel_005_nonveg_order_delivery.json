@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.beckn.io/OnCancelAction/v2.0",
+  "context": {
+    "action": "beckn/on_cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "oncanc-msg-005",
+    "timestamp": "2026-03-10T12:05:02.300Z",
+    "transactionId": "txn-0005-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000005",
+      "displayId": "DOM-BLR-20260310-005",
+      "status": "CANCELLED",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "vikram.patel@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Vikram Patel"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-koramangala",
+          "role": "provider",
+          "displayName": "Domino's — Koramangala"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-nonveg-chicken-fiesta",
+          "offerId": "offer-chicken-fiesta-medium",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 695,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 695,
+                "currency": "INR",
+                "description": "Medium Chicken Fiesta"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-side-chicken-wings",
+          "offerId": "offer-chicken-wings",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 179,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 179,
+                "currency": "INR",
+                "description": "Chicken Wings"
+              }
+            ]
+          }
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 914,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 695,
+            "currency": "INR",
+            "description": "1x Medium Chicken Fiesta"
+          },
+          {
+            "type": "UNIT",
+            "value": 179,
+            "currency": "INR",
+            "description": "1x Chicken Wings"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "entitlements": [
+        {
+          "type": "CANCELLATION_CONFIRMATION",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Confirmed",
+            "shortDesc": "Order DOM-BLR-20260310-005 has been cancelled"
+          },
+          "id": "canc-ord-2026031000005"
+        },
+        {
+          "type": "REFUND",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Refund Initiated",
+            "shortDesc": "Refund of INR 914 will be credited within 5-7 business days"
+          },
+          "id": "ref-UTR202603100005",
+          "value": {
+            "currency": "INR",
+            "amount": 914
+          }
+        }
+      ]
+    }
+  }
+}

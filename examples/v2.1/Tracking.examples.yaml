@@ -1,9 +1,0 @@
-# Examples for Tracking schema
-
-basic:
-  summary: Basic tracking information
-  value:
-    expires_at: '2025-10-16T18:30:00Z'
-    tl_method: http/get
-    trackingStatus: active
-    url: https://track.bpp.example?order_id=ORD-123

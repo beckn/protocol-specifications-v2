@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.beckn.io/OnCancelAction/v2.0",
+  "context": {
+    "action": "beckn/on_cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "oncanc-msg-002",
+    "timestamp": "2026-03-10T09:05:02.300Z",
+    "transactionId": "txn-0002-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000002",
+      "displayId": "DOM-BLR-20260310-002",
+      "status": "CANCELLED",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "priya.nair@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Priya Nair"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-koramangala",
+          "role": "provider",
+          "displayName": "Domino's — Koramangala"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-veg-peppy-paneer",
+          "offerId": "offer-peppy-paneer-medium",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 595,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 595,
+                "currency": "INR",
+                "description": "Medium Peppy Paneer"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-dessert-choco-lava-cake",
+          "offerId": "offer-choco-lava-cake",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 2
+          },
+          "price": {
+            "currency": "INR",
+            "value": 198,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 99,
+                "currency": "INR",
+                "description": "Choco Lava Cake"
+              }
+            ]
+          }
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 833,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 595,
+            "currency": "INR",
+            "description": "1x Medium Peppy Paneer"
+          },
+          {
+            "type": "UNIT",
+            "value": 198,
+            "currency": "INR",
+            "description": "2x Choco Lava Cake"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "entitlements": [
+        {
+          "type": "CANCELLATION_CONFIRMATION",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Confirmed",
+            "shortDesc": "Order DOM-BLR-20260310-002 has been cancelled"
+          },
+          "id": "canc-ord-2026031000002"
+        },
+        {
+          "type": "REFUND",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Refund Initiated",
+            "shortDesc": "Refund of INR 833 will be credited within 5-7 business days"
+          },
+          "id": "ref-UTR202603100002",
+          "value": {
+            "currency": "INR",
+            "amount": 833
+          }
+        }
+      ]
+    }
+  }
+}

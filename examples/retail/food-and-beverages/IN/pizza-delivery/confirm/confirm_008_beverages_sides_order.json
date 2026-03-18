@@ -1,0 +1,238 @@
+{
+  "$schema": "https://schema.beckn.io/ConfirmAction/v2.0",
+  "context": {
+    "action": "beckn/confirm",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "conf-msg-008",
+    "timestamp": "2026-03-10T15:03:00.000Z",
+    "transactionId": "txn-0008-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "anjali.singh@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Anjali Singh",
+          "telephone": "+913210987654",
+          "email": "anjali.singh@example.com"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-koramangala",
+          "role": "provider",
+          "displayName": "Domino's — Koramangala"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-veg-double-cheese-margherita",
+          "offerId": "offer-double-cheese-margherita-medium",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 595,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 595,
+                "currency": "INR",
+                "description": "Medium Double Cheese Margherita"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-side-stuffed-garlic-breadsticks",
+          "offerId": "offer-stuffed-garlic-breadsticks",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 145,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 145,
+                "currency": "INR",
+                "description": "Stuffed Garlic Breadsticks"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-003",
+          "itemId": "item-bev-pepsi-300ml",
+          "offerId": "offer-pepsi-300ml",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 2
+          },
+          "price": {
+            "currency": "INR",
+            "value": 60,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 30,
+                "currency": "INR",
+                "description": "Pepsi 300ml"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-42,l",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "anjali.singh@food-app.example.com",
+              "role": "recipient"
+            }
+          ],
+          "stages": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:FulfillmentStage",
+              "id": "stage-delivery",
+              "start": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "id": "store-dominos-blr-koramangala",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.6245,
+                      12.9352
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "No. 80/1, 5th Block, 80 Feet Road",
+                    "addressLocality": "Koramangala",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560034",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T15:30:00.000Z",
+                  "end": "2026-03-10T15:35:00.000Z"
+                }
+              },
+              "end": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.5973,
+                      12.9655
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "42, Lavelle Road, Richmond Town",
+                    "addressLocality": "Richmond Town",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560025",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T15:40:00.000Z",
+                  "end": "2026-03-10T15:55:00.000Z"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 840,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 595,
+            "currency": "INR",
+            "description": "1x Medium Double Cheese Margherita"
+          },
+          {
+            "type": "UNIT",
+            "value": 145,
+            "currency": "INR",
+            "description": "1x Stuffed Garlic Breadsticks"
+          },
+          {
+            "type": "UNIT",
+            "value": 60,
+            "currency": "INR",
+            "description": "2x Pepsi 300ml"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "entitlements": [
+        {
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Payment Reference",
+            "shortDesc": "Payment ref: UTR202603100008"
+          },
+          "type": "PAYMENT_PROOF",
+          "id": "UTR202603100008"
+        }
+      ]
+    }
+  }
+}

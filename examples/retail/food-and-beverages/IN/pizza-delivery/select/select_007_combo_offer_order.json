@@ -1,0 +1,136 @@
+{
+  "$schema": "https://schema.beckn.io/SelectAction/v2.0",
+  "context": {
+    "action": "beckn/select",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "sel-msg-007",
+    "timestamp": "2026-03-10T14:01:00.000Z",
+    "transactionId": "txn-0007-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "role": "consumer",
+          "id": "session-consumer-22204"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-mgroad",
+          "role": "provider",
+          "displayName": "Domino's \u2014 MG Road"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-nonveg-keema-do-pyaza",
+          "offerId": "offer-keema-do-pyaza-large",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 1095,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 1095,
+                "currency": "INR",
+                "description": "Large Keema Do Pyaza"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-dip-cheesy-jalapeno",
+          "offerId": "offer-cheesy-jalapeno-dip",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 25,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 25,
+                "currency": "INR",
+                "description": "Cheesy Jalapeno Dip"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-003",
+          "itemId": "item-bev-7up-300ml",
+          "offerId": "offer-7up-300ml",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 30,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 30,
+                "currency": "INR",
+                "description": "7UP 300ml"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-plot",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "session-consumer-22204",
+              "role": "recipient"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.beckn.io/StatusAction/v2.0",
+  "context": {
+    "action": "beckn/status",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "stat-msg-003",
+    "timestamp": "2026-03-10T10:15:00.000Z",
+    "transactionId": "txn-0003-2026-dominos-pizza"
+  },
+  "message": {
+    "order": {
+      "id": "ord-2026031000003"
+    }
+  }
+}

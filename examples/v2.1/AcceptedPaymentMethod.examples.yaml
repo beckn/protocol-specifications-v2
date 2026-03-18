@@ -1,8 +1,0 @@
-# Examples for AcceptedPaymentMethod schema
-
-basic:
-  summary: Basic payment methods
-  value:
-    - UPI
-    - Card
-    - Wallet

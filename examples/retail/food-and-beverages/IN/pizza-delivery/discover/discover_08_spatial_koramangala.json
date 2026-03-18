@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.beckn.io/DiscoverAction/v2.0",
+  "context": {
+    "action": "beckn/discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "disc-0008-08_spati-msg",
+    "timestamp": "2026-03-10T08:00:07.000Z",
+    "transactionId": "txn-disc-0008-2026"
+  },
+  "message": {
+    "intent": {
+      "textSearch": "pizza near me",
+      "spatial": [
+        {
+          "op": "INTERSECTS",
+          "property": "provider.locations.geo",
+          "value": {
+            "type": "Point",
+            "coordinates": [
+              77.6245,
+              12.9352
+            ]
+          },
+          "distance": {
+            "value": 2,
+            "unit": "KM"
+          }
+        }
+      ],
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "location": {
+          "@type": "beckn:Location",
+          "geo": {
+            "type": "Point",
+            "coordinates": [
+              77.5973,
+              12.9655
+            ]
+          }
+        }
+      }
+    }
+  }
+}

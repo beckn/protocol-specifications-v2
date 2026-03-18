@@ -1,0 +1,136 @@
+{
+  "$schema": "https://schema.beckn.io/SelectAction/v2.0",
+  "context": {
+    "action": "beckn/select",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "sel-msg-003",
+    "timestamp": "2026-03-10T10:01:00.000Z",
+    "transactionId": "txn-0003-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "role": "consumer",
+          "id": "session-consumer-32405"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-indiranagar",
+          "role": "provider",
+          "displayName": "Domino's \u2014 Indiranagar"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-nonveg-chicken-dominator",
+          "offerId": "offer-chicken-dominator-regular",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 835,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 835,
+                "currency": "INR",
+                "description": "Regular Chicken Dominator"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-side-stuffed-garlic-breadsticks",
+          "offerId": "offer-stuffed-garlic-breadsticks",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 145,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 145,
+                "currency": "INR",
+                "description": "Stuffed Garlic Breadsticks"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-003",
+          "itemId": "item-bev-pepsi-300ml",
+          "offerId": "offer-pepsi-300ml",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 30,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 30,
+                "currency": "INR",
+                "description": "Pepsi 300ml"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-flat",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "session-consumer-32405",
+              "role": "recipient"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

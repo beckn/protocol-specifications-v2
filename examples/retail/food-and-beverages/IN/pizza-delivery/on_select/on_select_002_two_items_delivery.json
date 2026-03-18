@@ -1,0 +1,205 @@
+{
+  "$schema": "https://schema.beckn.io/OnSelectAction/v2.0",
+  "context": {
+    "action": "beckn/on_select",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "onsel-msg-002",
+    "timestamp": "2026-03-10T09:01:01.800Z",
+    "transactionId": "txn-0002-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "role": "consumer",
+          "id": "session-consumer-82290"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-koramangala",
+          "role": "provider",
+          "displayName": "Domino's \u2014 Koramangala"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-veg-peppy-paneer",
+          "offerId": "offer-peppy-paneer-medium",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 595,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 595,
+                "currency": "INR",
+                "description": "Medium Peppy Paneer"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-dessert-choco-lava-cake",
+          "offerId": "offer-choco-lava-cake",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 2
+          },
+          "price": {
+            "currency": "INR",
+            "value": 198,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 99,
+                "currency": "INR",
+                "description": "Choco Lava Cake"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-no.4",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "session-consumer-82290",
+              "role": "recipient"
+            }
+          ],
+          "stages": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:FulfillmentStage",
+              "id": "stage-delivery",
+              "start": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "id": "store-dominos-blr-koramangala",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.6245,
+                      12.9352
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "No. 80/1, 5th Block, 80 Feet Road",
+                    "addressLocality": "Koramangala",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560034",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T09:30:00.000Z",
+                  "end": "2026-03-10T09:35:00.000Z"
+                }
+              },
+              "end": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.6245,
+                      12.9352
+                    ]
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T09:40:00.000Z",
+                  "end": "2026-03-10T09:55:00.000Z"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 833,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 595,
+            "currency": "INR",
+            "description": "1x Medium Peppy Paneer"
+          },
+          {
+            "type": "UNIT",
+            "value": 198,
+            "currency": "INR",
+            "description": "2x Choco Lava Cake"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "quotes": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Quote",
+          "id": "quote-002",
+          "price": {
+            "currency": "INR",
+            "value": 833
+          },
+          "validity": {
+            "start": "2026-03-10T09:01:01Z",
+            "end": "2026-03-10T09:16:01Z"
+          }
+        }
+      ]
+    }
+  }
+}

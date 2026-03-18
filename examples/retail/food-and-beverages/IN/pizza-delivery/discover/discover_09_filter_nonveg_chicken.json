@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.beckn.io/DiscoverAction/v2.0",
+  "context": {
+    "action": "beckn/discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "disc-0009-09_filte-msg",
+    "timestamp": "2026-03-10T08:00:08.000Z",
+    "transactionId": "txn-disc-0009-2026"
+  },
+  "message": {
+    "intent": {
+      "filters": {
+        "type": "jsonpath",
+        "expression": "$[?(@.itemAttributes.food.classification == 'NON_VEG' && @.category.code == 'NON_VEG_PIZZA')]"
+      },
+      "consumer": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Consumer",
+        "location": {
+          "@type": "beckn:Location",
+          "geo": {
+            "type": "Point",
+            "coordinates": [
+              77.6674,
+              12.8392
+            ]
+          }
+        }
+      }
+    }
+  }
+}

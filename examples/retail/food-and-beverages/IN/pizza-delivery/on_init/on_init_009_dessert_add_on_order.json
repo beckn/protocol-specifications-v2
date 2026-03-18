@@ -1,0 +1,244 @@
+{
+  "$schema": "https://schema.beckn.io/OnInitAction/v2.0",
+  "context": {
+    "action": "beckn/on_init",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "oninit-msg-009",
+    "timestamp": "2026-03-10T16:02:01.500Z",
+    "transactionId": "txn-0009-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "ravi.kumar@food-app.example.com",
+          "role": "consumer",
+          "displayName": "Ravi Kumar",
+          "telephone": "+912109876543",
+          "email": "ravi.kumar@example.com"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Participant",
+          "id": "store-dominos-blr-indiranagar",
+          "role": "provider",
+          "displayName": "Domino's — Indiranagar"
+        }
+      ],
+      "items": [
+        {
+          "lineId": "line-001",
+          "itemId": "item-nonveg-chicken-pepperoni",
+          "offerId": "offer-chicken-pepperoni-regular",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 495,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 495,
+                "currency": "INR",
+                "description": "Regular Chicken Pepperoni"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-002",
+          "itemId": "item-side-chicken-wings",
+          "offerId": "offer-chicken-wings",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 179,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 179,
+                "currency": "INR",
+                "description": "Chicken Wings"
+              }
+            ]
+          }
+        },
+        {
+          "lineId": "line-003",
+          "itemId": "item-dessert-choco-lava-cake",
+          "offerId": "offer-choco-lava-cake",
+          "quantity": {
+            "unitCode": "EA",
+            "unitQuantity": 1
+          },
+          "price": {
+            "currency": "INR",
+            "value": 99,
+            "components": [
+              {
+                "type": "UNIT",
+                "value": 99,
+                "currency": "INR",
+                "description": "Choco Lava Cake"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-unit",
+          "mode": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FulfillmentMode",
+            "descriptor": {
+              "@type": "beckn:Descriptor",
+              "name": "Home Delivery"
+            },
+            "modeAttributes": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:RetailCoreFulfillmentAttributes",
+              "supportedFulfillmentTypes": [
+                "DELIVERY"
+              ],
+              "sla": {
+                "min": "PT25M",
+                "max": "PT45M",
+                "unitBasis": "ORDER_CONFIRMATION"
+              }
+            }
+          },
+          "participants": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Participant",
+              "id": "ravi.kumar@food-app.example.com",
+              "role": "recipient"
+            }
+          ],
+          "stages": [
+            {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:FulfillmentStage",
+              "id": "stage-delivery",
+              "start": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "id": "store-dominos-blr-indiranagar",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.6408,
+                      12.9784
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "No. 12, CMH Road, 1st Stage",
+                    "addressLocality": "Indiranagar",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560038",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T16:30:00.000Z",
+                  "end": "2026-03-10T16:35:00.000Z"
+                }
+              },
+              "end": {
+                "@context": "https://schema.beckn.io/",
+                "@type": "beckn:FulfillmentStageEndpoint",
+                "location": {
+                  "@type": "beckn:Location",
+                  "geo": {
+                    "type": "Point",
+                    "coordinates": [
+                      77.6674,
+                      12.8392
+                    ]
+                  },
+                  "address": {
+                    "streetAddress": "Unit 5, Salarpuria Symbiosis",
+                    "addressLocality": "Electronic City",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560100",
+                    "addressCountry": "IN"
+                  }
+                },
+                "time": {
+                  "start": "2026-03-10T16:40:00.000Z",
+                  "end": "2026-03-10T16:55:00.000Z"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "contractValue": {
+        "currency": "INR",
+        "value": 813,
+        "components": [
+          {
+            "type": "UNIT",
+            "value": 495,
+            "currency": "INR",
+            "description": "1x Regular Chicken Pepperoni"
+          },
+          {
+            "type": "UNIT",
+            "value": 179,
+            "currency": "INR",
+            "description": "1x Chicken Wings"
+          },
+          {
+            "type": "UNIT",
+            "value": 99,
+            "currency": "INR",
+            "description": "1x Choco Lava Cake"
+          },
+          {
+            "type": "DELIVERY",
+            "value": 40,
+            "currency": "INR",
+            "description": "Delivery fee"
+          }
+        ]
+      },
+      "paymentTerms": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:PaymentTerm",
+          "id": "payment-009",
+          "type": "PRE_ORDER",
+          "method": "CASH_ON_DELIVERY",
+          "amount": {
+            "currency": "INR",
+            "value": 813
+          },
+          "due": "2026-03-10T16:03:00.000Z",
+          "payTo": {
+            "method": "CASH_ON_DELIVERY"
+          }
+        }
+      ]
+    }
+  }
+}
