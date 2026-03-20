@@ -27,6 +27,7 @@
     "areaServed": "schema:areaServed",
     "category": "schema:category",
     "chargingStation": "beckn:chargingStation",
+    "qrIdentifier": "beckn:qrIdentifier",
     "amenityFeature": {
       "@id": "beckn:amenityFeature",
       "@type": "@id"

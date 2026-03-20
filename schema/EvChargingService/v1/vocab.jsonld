@@ -69,6 +69,15 @@
       "schema:rangeIncludes": "schema:Text"
     },
     {
+      "@id": "beckn:qrIdentifier",
+      "@type": "rdf:Property",
+      "rdfs:label": "QR identifier",
+      "rdfs:comment": "The short URL or plain-text token encoded in the physical QR code affixed to this charging connector. BPPs populate this during catalog publish so that BAPs can discover a specific connector by scanning its QR, without requiring CPO-specific SDK logic to resolve the scanned value.",
+      "rdfs:domain": "beckn:ChargingService",
+      "schema:rangeIncludes": "schema:Text",
+      "rdfs:seeAlso": "https://schema.org/identifier"
+    },
+    {
       "@id": "beckn:roamingNetwork",
       "@type": "rdf:Property",
       "rdfs:label": "Roaming network",

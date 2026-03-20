@@ -23,7 +23,7 @@ components:
     ########################################################################
     ChargingService:
       type: object
-      additionalProperties: false
+      additionalProperties: true
       required:
         - connectorType
         - maxPowerKW
@@ -37,6 +37,16 @@ components:
           description: EVSE identifier (e.g., OCPI/Hubject style).
           example: "IN*ECO*01*CCS2*A"
           x-jsonld: { "@id": evseId }
+
+        qrIdentifier:
+          type: string
+          description: >
+            The short URL or plain-text token encoded in the physical QR code
+            affixed to this connector. BPPs populate this during catalog publish
+            so that BAPs can discover a specific connector by scanning its QR
+            without requiring CPO-specific SDK logic to resolve the scanned value.
+          example: "https://charge.ecopower.in/cs01-ccs2"
+          x-jsonld: { "@id": qrIdentifier }
 
         # EV-specific technicals
         connectorType:
@@ -154,8 +164,21 @@ components:
           x-jsonld: { "@id": chargingSpeed }
 
         vehicleType:
-          type: string
-          enum: ["2-WHEELER", "3-WHEELER", "4-WHEELER"]
-          description: Type of vehicle that can use this charging service.
-          example: "4-WHEELER"
+          oneOf:
+            - type: string
+              enum: ["2-WHEELER", "3-WHEELER", "4-WHEELER"]
+              description: Single vehicle type supported by this charging service.
+              example: "4-WHEELER"
+            - type: array
+              items:
+                type: string
+                enum: ["2-WHEELER", "3-WHEELER", "4-WHEELER"]
+              minItems: 1
+              uniqueItems: true
+              description: Multiple vehicle types supported by this charging service.
+              example: ["2-WHEELER", "4-WHEELER"]
+          description: >
+            Vehicle type(s) that can use this charging service.
+            Use a single string for backwards compatibility or an array
+            when the connector supports multiple vehicle types.
           x-jsonld: { "@id": vehicleType }
