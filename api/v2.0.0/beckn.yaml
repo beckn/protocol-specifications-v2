@@ -1088,7 +1088,7 @@ components:
           required: [order]
           properties:
             order:
-              - $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/Order/v2.0'
         - type: object
           required: [contract]
           properties:
@@ -1300,7 +1300,9 @@ components:
       oneOf:
         - type: object
           ratings:
-            $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+            type: array
+            items:
+              $ref: 'https://schema.beckn.io/RatingInput/v2.0'
         - type: object
           additionalProperties: true
           properties:
@@ -1344,11 +1346,9 @@ components:
           required: [order]
           properties:
             order:
-              type: object
-              required: ['beckn:id']
-              properties:
-                'beckn:id':
-                  $ref: 'https://schema.beckn.io/Order/v2.0/properties/beckn:id'
+              allOf:
+                - $ref: 'https://schema.beckn.io/Order/v2.0'
+                - required: ['beckn:id']
         - type: object
           description: Query by contract identifier
           required: [contract]
@@ -1368,36 +1368,15 @@ components:
         support contact information or to open a support ticket for an existing
         order/contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
-      additionalProperties: true
-      properties:
-        supportAttributes:
-          type: object
-          description: Domain-specific extension attributes for this support action.
+      oneOf:
+        - $ref: 'https://schema.beckn.io/SupportRequest/v2.0'
+        - type: object
           properties:
-            '@context':
-              type: array
-              items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'https://schema.beckn.io/SupportAction/v2.0/context.jsonld'
-              minItems: 1
-            '@type':
-              type: array
-              items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'beckn:SupportAction'
-              minItems: 1
-        supportRequest:
-          allOf:
-            - $ref: '#/components/schemas/SupportRequest'
-      required:
-        - supportRequest
+            support:
+              $ref: '#/components/schemas/Support'
+          required:
+            - support
+      
 
     TrackAction:
       oneOf:
@@ -1956,7 +1935,7 @@ components:
           description: >
             Records representing discharge of agreed consideration.
           items:
-            $ref: '#/components/schemas/ContractTerm'
+            $ref: '#/components/schemas/Attributes'
         status:
           description: The current state of the contract expressed as a Descriptor whose code MUST be one of the standard contract state values.
           allOf:
@@ -2010,8 +1989,6 @@ components:
         - status
         - resources
         - offer
-        - updatedAt
-        - updatedBy
       properties:
         "@context":
           type: string
@@ -2047,11 +2024,6 @@ components:
             - id
             - resourceIds
           $ref: '#/components/schemas/Offer'
-        updatedAt:
-          type: string
-          format: date-time
-        updatedBy:
-          $ref: '#/components/schemas/Participant/properties/id'
         commitmentAttributes:
           description: >
             Domain-specific extension attributes for this commitment.
@@ -2917,7 +2889,7 @@ components:
         id:
           type: string
         descriptor:
-          '#/components/schemas/Descriptor'
+          $ref: '#/components/schemas/Descriptor'
     
     SettlementMethod:
       type: object
@@ -2940,6 +2912,7 @@ components:
           type: string
         committed:
           type: boolean
+          default: false
         commitments:
           type: array
           items:
@@ -2960,7 +2933,7 @@ components:
             - $ref: '#/components/schemas/Performance'
           type: string
         trigger:
-          $ref: '#/components/schemas/Trigger'
+          $ref: '#/components/schemas/ActionTrigger'
         eligibleInstrument:
           $ref: '#/components/schemas/SettlementInstrument'
         schedule:
@@ -2975,10 +2948,6 @@ components:
             $ref: '#/components/schemas/SettlementMethod'
         settlementTermAttributes:
           $ref: '#/components/schemas/Attributes'
-        updatedAt:
-          type: date-time
-        updatedBy:
-          $ref: '#/components/schemas/Participant'
 
     Schedule:
       $id: 'https://schema.beckn.io/Schedule/v2.0'
@@ -3159,7 +3128,7 @@ components:
       $id: https://schema.beckn.io/Support
       description: Describes a support session
         info
-      title: SupportRequest
+      title: Support
       type: object
       properties:
         '@context':
