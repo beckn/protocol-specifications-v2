@@ -3,8 +3,8 @@
     "action": "on_discover",
     "bapId": "food-app.example.com",
     "bapUri": "https://food-app.example.com/beckn",
-    "bppId": "zomato.com",
-    "bppUri": "https://zomato.com/beckn",
+    "bppId": "tomato.com",
+    "bppUri": "https://tomato.com/beckn",
     "messageId": "d9f1a2b3-c4d5-6789-ef01-234567890abc",
     "networkId": "beckn:retail-network:in",
     "timestamp": "2026-03-10T08:00:01.300Z",
@@ -25,8 +25,8 @@
           "shortDesc": "Pizza, sides, desserts and beverages from Domino's India stores in Bangalore",
           "thumbnailImage": "https://res.cloudinary.com/zomato/image/upload/dominos-logo.png"
         },
-        "bppId": "zomato.com",
-        "bppUri": "https://zomato.com/beckn",
+        "bppId": "tomato.com",
+        "bppUri": "https://tomato.com/beckn",
         "providerId": "provider-dominos-india",
         "items": [
           {

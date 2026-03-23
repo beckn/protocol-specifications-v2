@@ -101,12 +101,12 @@ All examples conform to [`DiscoverAction/v2.0`](https://schema.beckn.io/Discover
 
 This example set is part of the end-to-end Beckn v2.0 retail flow:
 
-> **Consumer** (`food-app.example.com`) searches for pizza → **BPP** (`zomato.com`) returns a catalog of Domino's India items and offers.
+> **Consumer** (`food-app.example.com`) searches for pizza → **BPP** (`tomato.com`) returns a catalog of Domino's India items and offers.
 
 | Field | Value |
 |---|---|
 | BAP | `food-app.example.com` |
-| BPP | `zomato.com` |
+| BPP | `tomato.com` |
 | Transaction IDs | Per-file UUIDs (see each file) |
 
 ## Related endpoints

@@ -23,7 +23,7 @@ The `on_discover` response is sent by a BPP to a BAP in reply to a `discover` re
 
 ```
 Catalog (catalog-dominos-india-blr-001)
- ├── BPP: zomato.com
+ ├── BPP: tomato.com
  ├── Provider: provider-dominos-india (Domino's India)
  │    └── Locations: MG Road · Koramangala · Indiranagar (Bangalore)
  ├── items[] — 25 items across 8 categories
@@ -146,7 +146,7 @@ GeoJSON coordinate order is **[longitude, latitude]** (RFC 7946). Address uses `
 | Field | Value |
 |---|---|
 | BAP | `food-app.example.com` |
-| BPP | `zomato.com` |
+| BPP | `tomato.com` |
 | Provider | Domino's India (`provider-dominos-india`) |
 | Transaction ID | `txn-0001-2026-dominos-pizza` |
 
