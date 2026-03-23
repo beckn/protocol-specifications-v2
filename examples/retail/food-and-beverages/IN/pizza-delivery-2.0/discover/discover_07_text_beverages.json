@@ -1,0 +1,20 @@
+{
+  "context": {
+    "action": "discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "11111111-0007-4007-a007-000000000007",
+    "timestamp": "2026-03-10T08:00:06.000Z",
+    "transactionId": "aaaaaaaa-0007-4007-a007-000000000007"
+  },
+  "message": {
+    "intent": {
+      "textSearch": "cold drinks pepsi 7up"
+    }
+  }
+}

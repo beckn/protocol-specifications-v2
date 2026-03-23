@@ -1,0 +1,104 @@
+{
+  "context": {
+    "action": "select",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "sel-msg-003",
+    "timestamp": "2026-03-10T10:01:00.000Z",
+    "transactionId": "txn-0003-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "store-dominos-blr-indiranagar",
+          "displayName": "Domino's — Indiranagar"
+        }
+      ],
+      "commitments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-nonveg-chicken-dominator",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "offerId": "offer-chicken-dominator-regular",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "resourceId": "item-nonveg-chicken-dominator",
+            "classification": "NON_VEG",
+            "cuisine": "Indian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ],
+              "mayContain": [
+                "SULPHITES"
+              ]
+            }
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-side-stuffed-garlic-breadsticks",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "offerId": "offer-stuffed-garlic-breadsticks",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "resourceId": "item-side-stuffed-garlic-breadsticks",
+            "classification": "VEG",
+            "cuisine": "Italian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK"
+              ]
+            }
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-bev-pepsi-300ml",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "offerId": "offer-pepsi-300ml",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "resourceId": "item-bev-pepsi-300ml",
+            "classification": "VEG",
+            "cuisine": "American"
+          }
+        }
+      ]
+    }
+  }
+}

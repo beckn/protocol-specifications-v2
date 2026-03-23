@@ -1,0 +1,20 @@
+{
+  "context": {
+    "action": "discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "messageId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "networkId": "beckn:retail-network:in",
+    "timestamp": "2026-03-10T08:00:00.000Z",
+    "transactionId": "b7e3f1a2-c4d5-6789-bcde-f01234567890",
+    "version": "2.0.0",
+    "ttl": "PT30S"
+  },
+  "message": {
+    "intent": {
+      "textSearch": "Margherita Pizza near MG Road Bangalore"
+    }
+  }
+}

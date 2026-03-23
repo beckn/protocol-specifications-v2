@@ -1,0 +1,264 @@
+{
+  "context": {
+    "action": "confirm",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "conf-msg-005",
+    "timestamp": "2026-03-10T12:03:00.000Z",
+    "transactionId": "txn-0005-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Consumer/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Consumer"
+          ],
+          "id": "vikram.patel@food-app.example.com",
+          "displayName": "Vikram Patel",
+          "telephone": "+916543210987",
+          "email": "vikram.patel@example.com"
+        },
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "store-dominos-blr-koramangala",
+          "displayName": "Domino's — Koramangala"
+        }
+      ],
+      "commitments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-nonveg-chicken-fiesta",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-001",
+            "offerId": "offer-chicken-fiesta-medium",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "price": {
+              "currency": "INR",
+              "value": 695,
+              "components": [
+                {
+                  "type": "BASE_ITEM",
+                  "value": 695,
+                  "currency": "INR",
+                  "description": "Medium Chicken Fiesta"
+                }
+              ]
+            },
+            "resourceId": "item-nonveg-chicken-fiesta",
+            "classification": "NON_VEG",
+            "cuisine": "Indian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ],
+              "mayContain": [
+                "SULPHITES"
+              ]
+            }
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-side-chicken-wings",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-002",
+            "offerId": "offer-chicken-wings",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "price": {
+              "currency": "INR",
+              "value": 179,
+              "components": [
+                {
+                  "type": "BASE_ITEM",
+                  "value": 179,
+                  "currency": "INR",
+                  "description": "Chicken Wings"
+                }
+              ]
+            },
+            "resourceId": "item-side-chicken-wings",
+            "classification": "NON_VEG",
+            "cuisine": "Indian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ],
+              "mayContain": [
+                "SULPHITES"
+              ]
+            }
+          }
+        }
+      ],
+      "consideration": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Consideration",
+          "status": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "code": "PENDING"
+          },
+          "considerationAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBPriceSpecification",
+            "currency": "INR",
+            "value": 914,
+            "components": [
+              {
+                "type": "BASE_ITEM",
+                "value": 695,
+                "currency": "INR",
+                "description": "1x Medium Chicken Fiesta"
+              },
+              {
+                "type": "BASE_ITEM",
+                "value": 179,
+                "currency": "INR",
+                "description": "1x Chicken Wings"
+              },
+              {
+                "type": "DELIVERY_FEE",
+                "value": 40,
+                "currency": "INR",
+                "description": "Delivery fee"
+              }
+            ]
+          }
+        }
+      ],
+      "entitlements": [
+        {
+          "descriptor": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "name": "Payment Reference",
+            "shortDesc": "Payment ref: UTR202603100005"
+          },
+          "type": "PAYMENT_PROOF",
+          "id": "UTR202603100005"
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-tower",
+          "fulfillmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:HyperlocalDelivery",
+            "pickupLocation": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Location",
+              "id": "store-dominos-blr-koramangala",
+              "geo": {
+                "type": "Point",
+                "coordinates": [
+                  77.6245,
+                  12.9352
+                ]
+              },
+              "address": {
+                "streetAddress": "No. 80/1, 5th Block, 80 Feet Road",
+                "addressLocality": "Koramangala",
+                "addressRegion": "Karnataka",
+                "postalCode": "560034",
+                "addressCountry": "IN"
+              }
+            },
+            "deliveryLocation": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Location",
+              "geo": {
+                "type": "Point",
+                "coordinates": [
+                  77.7499,
+                  12.9698
+                ]
+              },
+              "address": {
+                "streetAddress": "Tower C, Prestige Shantiniketan",
+                "addressLocality": "Whitefield",
+                "addressRegion": "Karnataka",
+                "postalCode": "560066",
+                "addressCountry": "IN"
+              }
+            },
+            "itemsShipped": [
+              {
+                "@context": [
+                  "https://schema.beckn.io/Resource/v2.0",
+                  "https://schema.beckn.io/FoodAndBeverageItem/v2.0"
+                ],
+                "@type": [
+                  "beckn:Resource",
+                  "beckn:FnBItem"
+                ],
+                "itemId": "item-nonveg-chicken-fiesta",
+                "offerId": "offer-chicken-fiesta-medium",
+                "quantity": {
+                  "unitCode": "EA",
+                  "unitQuantity": 1
+                },
+                "lineId": "line-001"
+              },
+              {
+                "@context": [
+                  "https://schema.beckn.io/Resource/v2.0",
+                  "https://schema.beckn.io/FoodAndBeverageItem/v2.0"
+                ],
+                "@type": [
+                  "beckn:Resource",
+                  "beckn:FnBItem"
+                ],
+                "itemId": "item-side-chicken-wings",
+                "offerId": "offer-chicken-wings",
+                "quantity": {
+                  "unitCode": "EA",
+                  "unitQuantity": 1
+                },
+                "lineId": "line-002"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

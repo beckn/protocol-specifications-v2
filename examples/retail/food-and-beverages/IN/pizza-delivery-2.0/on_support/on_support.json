@@ -1,0 +1,56 @@
+{
+  "context": {
+    "action": "on_support",
+    "bapId": "pizza-app.example.com",
+    "bapUri": "https://pizza-app.example.com/beckn",
+    "bppId": "pizzeria-roma.example.com",
+    "bppUri": "https://pizzeria-roma.example.com/beckn",
+    "messageId": "a7b8c9d0-e1f2-3456-a012-567890123456",
+    "networkId": "beckn:retail-network:in",
+    "timestamp": "2026-03-10T08:06:01.100Z",
+    "transactionId": "txn-0001-2026-retail-pizza",
+    "version": "2.0.0",
+    "ttl": "PT30S"
+  },
+  "message": {
+    "support": {
+      "@context": "https://schema.beckn.io/",
+      "@type": "beckn:Support",
+      "name": "Pizzeria Roma Customer Care",
+      "channels": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:PhoneChannel",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Phone Support"
+          },
+          "value": "+918001234567"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:EmailChannel",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "Email Support"
+          },
+          "value": "support@pizzeria-roma.example.com"
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:WhatsAppChannel",
+          "descriptor": {
+            "@type": "beckn:Descriptor",
+            "name": "WhatsApp Support"
+          },
+          "value": "+918001234567"
+        }
+      ],
+      "telephone": "+918001234567",
+      "email": "support@pizzeria-roma.example.com",
+      "url": "https://pizzeria-roma.example.com/support",
+      "hoursAvailable": "Mon–Sun, 10:00 AM – 11:00 PM IST",
+      "callbackStatus": "REQUESTED"
+    }
+  }
+}

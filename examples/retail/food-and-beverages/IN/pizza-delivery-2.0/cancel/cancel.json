@@ -1,0 +1,86 @@
+{
+  "context": {
+    "action": "cancel",
+    "bapId": "pizza-app.example.com",
+    "bapUri": "https://pizza-app.example.com/beckn",
+    "bppId": "pizzeria-roma.example.com",
+    "bppUri": "https://pizzeria-roma.example.com/beckn",
+    "messageId": "f6a7b8c9-d0e1-2345-f012-456789012345",
+    "networkId": "beckn:retail-network:in",
+    "timestamp": "2026-03-10T08:05:00.000Z",
+    "transactionId": "txn-0001-2026-retail-pizza",
+    "version": "2.0.0",
+    "ttl": "PT30S"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "id": "f7a8b9c0-d1e2-4f3a-b5c6-789012345678",
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Consumer/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Consumer"
+          ],
+          "id": "arjun.sharma@pizza-app.example.com",
+          "displayName": "Arjun Sharma"
+        },
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "provider-roma-blr-mgroad-001",
+          "displayName": "Pizzeria Roma — MG Road"
+        }
+      ],
+      "commitments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-margherita-regular",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-001",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 2
+            },
+            "resourceId": "item-margherita-regular",
+            "classification": "VEG",
+            "cuisine": "Italian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ]
+            }
+          }
+        }
+      ],
+      "entitlements": [
+        {
+          "descriptor": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Reason",
+            "shortDesc": "Changed mind before preparation started"
+          },
+          "type": "CANCELLATION_REASON",
+          "id": "REASON-CHANGE-OF-MIND"
+        }
+      ]
+    }
+  }
+}

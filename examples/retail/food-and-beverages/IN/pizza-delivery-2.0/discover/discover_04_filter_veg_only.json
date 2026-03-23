@@ -1,0 +1,23 @@
+{
+  "context": {
+    "action": "discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "11111111-0004-4004-a004-000000000004",
+    "timestamp": "2026-03-10T08:00:03.000Z",
+    "transactionId": "aaaaaaaa-0004-4004-a004-000000000004"
+  },
+  "message": {
+    "intent": {
+      "filters": {
+        "type": "jsonpath",
+        "expression": "$[?(@.itemAttributes['@type'] == 'beckn:RetailCoreItemAttributes' && @.itemAttributes.food.classification == 'VEG')]"
+      }
+    }
+  }
+}

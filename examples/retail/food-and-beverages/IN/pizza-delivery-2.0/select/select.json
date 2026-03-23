@@ -1,0 +1,60 @@
+{
+  "context": {
+    "action": "select",
+    "bapId": "pizza-app.example.com",
+    "bapUri": "https://pizza-app.example.com/beckn",
+    "bppId": "pizzeria-roma.example.com",
+    "bppUri": "https://pizzeria-roma.example.com/beckn",
+    "messageId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "networkId": "beckn:retail-network:in",
+    "timestamp": "2026-03-10T08:01:00.000Z",
+    "transactionId": "txn-0001-2026-retail-pizza",
+    "version": "2.0.0",
+    "ttl": "PT30S"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "provider-roma-blr-mgroad-001",
+          "displayName": "Pizzeria Roma — MG Road"
+        }
+      ],
+      "commitments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-margherita-regular",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 2
+            },
+            "resourceId": "item-margherita-regular",
+            "classification": "VEG",
+            "cuisine": "Italian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,305 @@
+{
+  "context": {
+    "action": "init",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "init-msg-008",
+    "timestamp": "2026-03-10T15:02:00.000Z",
+    "transactionId": "txn-0008-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Consumer/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Consumer"
+          ],
+          "id": "anjali.singh@food-app.example.com",
+          "displayName": "Anjali Singh",
+          "telephone": "+913210987654",
+          "email": "anjali.singh@example.com",
+          "billingAddress": {
+            "streetAddress": "42, Lavelle Road, Richmond Town",
+            "addressLocality": "Richmond Town",
+            "addressRegion": "Karnataka",
+            "postalCode": "560025",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "store-dominos-blr-koramangala",
+          "displayName": "Domino's — Koramangala"
+        }
+      ],
+      "commitments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-veg-double-cheese-margherita",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-001",
+            "offerId": "offer-double-cheese-margherita-medium",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "price": {
+              "currency": "INR",
+              "value": 595,
+              "components": [
+                {
+                  "type": "BASE_ITEM",
+                  "value": 595,
+                  "currency": "INR",
+                  "description": "Medium Double Cheese Margherita"
+                }
+              ]
+            },
+            "resourceId": "item-veg-double-cheese-margherita",
+            "classification": "VEG",
+            "cuisine": "Italian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK",
+                "EGGS"
+              ]
+            }
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-side-stuffed-garlic-breadsticks",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-002",
+            "offerId": "offer-stuffed-garlic-breadsticks",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 1
+            },
+            "price": {
+              "currency": "INR",
+              "value": 145,
+              "components": [
+                {
+                  "type": "BASE_ITEM",
+                  "value": 145,
+                  "currency": "INR",
+                  "description": "Stuffed Garlic Breadsticks"
+                }
+              ]
+            },
+            "resourceId": "item-side-stuffed-garlic-breadsticks",
+            "classification": "VEG",
+            "cuisine": "Italian",
+            "allergenInfo": {
+              "contains": [
+                "GLUTEN",
+                "MILK"
+              ]
+            }
+          }
+        },
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Commitment",
+          "ref": "item-bev-pepsi-300ml",
+          "commitmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBItem",
+            "lineId": "line-003",
+            "offerId": "offer-pepsi-300ml",
+            "quantity": {
+              "unitCode": "EA",
+              "unitQuantity": 2
+            },
+            "price": {
+              "currency": "INR",
+              "value": 60,
+              "components": [
+                {
+                  "type": "BASE_ITEM",
+                  "value": 30,
+                  "currency": "INR",
+                  "description": "Pepsi 300ml"
+                }
+              ]
+            },
+            "resourceId": "item-bev-pepsi-300ml",
+            "classification": "VEG",
+            "cuisine": "American"
+          }
+        }
+      ],
+      "consideration": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Consideration",
+          "status": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "code": "PENDING"
+          },
+          "considerationAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:FnBPriceSpecification",
+            "currency": "INR",
+            "value": 840,
+            "components": [
+              {
+                "type": "BASE_ITEM",
+                "value": 595,
+                "currency": "INR",
+                "description": "1x Medium Double Cheese Margherita"
+              },
+              {
+                "type": "BASE_ITEM",
+                "value": 145,
+                "currency": "INR",
+                "description": "1x Stuffed Garlic Breadsticks"
+              },
+              {
+                "type": "BASE_ITEM",
+                "value": 60,
+                "currency": "INR",
+                "description": "2x Pepsi 300ml"
+              },
+              {
+                "type": "DELIVERY_FEE",
+                "value": 40,
+                "currency": "INR",
+                "description": "Delivery fee"
+              }
+            ]
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "@context": "https://schema.beckn.io/",
+          "@type": "beckn:Fulfillment",
+          "id": "fulfillment-delivery-42,l",
+          "fulfillmentAttributes": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:HyperlocalDelivery",
+            "pickupLocation": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Location",
+              "id": "store-dominos-blr-koramangala",
+              "geo": {
+                "type": "Point",
+                "coordinates": [
+                  77.6245,
+                  12.9352
+                ]
+              },
+              "address": {
+                "streetAddress": "No. 80/1, 5th Block, 80 Feet Road",
+                "addressLocality": "Koramangala",
+                "addressRegion": "Karnataka",
+                "postalCode": "560034",
+                "addressCountry": "IN"
+              }
+            },
+            "deliveryLocation": {
+              "@context": "https://schema.beckn.io/",
+              "@type": "beckn:Location",
+              "geo": {
+                "type": "Point",
+                "coordinates": [
+                  77.5973,
+                  12.9655
+                ]
+              },
+              "address": {
+                "streetAddress": "42, Lavelle Road, Richmond Town",
+                "addressLocality": "Richmond Town",
+                "addressRegion": "Karnataka",
+                "postalCode": "560025",
+                "addressCountry": "IN"
+              }
+            },
+            "itemsShipped": [
+              {
+                "@context": [
+                  "https://schema.beckn.io/Resource/v2.0",
+                  "https://schema.beckn.io/FoodAndBeverageItem/v2.0"
+                ],
+                "@type": [
+                  "beckn:Resource",
+                  "beckn:FnBItem"
+                ],
+                "itemId": "item-veg-double-cheese-margherita",
+                "offerId": "offer-double-cheese-margherita-medium",
+                "quantity": {
+                  "unitCode": "EA",
+                  "unitQuantity": 1
+                },
+                "lineId": "line-001"
+              },
+              {
+                "@context": [
+                  "https://schema.beckn.io/Resource/v2.0",
+                  "https://schema.beckn.io/FoodAndBeverageItem/v2.0"
+                ],
+                "@type": [
+                  "beckn:Resource",
+                  "beckn:FnBItem"
+                ],
+                "itemId": "item-side-stuffed-garlic-breadsticks",
+                "offerId": "offer-stuffed-garlic-breadsticks",
+                "quantity": {
+                  "unitCode": "EA",
+                  "unitQuantity": 1
+                },
+                "lineId": "line-002"
+              },
+              {
+                "@context": [
+                  "https://schema.beckn.io/Resource/v2.0",
+                  "https://schema.beckn.io/FoodAndBeverageItem/v2.0"
+                ],
+                "@type": [
+                  "beckn:Resource",
+                  "beckn:FnBItem"
+                ],
+                "itemId": "item-bev-pepsi-300ml",
+                "offerId": "offer-pepsi-300ml",
+                "quantity": {
+                  "unitCode": "EA",
+                  "unitQuantity": 2
+                },
+                "lineId": "line-003"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

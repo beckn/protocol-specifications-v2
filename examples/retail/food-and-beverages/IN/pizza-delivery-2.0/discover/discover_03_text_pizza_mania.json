@@ -1,0 +1,20 @@
+{
+  "context": {
+    "action": "discover",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "11111111-0003-4003-a003-000000000003",
+    "timestamp": "2026-03-10T08:00:02.000Z",
+    "transactionId": "aaaaaaaa-0003-4003-a003-000000000003"
+  },
+  "message": {
+    "intent": {
+      "textSearch": "pizza mania budget under 100"
+    }
+  }
+}

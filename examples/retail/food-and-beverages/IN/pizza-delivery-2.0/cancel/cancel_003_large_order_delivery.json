@@ -1,0 +1,65 @@
+{
+  "context": {
+    "action": "cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "canc-msg-003",
+    "timestamp": "2026-03-10T10:05:00.000Z",
+    "transactionId": "txn-0003-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000003",
+      "status": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Descriptor",
+        "code": "CANCELLATION_REQUESTED"
+      },
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Consumer/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Consumer"
+          ],
+          "id": "rahul.mehta@food-app.example.com",
+          "displayName": "Rahul Mehta"
+        },
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "store-dominos-blr-indiranagar",
+          "displayName": "Domino's — Indiranagar"
+        }
+      ],
+      "entitlements": [
+        {
+          "type": "CANCELLATION_REASON",
+          "descriptor": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Reason",
+            "shortDesc": "Order placed by mistake"
+          },
+          "id": "ALLERGIC_INGREDIENT"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "context": {
+    "action": "cancel",
+    "bapId": "food-app.example.com",
+    "bapUri": "https://food-app.example.com/beckn",
+    "bppId": "zomato.com",
+    "bppUri": "https://zomato.com/beckn",
+    "networkId": "beckn:retail-network:in",
+    "version": "2.0.0",
+    "ttl": "PT30S",
+    "messageId": "canc-msg-010",
+    "timestamp": "2026-03-10T17:05:00.000Z",
+    "transactionId": "txn-0010-2026-dominos-pizza"
+  },
+  "message": {
+    "contract": {
+      "@context": "https://schema.beckn.io/Contract/v2.0",
+      "@type": "beckn:Contract",
+      "id": "ord-2026031000010",
+      "status": {
+        "@context": "https://schema.beckn.io/",
+        "@type": "beckn:Descriptor",
+        "code": "CANCELLATION_REQUESTED"
+      },
+      "participants": [
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Consumer/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Consumer"
+          ],
+          "id": "meena.iyer@food-app.example.com",
+          "displayName": "Meena Iyer"
+        },
+        {
+          "@context": [
+            "https://schema.beckn.io/Participant/v2.0",
+            "https://schema.beckn.io/Restaurant/v2.0"
+          ],
+          "@type": [
+            "beckn:Participant",
+            "beckn:Restaurant"
+          ],
+          "id": "store-dominos-blr-mgroad",
+          "displayName": "Domino's — MG Road"
+        }
+      ],
+      "entitlements": [
+        {
+          "type": "CANCELLATION_REASON",
+          "descriptor": {
+            "@context": "https://schema.beckn.io/",
+            "@type": "beckn:Descriptor",
+            "name": "Cancellation Reason",
+            "shortDesc": "Ordered too much food"
+          },
+          "id": "DUPLICATE_ORDER"
+        }
+      ]
+    }
+  }
+}
