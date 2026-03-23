@@ -57,6 +57,31 @@ tags:
     description: Rate and support completed contracts/orders
   - name: Catalog Publishing
     description: Publish catalogs to a Catalog Discovery Service (CDS)
+  - name: Subscription
+    description: |
+      Beckn v2.0 catalog subscription management.
+      Subscriptions determine which networks and schema types a BAP receives
+      `on_discover` callbacks for. Only `ACTIVE` subscriptions are matched
+      during evaluation.
+  - name: Master Resource Search
+    description: |
+      Query APIs for master catalog items stored in the Catalog Indexer git
+      repository. All endpoints return a Beckn v2.0 response envelope with
+      `action: "on_catalog_master_search"`.
+  - name: Catalog Pull
+    description: |
+      Async catalog pull API hosted on the Catalog Indexer Job.
+      The BAP POSTs a pull request and receives an immediate ACK with a `requestId`.
+      The actual catalog data is delivered asynchronously via HTTP callback to
+      `{bapUri}/on_catalog_pull`.
+
+      Two delivery modes:
+      - **FULL** — latest version of each matching catalog
+      - **INCREMENTAL** — all versions within a date range (`fromDate`/`toDate`)
+
+      Large payloads exceeding the configured inline threshold are written to disk
+      and served via `GET /catalog/pull/result/{requestId}/catalogs.json`; the
+      callback's `objectUrl` field carries the download URL and `sha256` checksum.
 
 # All requests MUST carry a valid Beckn HTTP Signature in the Authorization header.
 # The securityScheme is informational; actual enforcement is done at the network layer.
@@ -916,6 +941,465 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # CATALOG EXTENSION — Subscription, Master Search, Pull
+  # ─────────────────────────────────────────────────────────────────────
+
+  /catalog/subscription:
+    post:
+      operationId: catalogSubscribe
+      tags: [Subscription]
+      security:
+        - BecknSignature: []
+      summary: Create subscription (catalog_subscribe)
+      description: |
+        Creates a new catalog subscription using the Beckn v2.0 envelope
+        (`action: "catalog_subscribe"`). The subscriber identity is derived
+        from `context.bapId` / `context.bapUri`; the callback URL defaults
+        to `bapUri`.
+
+        At least one of `networkIds` or `schemaTypes` must be non-empty.
+        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
+        matching all schema types for the specified networks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogSubscribeRequest'
+            example:
+              context:
+                version: '2.0'
+                action: catalog_subscribe
+                messageId: 550e8400-e29b-41d4-a716-446655440000
+                transactionId: 550e8400-e29b-41d4-a716-446655440001
+                timestamp: '2026-03-23T10:00:00.000Z'
+                bapId: bap.example.com
+                bapUri: https://bap.example.com
+              message:
+                subscription:
+                  networkIds: [retail]
+                  schemaTypes:
+                    - 'https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType'
+                  deliveryPolicy:
+                    retryCount: 3
+                    retryBackoffMultiplier: 2
+      responses:
+        '200':
+          description: Subscription created — Beckn on_catalog_subscribe envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogSubscribeResponse'
+        '400':
+          description: Validation failure or malformed signature header
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+    get:
+      operationId: listSubscriptions
+      tags: [Subscription]
+      security:
+        - BecknSignature: []
+      summary: List subscriptions by subscriber
+      description: |
+        Returns all `ACTIVE` subscriptions for the given `subscriberId`.
+        The `subscriberId` parameter accepts the BAP's URL (`bapUri`) or
+        its internal UUID.
+      parameters:
+        - name: subscriberId
+          in: query
+          required: true
+          description: BAP URI, BAP ID, or internal subscriber UUID
+          schema:
+            type: string
+          example: https://bap.example.com
+      responses:
+        '200':
+          description: List of matching subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSubscriptionsResponse'
+        '400':
+          description: Missing subscriberId parameter or malformed signature header
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+  /catalog/subscription/{id}:
+    get:
+      operationId: getSubscription
+      tags: [Subscription]
+      security:
+        - BecknSignature: []
+      summary: Get subscription by ID
+      description: Returns full details for a single subscription. Returns 404 if the subscription does not exist or has been deactivated.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subscription UUID
+          schema:
+            type: string
+            format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetail'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '404':
+          description: Subscription not found or inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+    delete:
+      operationId: deleteSubscription
+      tags: [Subscription]
+      security:
+        - BecknSignature: []
+      summary: Delete (deactivate) subscription
+      description: |
+        Soft-deletes a subscription by setting its status to `INACTIVE`.
+        The subscription record is retained in the database; it will no longer
+        receive catalog delivery callbacks.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subscription UUID
+          schema:
+            type: string
+            format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSubscriptionResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SubscriptionErrorResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+  /catalog/master/search:
+    post:
+      operationId: masterSearch
+      tags: [Master Resource Search]
+      security:
+        - BecknSignature: []
+      summary: Search master catalog items
+      description: |
+        Searches indexed master catalog items by network IDs and/or schema types.
+        Returns catalog-wrapped items using the Beckn v2.0 response envelope
+        (`action: "on_catalog_master_search"`).
+
+        Each catalog entry in the response is the full `catalog.json` stored in
+        git at index time (includes `bppUri`, full `descriptor`, etc.) with the
+        resolved `items` array injected.
+
+        **Pagination:** `limit` is clamped to `[1, 100]`, `offset` ≥ 0.
+        An empty `networkIds` or `schemaTypes` list matches all values.
+        The `message` field is required — a missing `message` returns HTTP 400 NACK.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MasterSearchRequest'
+      responses:
+        '200':
+          description: Master search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterSearchResponse'
+        '400':
+          description: NACK — missing or invalid message field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterNackResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterNackResponse'
+
+  /catalog/master/schemaTypes:
+    get:
+      operationId: listMasterSchemaTypes
+      tags: [Master Resource Search]
+      security:
+        - BecknSignature: []
+      summary: List distinct schema types
+      description: |
+        Returns all distinct schema type URIs among currently indexed master items.
+        Useful for discovery — callers can enumerate available types before
+        performing a filtered search.
+      responses:
+        '200':
+          description: List of schema type URIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaTypesResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+  /catalog/master/{masterItemId}:
+    get:
+      operationId: getMasterItem
+      tags: [Master Resource Search]
+      security:
+        - BecknSignature: []
+      summary: Get single master item
+      description: |
+        Returns the full master item JSON wrapped in its catalog envelope
+        (read from `catalog.json` in the item's bare git repo at index time).
+
+        **Path variable validation:** `masterItemId` must match
+        `^[a-zA-Z0-9_\-:.]+$` — any other format returns HTTP 400 NACK.
+      parameters:
+        - name: masterItemId
+          in: path
+          required: true
+          description: Master item ID (alphanumeric, hyphens, underscores, colons, dots)
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_\-:.]+$'
+          example: ITEM-001
+      responses:
+        '200':
+          description: Master item wrapped in catalog envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterItemResponse'
+        '400':
+          description: NACK — invalid masterItemId format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterNackResponse'
+        '404':
+          description: NACK — master item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterNackResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+  /catalog/pull:
+    post:
+      operationId: catalogPull
+      tags: [Catalog Pull]
+      security:
+        - BecknSignature: []
+      summary: Submit async catalog pull request
+      description: |
+        Accepts a pull request and returns an immediate HTTP 200 ACK with a
+        generated `requestId`. Processing runs asynchronously on the
+        `pullExecutor` thread pool.
+
+        When processing completes, the Catalog Indexer Job POSTs to
+        `{context.bapUri}/on_catalog_pull` with a `PullCallbackPayload`.
+
+        **Required fields:** `context.version`, `context.action`, `context.bapUri`,
+        `message.mode`.
+
+        **FULL mode:** returns the latest version of each catalog matching the filters.
+
+        **INCREMENTAL mode:** returns all catalog versions indexed between
+        `message.fromDate` and `message.toDate` (ISO-8601, inclusive).
+
+        **Payload size:**
+        - Small (< inline threshold): catalogs returned inline in the callback body.
+        - Large (≥ inline threshold): callback contains an `objectUrl` pointing to
+          `GET /catalog/pull/result/{requestId}/catalogs.json`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogPullRequest'
+      responses:
+        '200':
+          description: ACK — pull request accepted; result will be delivered asynchronously via callback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullAckResponse'
+        '400':
+          description: Validation failure — missing required fields (bapUri, mode, etc.) or malformed signature header
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MasterNackResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '500':
+          description: Internal server error or registry unreachable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MasterNackResponse'
+                  - $ref: '#/components/schemas/CatalogAuthErrorResponse'
+
+  /catalog/pull/result/{requestId}/{filename}:
+    get:
+      operationId: getPullResult
+      tags: [Catalog Pull]
+      security:
+        - BecknSignature: []
+      summary: Download large pull result file
+      description: |
+        Serves the result file written to disk when the pull payload exceeds the
+        configured inline threshold. Called by the BAP after receiving a callback
+        with a non-null `message.objectUrl`.
+
+        **Path traversal protection:**
+        - `requestId` must match the UUID v4 pattern
+          (`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).
+        - `filename` is validated against an allowlist; only `catalogs.json` is permitted.
+
+        Requests failing either check return HTTP 400 without a body.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          description: UUID v4 returned in the pull ACK response
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        - name: filename
+          in: path
+          required: true
+          description: Result filename — must be `catalogs.json`
+          schema:
+            type: string
+            enum: [catalogs.json]
+          example: catalogs.json
+      responses:
+        '200':
+          description: Pull result as JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullResultFile'
+        '400':
+          description: Invalid requestId format or disallowed filename
+        '401':
+          description: Beckn signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogAuthErrorResponse'
+        '404':
+          description: Result file not found (processing may still be in progress)
 
 # ─────────────────────────────────────────────────────────────────────
 # COMPONENTS
@@ -3305,6 +3789,649 @@ components:
         - endTime
       additionalProperties: false
 
+    # ── Catalog extension (subscription, master search, pull) ─────────────────
+    BecknContext:
+      type: object
+      description: Beckn Protocol v2.0 context block (camelCase fields, no coreVersion)
+      properties:
+        version:
+          type: string
+          description: Protocol version (e.g. "2.0")
+        action:
+          type: string
+          description: Beckn action identifier
+        messageId:
+          type: string
+          format: uuid
+        transactionId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        bapId:
+          type: string
+          description: BAP identifier
+        bapUri:
+          type: string
+          format: uri
+          description: BAP callback base URI
+        bppId:
+          type: string
+          description: BPP identifier
+        bppUri:
+          type: string
+          format: uri
+          description: BPP base URI
+        networkId:
+          type: string
+          description: Network identifier (String in v2.0, not a list)
+
+    CatalogDeliveryPolicy:
+      type: object
+      description: Retry delivery policy for catalog callbacks
+      properties:
+        retryCount:
+          type: integer
+          minimum: 0
+          description: Maximum number of delivery retry attempts
+          example: 3
+        retryBackoffMultiplier:
+          type: integer
+          minimum: 1
+          description: Exponential backoff multiplier between retries
+          example: 2
+
+    SubscriptionStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+      description: Lifecycle status of a subscription
+
+    SubscriptionDetail:
+      type: object
+      description: Full subscription record
+      required: [id, subscriberId, networkIds, schemaTypes, callbackUrl, deliveryPolicy, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Subscription UUID
+        subscriberId:
+          type: string
+          format: uuid
+          description: Internal subscriber UUID
+        networkIds:
+          type: array
+          items:
+            type: string
+          description: Network IDs covered by this subscription
+        schemaTypes:
+          type: array
+          items:
+            type: string
+          description: Schema type URIs filtered by this subscription (empty = wildcard "*")
+        callbackUrl:
+          type: string
+          format: uri
+          description: Delivery callback URL (derived from bapUri)
+        deliveryPolicy:
+          $ref: '#/components/schemas/CatalogDeliveryPolicy'
+        status:
+          $ref: '#/components/schemas/SubscriptionStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SubscriptionErrorResponse:
+      type: object
+      description: Error response for subscription endpoints
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - SUB_NOT_FOUND
+                - SUB_VALIDATION_FAILED
+                - SUB_INTERNAL_ERROR
+              description: Machine-readable subscription error code
+            message:
+              type: string
+              description: Human-readable error description
+
+    CatalogSubscribeRequest:
+      type: object
+      description: Beckn v2.0 catalog_subscribe request body
+      required: [context, message]
+      additionalProperties: false
+      properties:
+        context:
+          allOf:
+            - $ref: '#/components/schemas/BecknContext'
+            - type: object
+              required: [version, action, messageId, transactionId, timestamp, bapId, bapUri]
+              properties:
+                action:
+                  type: string
+                  const: catalog_subscribe
+        message:
+          type: object
+          required: [subscription]
+          additionalProperties: false
+          properties:
+            subscription:
+              type: object
+              description: |
+                Subscription filter criteria.
+                At least one of `networkIds` or `schemaTypes` must be non-empty.
+              additionalProperties: false
+              allOf:
+                - anyOf:
+                    - required: [networkIds]
+                      properties:
+                        networkIds:
+                          type: array
+                          items:
+                            type: string
+                          minItems: 1
+                    - required: [schemaTypes]
+                      properties:
+                        schemaTypes:
+                          type: array
+                          items:
+                            type: string
+                          minItems: 1
+                - type: object
+                  properties:
+                    networkIds:
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                      description: Network IDs to subscribe to (empty = all networks)
+                      default: []
+                    schemaTypes:
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                      description: Schema type URIs to filter on (empty = wildcard)
+                      default: []
+                    deliveryPolicy:
+                      $ref: '#/components/schemas/CatalogDeliveryPolicy'
+
+    CatalogSubscribeResponse:
+      type: object
+      description: Beckn v2.0 on_catalog_subscribe response envelope
+      required: [context, message]
+      properties:
+        context:
+          allOf:
+            - $ref: '#/components/schemas/BecknContext'
+            - type: object
+              required: [action, timestamp, messageId]
+              properties:
+                action:
+                  type: string
+                  const: on_catalog_subscribe
+        message:
+          type: object
+          required: [subscription]
+          properties:
+            subscription:
+              type: object
+              required: [id, status, networkIds, schemaTypes, createdAt]
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: Newly created subscription UUID
+                status:
+                  $ref: '#/components/schemas/SubscriptionStatus'
+                networkIds:
+                  type: array
+                  items:
+                    type: string
+                schemaTypes:
+                  type: array
+                  items:
+                    type: string
+                createdAt:
+                  type: string
+                  format: date-time
+
+    ListSubscriptionsResponse:
+      type: object
+      required: [count, subscriptions]
+      properties:
+        count:
+          type: integer
+          minimum: 0
+          description: Number of subscriptions returned
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionDetail'
+
+    DeleteSubscriptionResponse:
+      type: object
+      required: [id, status, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: INACTIVE
+        updatedAt:
+          type: string
+          format: date-time
+
+    MasterBecknContext:
+      type: object
+      description: Request context for master catalog search (requester is a BAP)
+      properties:
+        action:
+          type: string
+          description: Request action (e.g. "catalog_master_search")
+        messageId:
+          type: string
+          format: uuid
+        transactionId:
+          type: string
+          format: uuid
+        bapId:
+          type: string
+        bapUri:
+          type: string
+          format: uri
+        timestamp:
+          type: string
+          format: date-time
+
+    MasterSearchRequest:
+      type: object
+      description: |
+        Beckn v2.0 master catalog search request.
+        The `message` field is required; a missing `message` returns HTTP 400 NACK.
+      required: [message]
+      properties:
+        context:
+          $ref: '#/components/schemas/MasterBecknContext'
+        message:
+          type: object
+          properties:
+            filters:
+              type: object
+              description: Search filters (empty lists match all)
+              properties:
+                networkIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by network IDs (empty = all networks)
+                  default: []
+                schemaTypes:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by schema type URIs (empty = all types)
+                  default: []
+            pagination:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 20
+                  description: Maximum items per page (clamped to [1, 100])
+                offset:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: Zero-based result offset
+
+    CatalogEnvelope:
+      type: object
+      description: |
+        Full catalog envelope returned in master search responses.
+        Sourced from `catalog.json` committed to the master item's bare git repo at index time.
+        All published catalog fields (`bppUri`, full `descriptor`, etc.) are present.
+      properties:
+        id:
+          type: string
+          description: Catalog identifier
+        bppId:
+          type: string
+        bppUri:
+          type: string
+          format: uri
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        items:
+          type: array
+          items:
+            type: object
+            description: Full item JSON from git (domain-specific shape)
+            additionalProperties: true
+
+    MasterSearchResponseContext:
+      type: object
+      description: Response context for master search — always action on_catalog_master_search
+      required: [action, timestamp]
+      properties:
+        action:
+          type: string
+          const: on_catalog_master_search
+        timestamp:
+          type: string
+          format: date-time
+        messageId:
+          type: string
+          format: uuid
+          description: Echoed from request if present
+        transactionId:
+          type: string
+          format: uuid
+          description: Echoed from request if present
+
+    PaginationResult:
+      type: object
+      required: [total, limit, offset]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of matching items
+        limit:
+          type: integer
+          description: Page size used in this response
+        offset:
+          type: integer
+          description: Offset used in this response
+
+    MasterSearchResponse:
+      type: object
+      required: [context, message]
+      properties:
+        context:
+          $ref: '#/components/schemas/MasterSearchResponseContext'
+        message:
+          type: object
+          required: [catalogs, pagination]
+          properties:
+            catalogs:
+              type: array
+              items:
+                $ref: '#/components/schemas/CatalogEnvelope'
+            pagination:
+              $ref: '#/components/schemas/PaginationResult'
+
+    SchemaTypesResponse:
+      type: object
+      required: [context, message]
+      properties:
+        context:
+          $ref: '#/components/schemas/MasterSearchResponseContext'
+        message:
+          type: object
+          required: [schemaTypes]
+          properties:
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Distinct schema type URIs across all indexed master items
+
+    MasterItemResponse:
+      type: object
+      description: Single master item wrapped in its catalog envelope
+      required: [context, message]
+      properties:
+        context:
+          $ref: '#/components/schemas/MasterSearchResponseContext'
+        message:
+          type: object
+          required: [catalogs]
+          properties:
+            catalogs:
+              type: array
+              items:
+                $ref: '#/components/schemas/CatalogEnvelope'
+              minItems: 1
+              maxItems: 1
+              description: Single-element array containing the master item's catalog envelope
+
+    MasterNackResponse:
+      type: object
+      description: NACK response from master resource APIs
+      required: [context, status, error]
+      properties:
+        context:
+          $ref: '#/components/schemas/MasterSearchResponseContext'
+        status:
+          type: string
+          const: NACK
+        error:
+          type: object
+          required: [errorCode, errorMessage]
+          properties:
+            errorCode:
+              type: string
+              enum:
+                - INVALID_REQUEST
+                - INVALID_ITEM_ID
+                - ITEM_NOT_FOUND
+              description: Machine-readable error code
+            errorMessage:
+              type: string
+              description: Human-readable error description
+
+    PullMode:
+      type: string
+      enum: [FULL, INCREMENTAL]
+      description: |
+        - `FULL` — returns the latest version of each matching catalog.
+        - `INCREMENTAL` — returns all catalog versions indexed between
+          `fromDate` and `toDate` (inclusive).
+
+    PullFilter:
+      type: object
+      description: Optional filters narrowing which catalogs are returned
+      properties:
+        networkIds:
+          type: array
+          items:
+            type: string
+          description: Filter by network IDs (empty = all networks)
+          default: []
+        schemaTypes:
+          type: array
+          items:
+            type: string
+          description: Filter by schema type URIs (empty = all types)
+          default: []
+
+    CatalogPullRequest:
+      type: object
+      description: Request body for POST /catalog/pull
+      required: [context, message]
+      properties:
+        context:
+          type: object
+          description: Beckn v2.0 pull request context
+          required: [version, action, bapUri]
+          properties:
+            version:
+              type: string
+              minLength: 1
+              description: Protocol version (e.g. "2.0")
+            action:
+              type: string
+              minLength: 1
+              description: Beckn action (e.g. "catalog_pull")
+            timestamp:
+              type: string
+              format: date-time
+            messageId:
+              type: string
+              format: uuid
+            transactionId:
+              type: string
+              format: uuid
+            bapId:
+              type: string
+            bapUri:
+              type: string
+              format: uri
+              pattern: '^https?://.*'
+              description: BAP base URI — callback will be posted to `{bapUri}/on_catalog_pull`
+            ttl:
+              type: string
+              description: Optional time-to-live for this request (ISO-8601 duration)
+        message:
+          type: object
+          description: Pull request parameters
+          required: [mode]
+          properties:
+            mode:
+              $ref: '#/components/schemas/PullMode'
+            limit:
+              type: integer
+              minimum: 1
+              description: Maximum number of catalogs to return (server may apply its own cap)
+            fromDate:
+              type: string
+              format: date-time
+              description: Inclusive lower bound for INCREMENTAL mode
+            toDate:
+              type: string
+              format: date-time
+              description: Inclusive upper bound for INCREMENTAL mode
+            catalogIds:
+              type: array
+              items:
+                type: string
+              description: Explicit catalog IDs to pull (alternative to filters)
+            filters:
+              $ref: '#/components/schemas/PullFilter'
+
+    PullAckResponse:
+      type: object
+      description: Immediate HTTP 200 ACK — processing continues asynchronously
+      required: [status, requestId]
+      properties:
+        status:
+          type: string
+          const: ACK
+        requestId:
+          type: string
+          format: uuid
+          description: UUID v4 generated for this pull request; echoed in callback and result download path
+
+    PullObjectUrl:
+      type: object
+      description: |
+        Present in the callback when the payload exceeds the inline threshold.
+        The BAP should GET `url` to download the full result.
+      required: [url, format, sizeBytes, checksum]
+      properties:
+        url:
+          type: string
+          description: |
+            Download URL. For local storage: `/catalog/pull/result/{requestId}/catalogs.json`.
+            For GCS: a signed URL with expiry.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Expiry timestamp for signed URLs (GCS); absent for local URLs
+        format:
+          type: string
+          enum: [json, json.gz]
+          description: File format of the result
+        sizeBytes:
+          type: integer
+          format: int64
+          description: Size of the result file in bytes
+        checksum:
+          type: string
+          description: "SHA-256 checksum in the form `sha256:<hex>`"
+          example: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+    PullCallbackContext:
+      type: object
+      description: Context block in the async pull callback
+      required: [version, action, bapUri, timestamp]
+      properties:
+        version:
+          type: string
+        action:
+          type: string
+          const: on_catalog_pull
+        bapId:
+          type: string
+        bapUri:
+          type: string
+          format: uri
+        timestamp:
+          type: string
+          format: date-time
+        messageId:
+          type: string
+          format: uuid
+        transactionId:
+          type: string
+          format: uuid
+
+    PullResultFile:
+      type: object
+      description: |
+        JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
+        Same structure as the inline `catalog` array in the callback payload —
+        a list of distribution-envelope catalog objects.
+      properties:
+        catalogs:
+          type: array
+          items:
+            type: object
+            description: Full catalog distribution envelope (context + message + meta)
+            additionalProperties: true
+
+    CatalogAuthErrorResponse:
+      type: object
+      description: NACK returned when Beckn HTTP Signature verification fails (catalog extension)
+      required: [status, error]
+      properties:
+        status:
+          type: string
+          const: NACK
+        error:
+          type: object
+          required: [errorCode, errorMessage]
+          properties:
+            errorCode:
+              type: string
+              enum:
+                - SEC_SIGNATURE_MISSING
+                - SEC_SIGNATURE_INVALID
+                - SEC_KEY_NOT_FOUND
+                - SEC_KEY_EXPIRED_OR_REVOKED
+                - SEC_SUBSCRIBER_NOT_FOUND
+                - SEC_UNAUTHORIZED_ACTION
+                - INVALID_REQUEST
+                - NET_INTERNAL_ERROR
+              description: Machine-readable Beckn security error code
+            errorMessage:
+              type: string
+              description: Human-readable reason for the auth failure
+
   # ── Ack schema (shared by Ack, AckNoCallback, NackBadRequest, NackUnauthorized responses) ──
     AckSchema:
       $id: 'https://schema.beckn.io/Ack'
@@ -3328,6 +4455,81 @@ components:
           required:
             - status
             - signature
+
+  securitySchemes:
+    BecknSignature:
+      type: http
+      scheme: signature
+      description: |
+        **Beckn HTTP Signature** — Ed25519 asymmetric signature over the request body.
+
+        Verified by the Publish API service using the
+        [`beckn-auth-sdk`](https://github.com/manjudr/beck-auth-sdk) against the
+        Beckn Registry (`REGISTRY_BASE_URL`). The registry holds each subscriber's
+        Ed25519 public key.
+
+        Controlled by the `SIGNATURE_AUTH_ENABLED` environment variable
+        (default `true` in production; can be disabled for local development).
+
+        **Endpoints protected (Publish API — applies to all `/beckn/*` routes):**
+        `POST /catalog/subscription`, `GET /catalog/subscription`,
+        `GET /catalog/subscription/{id}`, `DELETE /catalog/subscription/{id}`.
+
+        **Endpoints protected (Catalog Indexer Job — `BecknAuthFilter` on `/*`):**
+        `POST /catalog/master/search`, `GET /catalog/master/schemaTypes`,
+        `GET /catalog/master/{masterItemId}`, `POST /catalog/pull`,
+        `GET /catalog/pull/result/{requestId}/{filename}`.
+
+        ---
+
+        ### Authorization Header Format
+
+        ```
+        Authorization: Signature keyId="{subscriberId}|{uniqueKeyId}|ed25519",
+                                  algorithm="ed25519",
+                                  created="{unix_epoch_seconds}",
+                                  expires="{unix_epoch_seconds}",
+                                  headers="(created) (expires) digest",
+                                  signature="{base64_ed25519_signature}"
+        ```
+
+        | Parameter | Description |
+        |-----------|-------------|
+        | `keyId` | `{subscriberId}\|{uniqueKeyId}\|ed25519` — all three segments required |
+        | `algorithm` | Always `ed25519` |
+        | `created` | Unix timestamp (seconds) when the signature was created |
+        | `expires` | Unix timestamp (seconds) when the signature expires |
+        | `headers` | Always `(created) (expires) digest` |
+        | `signature` | Base64-encoded Ed25519 signature of the signing string |
+
+        ### Signing String
+
+        ```
+        (created): {unix_epoch_seconds}
+        (expires): {unix_epoch_seconds}
+        digest: BLAKE-512={base64_blake2b512_hash_of_body}
+        ```
+
+        The digest is a **BLAKE2b-512** hash of the raw request body, Base64-encoded.
+
+        ### Error Responses
+
+        | HTTP | `errorCode` | Cause |
+        |------|-------------|-------|
+        | 400 | `SEC_SIGNATURE_MISSING` | `Authorization` header absent |
+        | 400 | `INVALID_REQUEST` | Header present but malformed |
+        | 401 | `SEC_SIGNATURE_INVALID` | Signature does not verify, expired, or created in future |
+        | 401 | `SEC_KEY_NOT_FOUND` | Key ID not found in registry |
+        | 401 | `SEC_KEY_EXPIRED_OR_REVOKED` | Public key expired in registry |
+        | 401 | `SEC_SUBSCRIBER_NOT_FOUND` | Subscriber not registered |
+        | 401 | `SEC_UNAUTHORIZED_ACTION` | Other auth failure |
+        | 500 | `NET_INTERNAL_ERROR` | Registry unreachable or timed out |
+
+        ### Whitelisting
+
+        Endpoints can be exempted per-deployment via the
+        `SIGNATURE_WHITELISTED_ENDPOINTS` env var
+        (comma-separated `METHOD:/path` entries, e.g. `GET:/catalog/subscription/:id`).
 
   responses:
     Ack:
@@ -3383,7 +4585,8 @@ components:
                     $ref: '#/components/schemas/Error'
 
     ServerError:
-      description: Internal failure on the network participant's application; the request could not be processed.
+      description: |
+        Internal failure on the network participant's application; the request could not be processed.
         The response body MAY contain an `error` object with additional details.
       content:
         application/json:
@@ -3392,5 +4595,66 @@ components:
             properties:
               error:
                 $ref: '#/components/schemas/Error'
-        
-      
+
+webhooks:
+  on_catalog_pull:
+    post:
+      operationId: onCatalogPull
+      tags: [Catalog Pull]
+      summary: Async pull result callback
+      description: |
+        POSTed by the Catalog Indexer Job to `{context.bapUri}/on_catalog_pull`
+        when pull processing completes.
+
+        The BAP must expose this endpoint and return `{"status":"ACK"}` (HTTP 200).
+        An HTTP 409 response is treated as AckNoCallback — logged and skipped, not an error.
+
+        Exactly one of `message.catalog` (inline) or `message.objectUrl` (large file)
+        will be non-null when `message.status` is `COMPLETED`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  $ref: '#/components/schemas/PullCallbackContext'
+                message:
+                  type: object
+                  required: [requestId, status]
+                  properties:
+                    requestId:
+                      type: string
+                      format: uuid
+                      description: Echoed from the pull ACK response
+                    status:
+                      type: string
+                      enum: [COMPLETED, PROCESSING, FAILED]
+                      description: |
+                        - `COMPLETED` — result available inline or via `objectUrl`.
+                        - `PROCESSING` — still running (intermediate callback, rare).
+                        - `FAILED` — pull failed; no catalog data.
+                    catalog:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: true
+                      description: Inline catalog data — present when payload is below the inline threshold
+                    objectUrl:
+                      $ref: '#/components/schemas/PullObjectUrl'
+      responses:
+        '200':
+          description: ACK — callback received
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ACK
+        '409':
+          description: AckNoCallback — logged and skipped by Catalg, not retried
