@@ -46,6 +46,12 @@ info:
     name: CC-BY-NC-SA 4.0 International
     url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
+servers:
+  - url: https://staging-api.becknprotocol.io
+    description: Staging server
+  - url: http://localhost:8080
+    description: Local development server
+
 tags:
   - name: Discovery
     description: Discover catalogs across a Beckn network
@@ -57,6 +63,10 @@ tags:
     description: Rate and support completed contracts/orders
   - name: Catalog Publishing
     description: Publish catalogs to a Catalog Discovery Service (CDS)
+
+# All requests MUST carry a valid Beckn HTTP Signature in the Authorization header.
+# The securityScheme is informational; actual enforcement is done at the network layer.
+security: []
 
 paths:
 
@@ -573,9 +583,7 @@ paths:
                 context:
                   $ref: '#/components/schemas/Context'
                 message:
-                  oneOf:
-                    - $ref: '#/components/schemas/UpdateInitMessage'
-                    - $ref: '#/components/schemas/UpdateConfirmMessage'
+                  $ref: '#/components/schemas/UpdateAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -611,9 +619,7 @@ paths:
                 context:
                   $ref: '#/components/schemas/Context'
                 message:
-                  oneOf:
-                    - $ref: '#/components/schemas/OnUpdateInitAction'
-                    - $ref: '#/components/schemas/OnUpdateConfirmMessage'
+                  $ref: '#/components/schemas/OnUpdateAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -648,9 +654,7 @@ paths:
                 context:
                   $ref: '#/components/schemas/Context'
                 message:
-                  oneOf:
-                    - $ref: '#/components/schemas/CancelInitAction'
-                    - $ref: '#/components/schemas/CancelConfirmAction'
+                  $ref: '#/components/schemas/CancelAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -685,9 +689,7 @@ paths:
                 context:
                   $ref: '#/components/schemas/Context'
                 message:
-                  oneOf:
-                    - $ref: '#/components/schemas/CancelInitAction'
-                    - $ref: '#/components/schemas/OnCancelConfirmAction'
+                  $ref: '#/components/schemas/OnCancelAction'
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1114,35 +1116,11 @@ components:
           properties:
             order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-        - oneOf:
-            - $ref: '#/components/schemas/OnCancelInitAction'
-            - $ref: '#/components/schemas/OnCancelConfirmAction'
-
-    OnCancelInitAction:
-      $id: https://schema.beckn.io/OnCancelInitAction/v2.0
-      title: On Cancel Init Action
-      description: |
-        Beckn /beckn/on_cancel (init phase) message payload. Sent by a BPP to a BAP
-        with the terms and consequences of cancellation before the BAP confirms.
-        (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
-      required: [contract]
-      properties:
-        contract:
-          $ref: '#/components/schemas/Contract'
-
-    OnCancelConfirmAction:
-      $id: https://schema.beckn.io/OnCancelConfirmAction/v2.0
-      title: On Cancel Confirm Action
-      description: |
-        Response to a /beckn/cancel confirm request. The BPP returns the
-        cancelled contract (v2.0+) with status = CANCELLED.
-        (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
-      required: [contract]
-      properties:
-        contract:
-          $ref: '#/components/schemas/Contract'
+        - type: object
+          required: [contract]
+          properties:
+            contract:
+              $ref: '#/components/schemas/Contract'
 
     OnConfirmAction:
       $id: https://schema.beckn.io/OnConfirmAction/v2.0
@@ -1319,35 +1297,11 @@ components:
           properties:
             order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
-        - oneOf:
-            - $ref: '#/components/schemas/OnUpdateInitAction'
-            - $ref: '#/components/schemas/OnUpdateConfirmAction'
-
-    OnUpdateConfirmAction:
-      $id: https://schema.beckn.io/OnUpdateConfirmAction/v2.0
-      title: On Update Confirm Action
-      description: |
-        Response to a /beckn/update confirm request. The BPP returns the
-        updated contract after the BAP has confirmed the update terms.
-        (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
-      required: [contract]
-      properties:
-        contract:
-          $ref: '#/components/schemas/Contract'
-
-    OnUpdateInitAction:
-      $id: https://schema.beckn.io/OnUpdateInitAction/v2.0
-      title: On Update Init Action
-      description: |
-        Beckn /beckn/on_update (init phase) message payload. Sent by a BPP to a BAP
-        with the proposed update terms before the BAP confirms.
-        (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
-      required: [contract]
-      properties:
-        contract:
-          $ref: '#/components/schemas/Contract'
+        - type: object
+          required: [contract]
+          properties:
+            contract:
+              $ref: '#/components/schemas/Contract'
 
 
     RateAction:
@@ -1461,7 +1415,6 @@ components:
         - supportRequest
 
     TrackAction:
-      $id: https://schema.beckn.io/TrackAction/v2.1
       oneOf:
         - $ref: https://schema.beckn.io/TrackAction/v2.0
         - type: object
@@ -1617,7 +1570,7 @@ components:
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
-          - $ref: "#/components/schemas/Descriptor"
+            - $ref: "#/components/schemas/Descriptor"
         id:
           description: Unique identifier for the catalog
           type: string
@@ -1661,8 +1614,7 @@ components:
                 description: Identifier of the network, participant, or role.
         validity:
           description: The time period during which this catalog is valid
-          allOf:
-          - $ref: "#/components/schemas/TimePeriod"
+          $ref: "#/components/schemas/TimePeriod"
       oneOf:
         - required: [items]
         - required: [resources]
