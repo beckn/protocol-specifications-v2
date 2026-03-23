@@ -1299,10 +1299,11 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
         - type: object
-          ratings:
-            type: array
-            items:
-              $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+          properties:
+            ratings:
+              type: array
+              items:
+                $ref: 'https://schema.beckn.io/RatingInput/v2.0'
         - type: object
           additionalProperties: true
           properties:
@@ -2605,9 +2606,7 @@ components:
               lineId:
                 type: string
               lineSummary:
-                oneOf:
-                  - $ref: '#/components/schemas/Commitment/properties/descriptor/properties/name'
-                  - type: string
+                type: string
               value:
                   type: number
               currency:
@@ -2666,6 +2665,47 @@ components:
       - descriptor
       additionalProperties: false
 
+    Quantity:
+      $id: https://schema.beckn.io/Quantity/v2.0
+      description: Schema definition for Quantity in the Beckn Protocol v2.0.1
+      title: Quantity
+      type: object
+      properties:
+        maxQuantity:
+          description: Maximum quantity for this price
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+          example: 100
+        minQuantity:
+          description: Minimum quantity for this price
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+          example: 1
+        unitCode:
+          description: Unit code for the quoted price (e.g., KWH, MIN, H, MON)
+          type: string
+          x-jsonld:
+            '@id': schema:unitCode
+          example: KWH
+        unitQuantity:
+          description: Quantity of the unit
+          type: number
+          x-jsonld:
+            '@id': schema:Number
+          example: 1
+        unitText:
+          description: Unit for the quoted price (e.g., kWh, minute, hour, month)
+          type: string
+          x-jsonld:
+            '@id': schema:unitText
+          example: kWh
+      x-jsonld:
+        '@id': schema:QuantitativeValue
+      additionalProperties: false
+      x-tags:
+      - common
     RatingForm: # Move to schema.beckn.io/RatingForm/v2.0
       $id: https://schema.beckn.io/RatingForm/v2.0
       $schema: "https://json-schema.org/draft/2020-12/schema"
@@ -2901,7 +2941,7 @@ components:
         id:
           type: string
         descriptor:
-          '#/components/schemas/Descriptor'
+          $ref: '#/components/schemas/Descriptor'
 
 
     SettlementTerm:
