@@ -2259,10 +2259,13 @@ components:
           type: array
           minItems: 4
           maxItems: 4
+          items:
+            type: number
         coordinates:
           description: Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon,
             lat, (alt)]**. For Polygons, this is an array of linear rings; each ring is an array of positions.
           type: array
+          items: {}
         geometries:
           description: Member geometries when `type` is **GeometryCollection**.
           type: array
@@ -3225,7 +3228,6 @@ components:
           description: Link/handle to off-network tracking UI or endpoint.
           type: string
           format: uri
-        additionalProperties: true
 
       required:
       - '@context'
