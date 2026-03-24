@@ -3274,38 +3274,34 @@ components:
       x-tags: [common]
       type: object
       properties:
+        '@context':
+          description: JSON-LD type for a date-time period
+          type: string
+          const: "https://schema.beckn.io/TimePeriod/v2.1"
         '@type':
           description: JSON-LD type for a date-time period
           type: string
-          example: TimePeriod
+          const: TimePeriod
         startDate:
           description: Start instant (inclusive)
           type: string
           format: date-time
           example: '2025-01-27T09:00:00Z'
-          x-jsonld:
-            '@id': schema:startDate
         endDate:
           description: End instant (exclusive or inclusive per domain semantics)
           type: string
           format: date-time
           example: '2025-12-31T23:59:59Z'
-          x-jsonld:
-            '@id': schema:endDate
         startTime:
           description: Start time of the time period
           type: string
           format: time
           example: 09:00:00
-          x-jsonld:
-            '@id': schema:startTime
         endTime:
           description: End time of the time period
           type: string
           format: time
           example: '22:00:00'
-          x-jsonld:
-            '@id': schema:endTime
       required:
       - '@type'
       anyOf:
