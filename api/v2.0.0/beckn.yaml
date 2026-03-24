@@ -1706,15 +1706,14 @@ components:
 
     Context:
       $id: "#/components/schemas/Context"
-      description: >-
+      description: |-
         Every API call in Beckn protocol has a context. It contains addressing information like the bap/bpp identifiers and API base urls, the protocol version implemented by the sender, the method being called, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specify the validity of the request, and a key to encrypt information if necessary.
       title: Context
-      x-tags: [common]
       type: object
       properties:
         action:
           description: The Beckn endpoint being called. Must conform to BecknEndpoint format.
-          $ref: "https://schema.beckn.io/BecknEndpoint/v2.0"
+          type: string
         bapId:
           description: A globally unique identifier of the BAP. Typically the fully qualified domain name (FQDN) of the BAP.
           type: string
@@ -1730,10 +1729,10 @@ components:
           type: string
           format: uri
         messageId:
-          description: >-
+          description: |
             A unique value which persists during a request/callback cycle. BAPs use
             this value to match an incoming callback from a BPP to an earlier call.
-            Generate a fresh message_id for every new interaction.
+            BAPs are expected to generate a fresh messageId for every new interaction. For independent callbacks, BPPs are expected to generate a fresh messageId for each callback.
           type: string
           format: uuid
         networkId:
@@ -1744,7 +1743,7 @@ components:
           type: string
           format: date-time
         transactionId:
-          description: >-
+          description: |
             A unique value which persists across all API calls from discover through
             confirm. Used to indicate an active user session across multiple requests.
           type: string
@@ -1759,9 +1758,9 @@ components:
         version:
           description: Version of Beckn protocol being used by the sender.
           type: string
-          default: 2.0.0
+          const: 2.0.0
         lineage:
-          description: >-
+          description: |
             An optional array of causal attribution records asserting that this
             Beckn transaction was triggered by one or more upstream Beckn interactions.
             Present only at transaction boundaries. MUST NOT be populated within
