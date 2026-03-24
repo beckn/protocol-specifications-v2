@@ -963,80 +963,23 @@ components:
     CatalogPublishAction:
       $id: https://schema.beckn.io/CatalogPublishAction/v2.0
       description: Catalog publish request payload.
-      type: object
-      required: [catalogs]
-      properties:
-        catalogPublishAttributes:
-          type: object
-          description: Domain-specific extension attributes for this catalog publish action.
+      required:
+        - catalogs
+      oneOf:
+        - type: object
           properties:
-            '@context':
+            catalogs:
               type: array
               items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'https://schema.beckn.io/CatalogPublishAction/v2.0/context.jsonld'
-              minItems: 1
-            '@type':
-              type: array
-              items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'beckn:CatalogPublishAction'
-              minItems: 1
-        catalogs:
-          type: array
-          minItems: 1
-          description: One or more catalogs to be indexed by the CDS
-          items:
-            $ref: '#/components/schemas/Catalog'
-
-    OnCatalogPublishAction:
-      $id: https://schema.beckn.io/CatalogPublishResponse/v2.0
-      type: object
-      required: [context, message]
-      properties:
-        onCatalogPublishAttributes:
-          type: object
-          description: Domain-specific extension attributes for this on_catalog_publish action.
+                $ref: https://schema.beckn.io/Catalog/v2.0
+        - type: object
           properties:
-            '@context':
+            catalogs:
               type: array
-              items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'https://schema.beckn.io/OnCatalogPublishAction/v2.0/context.jsonld'
               minItems: 1
-            '@type':
-              type: array
+              description: One or more catalogs to be indexed by the CDS
               items:
-                type: string
-                format: uri
-              uniqueItems: true
-              contains:
-                const: 'beckn:OnCatalogPublishAction'
-              minItems: 1
-        context:
-          allOf:
-            - $ref: '#/components/schemas/Context'
-            - type: object
-              properties:
-                action:
-                  const: 'on_catalog_publish'
-                  
-        message:
-          type: object
-          properties:
-            results:
-              type: array
-              items:
-                $ref: '#/components/schemas/CatalogProcessingResult'
+                $ref: '#/components/schemas/Catalog'
 
     ConfirmAction:
       $id: https://schema.beckn.io/ConfirmAction/v2.0
@@ -1663,7 +1606,7 @@ components:
       - descriptor
       additionalProperties: false
 
-    CatalogOnPublishMessage:
+    CatalogOnPublishAction:
       $id: 'https:schema.beckn.io/CatalogOnPublishMessage/v2.0'
       description: Catalog publish processing results from CDS to BPP.
       type: object
@@ -1671,7 +1614,6 @@ components:
       properties:
         results:
           type: array
-          description: Per-catalog processing results
           items:
             $ref: '#/components/schemas/CatalogProcessingResult'
 
