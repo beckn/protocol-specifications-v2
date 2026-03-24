@@ -1559,22 +1559,28 @@ components:
               enum: [FULL, MERGE]
               default: FULL
               description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
-            masterRef:
-              type: object
-              additionalProperties: false
-              required:
-                - masterItemId
-              properties:
-                masterItemId:
-                  type: string
-                  minLength: 1
-                  maxLength: 128
-                  pattern: "^[a-zA-Z0-9_:.\\-]+$"
-                pinnedVersion:
-                  type:
-                    - string
-                    - "null"
-                  description: Optional fixed master version/commit; null means latest master
+            itemDirectives:
+              description: Optional per-item extension mapping for regular catalogs
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - itemId
+                  - extends
+                properties:
+                  itemId:
+                    type: string
+                    description: Seller/provider item identifier in this catalog
+                  extends:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - masterItemId
+                    properties:
+                      masterItemId:
+                        type: string
+                        description: Canonical master item identifier being extended
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
