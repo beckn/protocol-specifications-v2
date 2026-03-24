@@ -1010,10 +1010,8 @@ components:
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - description: Flat form — Intent properties directly at top level (no intent container)
-          $ref: '#/components/schemas/Intent'
-        - description: Nested form — Intent properties inside an intent container object
-          type: object
+        - $ref: 'https://schema.beckn.io/Intent/v2.0'
+        - type: object
           required: [intent]
           properties:
             intent:
@@ -1128,10 +1126,12 @@ components:
       type: object
       additionalProperties: true
       properties:
-        ratingForms:
+        ratings:
           type: array
           items:
-            $ref: '#/components/schemas/RatingForm'
+            $ref: '#/components/schemas/Rating'
+        feedbackForm:
+          $ref: '#/components/schemas/Form'
       required:
         - ratingForms
 
@@ -1440,7 +1440,7 @@ components:
         descriptor:
           $ref: '#/components/schemas/Descriptor'
         addOnAttributes:
-          description: >
+          description: |
             Domain-specific extension attributes for this add-on.
           allOf:
             - $ref: '#/components/schemas/Attributes'
@@ -1495,8 +1495,6 @@ components:
           type: string
           example: 123 Tech Street
       additionalProperties: false
-      x-tags:
-      - common
 
     AsyncError: 
       title: Asynchronous Error
@@ -1508,7 +1506,7 @@ components:
           properties:
             '@context':
               type: string
-              default: '#/components/schemas/'
+              format: uri
             '@type':
               type: string
               default: AsyncError
@@ -1533,8 +1531,6 @@ components:
       - '@context'
       - '@type'
       additionalProperties: true
-      x-tags:
-      - common
 
     Catalog:
       $id: https://schema.beckn.io/Catalog/v2.1
@@ -1614,6 +1610,7 @@ components:
       properties:
         results:
           type: array
+          description: Per-catalog processing results
           items:
             $ref: '#/components/schemas/CatalogProcessingResult'
 
@@ -1670,7 +1667,7 @@ components:
     Consideration:
       $id: https://schema.beckn.io/Consideration/v2.0
       type: object
-      description: >
+      description: |
         Generalized representation of value exchanged under a Contract.
 
         Consideration is domain-neutral and may represent:
@@ -1698,7 +1695,7 @@ components:
           description: The status of this consideration
           $ref: '#/components/schemas/Descriptor'
         considerationAttributes:
-          description: >
+          description: |
             Domain-specific attributes of this consideration. For monetary considerations,
             use the PriceSpecification schema to capture total value with breakup.
             For other consideration types, use a generic Attributes bag.
@@ -1732,7 +1729,7 @@ components:
           description: |
             A unique value which persists during a request/callback cycle. BAPs use
             this value to match an incoming callback from a BPP to an earlier call.
-            BAPs are expected to generate a fresh messageId for every new interaction. For independent callbacks, BPPs are expected to generate a fresh messageId for each callback.
+            BAPs are expected to generate a fresh messageId for every new interaction. For independent callbacks, BPPs are expected to generate a fresh messageId for each callback. 
           type: string
           format: uuid
         networkId:
@@ -1783,8 +1780,8 @@ components:
     Contract:
       $id: https://schema.beckn.io/Contract/v2.1
       type: object
-      description: |
-        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.
+      description: | 
+        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract. 
         Alternate description A digitally agreed commitment between two or more participants
         governing the exchange of economic or non-economic value.
 
@@ -1823,7 +1820,7 @@ components:
         commitments:
           type: array
           description: |
-            Structured commitments governed by this contract.
+            Structured commitments governed by this contract. 
           minItems: 1
           items:
             $ref: '#/components/schemas/Commitment'
@@ -1967,8 +1964,7 @@ components:
             - resourceIds
           $ref: '#/components/schemas/Offer'
         commitmentAttributes:
-          description: >
-            Domain-specific extension attributes for this commitment.
+          description: Domain-specific extension attributes for this commitment.
           allOf:
             - $ref: '#/components/schemas/Attributes'
             - required:
@@ -2025,7 +2021,6 @@ components:
       $schema: "https://json-schema.org/draft/2020-12/schema"
       description: Schema definition for Descriptor in the Beckn Protocol v2.0.1
       title: Descriptor
-      x-tags: [common]
       type: object
       properties:
         '@context':
@@ -2072,7 +2067,7 @@ components:
 
     Entitlement:
       $id: https://schema.beckn.io/Entitlement/v2.0
-      description: A contractually granted, policy-governed right that allows a specific participant to access, use, or claim a defined economic resource within stated scope and validity constraints. It represents the enforceable permission created by an contract, independent of the credential used to exercise it. It is important to note that entitlements are different from committed resources / offers in the sense that they are derived from the resource commitments covered in a contract and are usually associated with the performance / fulfillment of a contract. Another important distinction is that while an offer can be rejected, an entitlement cannot. Typical examples of entitlements include entry / boarding passes, voucher redemptions. A more sophisticated example would be access to a streaming service (an entitlement) as a consequence of a streaming subscription.
+      description: A contractually granted, policy-governed right that allows a specific participant to access, use, or claim a defined economic resource within stated scope and validity constraints. It represents the enforceable permission created by an contract, independent of the credential used to exercise it. It is important to note that entitlements are different from committed resources / offers in the sense that they are derived from the resource commitments covered in a contract and are usually associated with the performance / fulfillment of a contract. Another important distinction is that while an offer can be rejected, an entitlement cannot. Typical examples of entitlements include entry / boarding passes, voucher redemptions. A more sophisticated example would be access to a streaming service (an entitlement) as a consequence of a streaming subscription. 
       title: Entitlement
       type: object
       properties:
@@ -2089,7 +2084,7 @@ components:
           description: A unique identifier for this entitlement within the entitlement provider's namespace
           type: string
         performanceId:
-          description: The performace that delivers this entitlement to the
+          description: The performace that delivers this entitlement to the 
           $ref: '#/components/schemas/Performance/properties/id'
         descriptor:
           description: Human-readable information regarding the entitlement like QR-code images, attached documents containing terms and conditions, video or audio files instructing the user on how to avail / use the entitlement
@@ -2184,13 +2179,13 @@ components:
           type: string
           default: Form
         id:
-          description: A unique identifier of this form.
+          description: A unique identifier of this form. 
           type: string
         descriptor:
           description: Description of the form
           $ref: '#/components/schemas/Descriptor'
         url:
-          description: |
+          description: | 
             The URL from where the form can be fetched. The content fetched from the url must be processed as per the mimeType specified in this object. Once fetched, the rendering platform can use the renderer.json of the respective form context choose to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the the render can process the form data and reproduce it as per the standard specified in the form.
           type: string
           format: uri
@@ -2236,7 +2231,7 @@ components:
                 - description: Raw form submission in a text/plain, text/html, or application/xml format
                   type: string
                 - description: Form data in an structured application/json mimetype
-                  type: object
+                  type: object  
         formAttributes:
           description: Domain-specific extension attributes for this form.
           allOf:
@@ -2285,7 +2280,7 @@ components:
         descriptor:
           $ref: '#/components/schemas/Descriptor'
         participantAttributes:
-          description: >
+          description: |
             Domain-specific extension attributes for this contract.
             Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
@@ -2359,8 +2354,6 @@ components:
       required:
       - type
       additionalProperties: true
-      x-tags:
-      - common
 
     Performance:
       $id: "https://schema.beckn.io/Performance/v2.2"
@@ -2473,7 +2466,6 @@ components:
       $id: https://schema.beckn.io/Intent/v2.0
       description: A declaration of an intent to transact
       title: Intent
-      x-tags: [common]
       type: object
       properties:
         textSearch:
@@ -2607,7 +2599,7 @@ components:
           description: Human / agent-readable description of this offer.
           $ref: '#/components/schemas/Descriptor'
         provider:
-          description: >
+          description: |
             Provider of this offer.
             - If the offer is published by the same provider as the item it is associated with,
               use only the provider's `id` (string reference).
@@ -2642,7 +2634,7 @@ components:
           $ref: '#/components/schemas/TimePeriod'
         availableTo:
           type: array
-          description: >
+          description: |
             Optional visibility constraint indicating which network participants
             (by participantId / networkId / role) are allowed to discover or
             transact on this entity.
@@ -2662,9 +2654,9 @@ components:
                 description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: '#/components/schemas/Attributes'
-          
 
     PriceSpecification:
+      description: TODO-get from schema.org
       type: object
       properties:
         priceUnit:
@@ -2707,7 +2699,6 @@ components:
           type: object
           additionalProperties: true
 
-
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2738,40 +2729,28 @@ components:
       type: object
       properties:
         maxQuantity:
-          description: Maximum quantity for this price
+          description: Maximum value 
           type: number
-          x-jsonld:
-            '@id': schema:Number
           example: 100
         minQuantity:
           description: Minimum quantity for this price
           type: number
-          x-jsonld:
-            '@id': schema:Number
           example: 1
         unitCode:
           description: Unit code for the quoted price (e.g., KWH, MIN, H, MON)
           type: string
-          x-jsonld:
-            '@id': schema:unitCode
           example: KWH
         unitQuantity:
           description: Quantity of the unit
           type: number
-          x-jsonld:
-            '@id': schema:Number
           example: 1
         unitText:
           description: Unit for the quoted price (e.g., kWh, minute, hour, month)
           type: string
-          x-jsonld:
-            '@id': schema:unitText
-          example: kWh
       x-jsonld:
-        '@id': schema:QuantitativeValue
+        '@id': beckn:Quantity
       additionalProperties: false
-      x-tags:
-      - common
+
     RatingInputDiscarded:
       $id: https://schema.beckn.io/RatingInput/v2.0
       title: RatingInput
@@ -2841,7 +2820,7 @@ components:
     Resource:
       $id: 'https://schema.beckn.io/Resource/v2.0'
       type: object
-      description: >
+      description: |
         A minimal, domain-neutral abstraction representing any discoverable,
         referenceable, or committable unit of value, capability, service,
         entitlement, or asset within the network.
@@ -3006,7 +2985,7 @@ components:
     Schedule:
       $id: 'https://schema.beckn.io/Schedule/v2.0'
       title: Schedule
-      description: >
+      description: |
         A schedule defines a repeating time period used to describe a regularly
         occurring Event. At a minimum a schedule will specify repeatFrequency which
         describes the interval between occurrences of the event. Additional information
@@ -3018,7 +2997,7 @@ components:
       type: object
       properties:
         byDay:
-          description: >
+          description: |
             Defines the day(s) of the week on which a recurring Event takes place.
             More specifically, to specify the day(s) of the week, use DayOfWeek;
             for daily recurrence, use schema:DayOfWeek/Everyday.
@@ -3031,7 +3010,7 @@ components:
                 type: string
                 description: Day-of-week strings (e.g. "Monday", "MO")
         byMonth:
-          description: >
+          description: |
             Defines the month(s) of the year on which a recurring Event takes place.
             Specified as an Integer between 1-12. January is 1.
           oneOf:
@@ -3044,7 +3023,7 @@ components:
                 minimum: 1
                 maximum: 12
         byMonthDay:
-          description: >
+          description: |
             Defines the day(s) of the month on which a recurring Event takes place.
             Specified as an Integer between 1-31.
           oneOf:
@@ -3057,7 +3036,7 @@ components:
                 minimum: 1
                 maximum: 31
         byMonthWeek:
-          description: >
+          description: |
             Defines the week(s) of the month on which a recurring Event takes place.
             Specified as an Integer between 1-5. For clarity, byMonthWeek is best
             used in conjunction with byDay to indicate concepts like the first and
@@ -3072,19 +3051,19 @@ components:
                 minimum: 1
                 maximum: 5
         duration:
-          description: >
+          description: |
             The duration of the item (e.g., using ISO 8601 duration format).
           type: string
           format: duration
           example: PT1H30M
         endDate:
-          description: >
+          description: |
             The end date and time of the item (in ISO 8601 date format).
           type: string
           format: date-time
           example: "2025-12-31T23:59:59Z"
         endTime:
-          description: >
+          description: |
             The end time of the item. For a reserved event or service (e.g. EventReservation),
             the time that it is expected to end. For actions that span a period of time,
             when the action was performed. e.g. John wrote a book from January to December.
@@ -3094,7 +3073,7 @@ components:
           format: time
           example: "18:00:00"
         exceptDate:
-          description: >
+          description: |
             Defines a Date or DateTime during which a scheduled Event will not take place.
             The property allows exceptions to a Schedule to be specified. If an exception
             is specified as a DateTime then only the event that would have started at that
@@ -3115,12 +3094,12 @@ components:
                   - type: string
                     format: date-time
         repeatCount:
-          description: >
+          description: |
             Defines the number of times a recurring Event will take place.
           type: integer
           minimum: 1
         repeatFrequency:
-          description: >
+          description: |
             Defines the frequency at which Events will occur according to a schedule Schedule.
             The intervals between events should be defined as a Duration of time.
             A schema:repeatFrequency value can be specified as either an ISO 8601 string
@@ -3129,19 +3108,19 @@ components:
           type: string
           example: P1W
         scheduleTimezone:
-          description: >
+          description: |
             Indicates the timezone for which the time(s) indicated in the Schedule are given.
             The value provided should be among those listed in the IANA Time Zone Database.
           type: string
           example: Asia/Kolkata
         startDate:
-          description: >
+          description: |
             The start date and time of the item (in ISO 8601 date format).
           type: string
           format: date-time
           example: "2025-01-01T00:00:00Z"
         startTime:
-          description: >
+          description: |
             The start time of the item. For a reserved event or service (e.g. EventReservation),
             the time that it is expected to start. For actions that span a period of time,
             when the action was performed. e.g. John wrote a book from January to December.
@@ -3208,9 +3187,7 @@ components:
       - '@context'
       - '@type'
       additionalProperties: false
-      x-tags:
-      - common
-
+    
     TimePeriod:
       $id: "https://schema.beckn.io/TimePeriod/v2.1"
       description: Time window with date-time precision for availability/validity
@@ -3260,7 +3237,7 @@ components:
 
     Tracking:
       $id: https://schema.beckn.io/Tracking
-      description: Information regarding live tracking of the fufillment of a contract
+      description: Information regarding live tracking of the fufillment of a contract 
       title: Tracking
       type: object
       properties:
