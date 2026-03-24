@@ -2772,123 +2772,71 @@ components:
       additionalProperties: false
       x-tags:
       - common
-    RatingForm: # Move to schema.beckn.io/RatingForm/v2.0
-      $id: https://schema.beckn.io/RatingForm/v2.0
+    RatingInputDiscarded:
+      $id: https://schema.beckn.io/RatingInput/v2.0
+      title: RatingInput
+      description: |
+        A rating input form. Extends FormInput with the @type fixed to beckn:RatingForm,
+        indicating that this form instance is specifically a rating form.
+      type: array
+      items:
+
+      $ref: '#/components/schemas/Form'
+
+    RatingInput:
+      $id: "https://schema.beckn.io/RatingInput/v2.1"
       $schema: "https://json-schema.org/draft/2020-12/schema"
-      description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings
-        and feedback of their respective users.
-      title: RatingForm
+      description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings and feedback of their respective users.
+      title: RatingInput
       x-tags: [common]
       type: object
       properties:
         '@context':
           type: string
           format: uri
-          const: "https://schema.beckn.io/"
+          const: "https://schema.beckn.io/RatingForm"
         '@type':
           type: string
           default: RatingForm
-          x-jsonld:
-            '@id': beckn:RatingForm
         target:
-          description: The entity being rated
+          description: The thing being rated. It could be a person, an application, a service, a product, an instrument used in the fulfillment of the contract, or the overall experience.
           type: object
           properties:
-            '@context':
-              type: string
-              format: uri
-              const: "https://schema.beckn.io/"
-            '@type':
-              type: string
-              default: RatingTarget
-              x-jsonld:
-                '@id': beckn:RatingTarget
             id:
               description: ID of the entity being rated (order/item/fulfillment/provider/agent).
               type: string
-            ratingTargetType:
-              description: What is being rated.
-              type: string
-              enum: [Order, Fulfillment, FulfillmentStage, Provider, Agent]
+            descriptor:
+              $ref: '#/components/schemas/Descriptor'
+            targetAttributes:
+              $ref: '#/components/schemas/Attributes'
+
         range:
           oneOf:
-            - type: object
-              properties:
-                bestRating:
-                  description: Maximum of the rating scale (default 5 if omitted).
-                  type: number
-                worstRating:
-                  description: Minimum of the rating scale (default 1 or 0 if omitted).
-                  type: number
-            - type: array
-              description: A custom rating range indexed from 0 to n
-              items:
-                type: object
-                properties:
-                  index:
-                    type: integer
-                    minimum: 0
-                  value:
-                    $ref: "#/components/schemas/Descriptor"
-        feedbackForm:
-          description: A feedback form sent along with a rating request
-          $ref: "https://schema.beckn.io/Form/v2.1"
-        feedbackRequired:
-          type: boolean
-          description: Specifies whether feedback after rating is required for acceptance of rating
+          - type: object
+            properties:
+              bestRating:
+                description: Maximum of the rating scale (default 5 if omitted).
+                type: number
+              worstRating:
+                description: Minimum of the rating scale (default 1 or 0 if omitted).
+                type: number
+          - type: array
+            description: A custom rating range indexed from 0 to n
+            properties:
+              index:
+                type: integer
+                minimum: 0
+              value:
+                $ref: "https://schema.beckn.io/Descriptor/v2.1"
+        feedbackFormSubmission:
+          description: The submission to the feedback form sent along with a rating request
+          $ref: https://schema.beckn.io/FormSubmission/v2.0
       required:
-        - '@context'
-        - '@type'
-        - target
-        - feedbackRequired
+      - '@context'
+      - '@type'
+      - target
+      - range
       additionalProperties: false
-
-    RatingInput:
-      $id: https://schema.beckn.io/RatingInput/v2.0
-      title: RatingInput
-      description: |
-        A rating input form. Extends FormInput with the @type fixed to beckn:RatingForm,
-        indicating that this form instance is specifically a rating form.
-      allOf:
-        - $ref: 'https://schema.beckn.io/FormSubmission/v2.0'
-        - type: object
-          properties:
-            '@type':
-              type: string
-              const: 'beckn:RatingForm'
-
-    Rating:
-      $id: https://schema.beckn.io/Rating
-      oneOf:
-        - $ref: '#/components/schemas/Rating'
-        - title: Rating
-          type: object
-          description: Aggregated rating information for an entity. Aligns with schema.org/AggregateRating semantics.
-          properties:
-            '@context':
-              type: string
-              format: uri
-              const: https://schema.beckn.io/
-            '@type':
-              type: string
-              default: beckn:Rating
-            minValue:
-              description: Rating value (typically 0-5)
-              type: number
-            maxValue:
-              description: Number of ratings
-              type: integer
-              minimum: 0
-              x-jsonld:
-                '@id': schema:ratingCount
-            reviewText:
-              description: Optional textual review or comment
-              type: string
-              x-jsonld:
-                '@id': schema:reviewBody
-          additionalProperties: false
-          x-tags:
-          - common
 
     Resource:
       $id: 'https://schema.beckn.io/Resource/v2.0'
