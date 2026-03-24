@@ -1285,7 +1285,7 @@ components:
         order/contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportRequest'
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
         - type: object
           properties:
             support:
