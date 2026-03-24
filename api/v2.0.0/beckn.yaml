@@ -2284,8 +2284,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Commitment/properties/id'
-        schedule:
-          $ref: '#/components/schemas/Schedule'
         performanceAttributes:
           description: >
             Domain-specific extension attributes for this fulfillment.
@@ -2994,3 +2992,5 @@ components:
             properties:
               error:
                 $ref: '#/components/schemas/Error'
+        
+      
