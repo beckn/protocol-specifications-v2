@@ -1513,7 +1513,7 @@ components:
               enum: [FULL, MERGE]
               default: FULL
               description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
-            resourceDirective:
+            resourceDirectives:
               description: Optional per-resource extension mapping for regular catalogs
               type: array
               items:
