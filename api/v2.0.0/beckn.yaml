@@ -1783,8 +1783,8 @@ components:
     Contract:
       $id: https://schema.beckn.io/Contract/v2.1
       type: object
-      description: > 
-        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract. 
+      description: |
+        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.
         Alternate description A digitally agreed commitment between two or more participants
         governing the exchange of economic or non-economic value.
 
@@ -1822,8 +1822,8 @@ components:
           $ref: '#/components/schemas/Descriptor'
         commitments:
           type: array
-          description: >
-            Structured commitments governed by this contract. 
+          description: |
+            Structured commitments governed by this contract.
           minItems: 1
           items:
             $ref: '#/components/schemas/Commitment'
@@ -1843,7 +1843,7 @@ components:
             $ref: '#/components/schemas/Participant'
         performance:
           type: array
-          description: >
+          description: |
             Execution units of the contract.
 
             Previously defined as `fulfillments`, performance is the generalized the legacy Fulfillment abstraction.
@@ -1865,16 +1865,16 @@ components:
         entitlements:
           type: array
           items:
-            $ref: '#/components/schemas/Entitlement'  
+            $ref: '#/components/schemas/Entitlement'
         settlements:
           type: array
-          description: >
+          description: |
             Records representing discharge of agreed consideration.
           items:
             $ref: '#/components/schemas/Settlement'
         terms:
           type: array
-          description: >
+          description: |
             Records representing discharge of agreed consideration.
           items:
             $ref: '#/components/schemas/Attributes'
@@ -1886,11 +1886,13 @@ components:
               properties:
                 code:
                   enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE]
+        forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attributes'
+
         contractAttributes:
-          description: >
-            Domain-specific extension attributes for this contract.
-            Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
-            other fulfillment types where no well-known domain schema exists.
+          description: Domain-specific extension attributes for this contract.
           allOf:
             - $ref: '#/components/schemas/Attributes'
             - required:
@@ -1920,8 +1922,6 @@ components:
                     - P2PEnergyTrade
 
       additionalProperties: false
-      x-tags:
-      - common
       required:
         - commitments
 
