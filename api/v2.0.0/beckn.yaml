@@ -1116,8 +1116,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RatingInput'
-        feedbackForm:
-          $ref: '#/components/schemas/Form'
+      ##Ravi - removed form
       required:
         - ratingForms
 
@@ -2619,17 +2618,8 @@ components:
         '@id': beckn:Quantity
       additionalProperties: false
 
-    RatingInputDiscarded:
-      $id: https://schema.beckn.io/RatingInput/v2.0
-      title: RatingInput
-      description: |
-        A rating input form. Extends FormInput with the @type fixed to beckn:RatingForm,
-        indicating that this form instance is specifically a rating form.
-      type: array
-      items:
-
-      $ref: '#/components/schemas/Form'
-
+    #ratingInputDiscraded removed 
+    
     RatingInput:
       $id: "https://schema.beckn.io/RatingInput/v2.1"
       $schema: "https://json-schema.org/draft/2020-12/schema"
