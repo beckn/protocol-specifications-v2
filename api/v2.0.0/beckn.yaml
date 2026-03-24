@@ -952,7 +952,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -969,7 +969,7 @@ components:
             catalogs:
               type: array
               items:
-                $ref: https://schema.beckn.io/Catalog/v2.0
+                $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog'
         - type: object
           properties:
             catalogs:
@@ -991,7 +991,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1006,7 +1006,7 @@ components:
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: 'https://schema.beckn.io/Intent/v2.0'
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Intent'
         - type: object
           properties:
             intent:
@@ -1023,7 +1023,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1042,7 +1042,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1060,7 +1060,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1096,7 +1096,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1134,7 +1134,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1152,7 +1152,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1204,7 +1204,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1225,7 +1225,7 @@ components:
             ratings:
               type: array
               items:
-                $ref: 'https://schema.beckn.io/RatingInput/v2.0'
+                $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/RatingInput'
         - type: object
           additionalProperties: true
           properties:
@@ -1246,7 +1246,7 @@ components:
         - type: object
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
@@ -1265,7 +1265,7 @@ components:
           properties:
             order:
               allOf:
-                - $ref: 'https://schema.beckn.io/Order/v2.0'
+                - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
                 - required: ['beckn:id']
         - type: object
           description: Query by contract identifier
@@ -1286,18 +1286,17 @@ components:
         order/contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: 'https://schema.beckn.io/SupportRequest/v2.0'
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportRequest'
         - type: object
           properties:
             support:
               $ref: '#/components/schemas/Support'
           required:
             - support
-      
-
+  
     TrackAction:
       oneOf:
-        - $ref: https://schema.beckn.io/TrackAction/v2.0
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/TrackAction'
         - type: object
           title: Track Action
           description: |
@@ -1361,7 +1360,7 @@ components:
           required: [order]
           properties:
             order:
-              $ref: 'https://schema.beckn.io/Order/v2.0'
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         - type: object
           properties:
             contract:
