@@ -1129,7 +1129,7 @@ components:
         ratings:
           type: array
           items:
-            $ref: '#/components/schemas/Rating'
+            $ref: '#/components/schemas/RatingInput'
         feedbackForm:
           $ref: '#/components/schemas/Form'
       required:
