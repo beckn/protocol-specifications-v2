@@ -2752,10 +2752,6 @@ components:
             - DRAFT
             - COMMITTED
             - COMPLETE
-        settlementActions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettlementAction'
         settlementAttributes:
           $ref: '#/components/schemas/Attributes'
 
