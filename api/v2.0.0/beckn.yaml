@@ -2072,7 +2072,7 @@ components:
 
     Entitlement:
       $id: https://schema.beckn.io/Entitlement/v2.0
-      description: A contractually granted, policy-governed right that allows a specific party to access, use, or claim a defined economic resource within stated scope and validity constraints. It represents the enforceable permission created by an order, independent of the credential used to exercise it.
+      description: A contractually granted, policy-governed right that allows a specific participant to access, use, or claim a defined economic resource within stated scope and validity constraints. It represents the enforceable permission created by an contract, independent of the credential used to exercise it. It is important to note that entitlements are different from committed resources / offers in the sense that they are derived from the resource commitments covered in a contract and are usually associated with the performance / fulfillment of a contract. Another important distinction is that while an offer can be rejected, an entitlement cannot. Typical examples of entitlements include entry / boarding passes, voucher redemptions. A more sophisticated example would be access to a streaming service (an entitlement) as a consequence of a streaming subscription.
       title: Entitlement
       type: object
       properties:
@@ -2088,24 +2088,49 @@ components:
         id:
           description: A unique identifier for this entitlement within the entitlement provider's namespace
           type: string
-        resource:
-          description: The resource being availed or accessed against this entitlement
-          $ref: '#/components/schemas/Resource/properties/id'
+        performanceId:
+          description: The performace that delivers this entitlement to the
+          $ref: '#/components/schemas/Performance/properties/id'
         descriptor:
-          description: Human-readable information regarding the entitlement like QR-code images, attached documents containing terms and conditions, video or audio files instructing the user on how to use the entitlement
+          description: Human-readable information regarding the entitlement like QR-code images, attached documents containing terms and conditions, video or audio files instructing the user on how to avail / use the entitlement
           $ref: '#/components/schemas/Descriptor'
-        credentials:
-          type: array
-          items:
-            $ref: '#/components/schemas/Descriptor'
-      additionalProperties: true
+        entitlementAttributes:
+          description: |
+            Domain-specific extension attributes for this entitlement.
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
+            - required:
+                - '@context'
+                - '@type'
+            - properties:
+                '@context':
+                  description: Domain-specific context in which this entitlement is being created
+                  type: string
+                  format: uri
+                  examples:
+                    - 'https://schema.beckn.io/BoardingPass/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/NationalPermit/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/ImmigrationClearance/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/FirstFreeService/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/ZeroCancellationFee/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/FreeGift/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/CreditVoucher/v2.0/context.jsonld'
+                '@type':
+                  description: JSON-LD type corresponding to the context
+                  type: string
+                  examples:
+                    - BoardingPass
+                    - NationalPermit
+                    - ImmigrationClearance
+                    - FirstFreeService
+                    - ZeroCancellationFee
+                    - FreeGift
+                    - CreditVoucher
       required:
       - '@context'
       - '@type'
       - id
       - descriptor
-      x-tags:
-      - common
 
     Error:
       $id: '#/components/schemas/Error/v2.0'
