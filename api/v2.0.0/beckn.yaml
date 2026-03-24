@@ -1498,6 +1498,7 @@ components:
           example: bpp.example.com
         publishDirectives:
           description: Directives controlling publish behavior for master/regular catalog flow
+          deprecated: true
           type: object
           additionalProperties: false
           required:
@@ -1512,28 +1513,28 @@ components:
               enum: [FULL, MERGE]
               default: FULL
               description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
-            itemDirectives:
-              description: Optional per-item extension mapping for regular catalogs
+            resourceDirective:
+              description: Optional per-resource extension mapping for regular catalogs
               type: array
               items:
                 type: object
                 additionalProperties: false
                 required:
-                  - itemId
+                  - resourceId
                   - extends
                 properties:
-                  itemId:
+                  resourceId:
                     type: string
-                    description: Seller/provider item identifier in this catalog
+                    description: Seller/provider resource identifier in this catalog
                   extends:
                     type: object
                     additionalProperties: false
                     required:
-                      - masterItemId
+                      - masterResourceId
                     properties:
-                      masterItemId:
+                      masterResourceId:
                         type: string
-                        description: Canonical master item identifier being extended
+                        description: Canonical master resource identifier being extended
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
