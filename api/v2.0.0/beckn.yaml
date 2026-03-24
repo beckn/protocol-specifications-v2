@@ -1497,8 +1497,7 @@ components:
           type: string
           example: bpp.example.com
         publishDirectives:
-          description: Directives controlling publish behavior for master/regular catalog flow
-          deprecated: true
+          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
           type: object
           additionalProperties: false
           required:
