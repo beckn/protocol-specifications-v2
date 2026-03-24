@@ -1543,6 +1543,38 @@ components:
           description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
           type: string
           example: bpp.example.com
+        publishDirectives:
+          description: Directives controlling publish behavior for master/regular catalog flow
+          type: object
+          additionalProperties: false
+          required:
+            - catalogType
+          properties:
+            catalogType:
+              type: string
+              enum: [master, regular]
+              description: master = canonical source catalog; regular = seller/provider extension catalog
+            updateMode:
+              type: string
+              enum: [FULL, MERGE]
+              default: FULL
+              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+            masterRef:
+              type: object
+              additionalProperties: false
+              required:
+                - masterItemId
+              properties:
+                masterItemId:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+                  pattern: "^[a-zA-Z0-9_:.\\-]+$"
+                pinnedVersion:
+                  type:
+                    - string
+                    - "null"
+                  description: Optional fixed master version/commit; null means latest master
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
