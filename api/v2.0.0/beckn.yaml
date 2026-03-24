@@ -3211,62 +3211,6 @@ components:
       x-tags:
       - common
 
-    Tracking:
-      $id: https://schema.beckn.io/Tracking
-      description: Information regarding live tracking of the fufillment of a contract 
-      title: Tracking
-      type: object
-      properties:
-        '@context':
-          description: TBD
-          type: string
-          format: uri
-          default: https://schema.beckn.io/
-        '@type':
-          description: TBD
-          type: string
-          default: beckn:Tracking
-        refId:
-          description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
-          type: string
-        status:
-          type: string
-          enum:
-          - ACTIVE
-          - INACTIVE
-          - NOT-SUPPORTED
-        url:
-          description: Link/handle to off-network tracking UI or endpoint.
-          type: string
-          format: uri
-
-      required:
-      - '@context'
-      - '@type'
-      - url
-      - status
-      x-jsonld:
-        '@type': schema:TrackAction
-        trackingStatus: $.trackingStatus
-        schema:target: $.url
-      additionalProperties: false
-      x-tags:
-      - common
-  
-    JSONLDHeaders:
-      type: object
-      properties:
-        '@context':
-            description: The JSON-LD context in which the attached object is being instantiated in. 
-            type: string
-            format: uri
-            default: https://schema.beckn.io/
-        '@type':
-            description: The JSON-LD type in which the attached object 
-            type: string
-            default: beckn:Tracking
-      required: ['@context', '@type']
-  
     TimePeriod:
       $id: "https://schema.beckn.io/TimePeriod/v2.1"
       description: Time window with date-time precision for availability/validity
@@ -3313,6 +3257,41 @@ components:
         - startTime
         - endTime
       additionalProperties: false
+
+    Tracking:
+      $id: https://schema.beckn.io/Tracking
+      description: Information regarding live tracking of the fufillment of a contract
+      title: Tracking
+      type: object
+      properties:
+        '@context':
+          description: TBD
+          type: string
+          format: uri
+          default: https://schema.beckn.io/
+        '@type':
+          description: TBD
+          type: string
+          default: beckn:Tracking
+        refId:
+          description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - NOT-SUPPORTED
+        url:
+          description: Link/handle to off-network tracking UI or endpoint.
+          type: string
+          format: uri
+
+      required:
+      - '@context'
+      - '@type'
+      - url
+      - status
 
   # ── Ack schema (shared by Ack, AckNoCallback, NackBadRequest, NackUnauthorized responses) ──
     AckSchema:
