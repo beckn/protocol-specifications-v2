@@ -1006,7 +1006,7 @@ components:
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Intent'
+        - $ref: '#/components/schemas/Intent'
         - type: object
           properties:
             intent:
