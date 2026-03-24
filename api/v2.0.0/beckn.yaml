@@ -1116,8 +1116,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RatingInput'
-        feedbackForm:
-          $ref: '#/components/schemas/Form'
+      ##Ravi - removed form
       required:
         - ratingForms
 
@@ -1495,6 +1494,45 @@ components:
           description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
           type: string
           example: bpp.example.com
+        publishDirectives:
+          deprecated: true
+          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
+          type: object
+          additionalProperties: false
+          required:
+            - catalogType
+          properties:
+            catalogType:
+              type: string
+              enum: [master, regular]
+              description: master = canonical source catalog; regular = seller/provider extension catalog
+            updateMode:
+              type: string
+              enum: [FULL, MERGE]
+              default: FULL
+              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+            resourceDirectives:
+              description: Optional per-resource extension mapping for regular catalogs
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - resourceId
+                  - extends
+                properties:
+                  resourceId:
+                    type: string
+                    description: Seller/provider resource identifier in this catalog
+                  extends:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - masterResourceId
+                    properties:
+                      masterResourceId:
+                        type: string
+                        description: Canonical master resource identifier being extended
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
@@ -1516,12 +1554,12 @@ components:
           description: Array of generalized Resource entities in this catalog (new model)
           type: array
           items:
-            $ref: '#/components/schemas/Resource'
-        addOns:
-          description: Array of offers optionally linked to resources
-          type: array
-          items:
-            $ref: "#/components/schemas/AddOn"
+            $ref: '#/components/schemas/Resource'     
+#        addOns: addOns is available insode offers - not needed here. 
+#          description: Array of offers optionally linked to resources
+#          type: array
+#          items:
+#            $ref: "#/components/schemas/AddOn"
         provider:
           $ref: "#/components/schemas/Provider"
         visibleTo:
@@ -1550,8 +1588,10 @@ components:
       required:
       - id
       - descriptor
-      - resources
       - provider
+      anyOf:
+        - required: [resources]
+        - required: [offers]      
       additionalProperties: false
 
     CatalogOnPublishAction:
@@ -1879,22 +1919,14 @@ components:
             individual Performance units.
           items:
             $ref: '#/components/schemas/Performance'
-        entitlements:
-          type: array
-          items:
-            $ref: '#/components/schemas/Entitlement'
+        #removed entitlements as the data is beign captrued across different atributes
         settlements:
           type: array
           description: |
             Records representing discharge of agreed consideration.
           items:
             $ref: '#/components/schemas/Settlement'
-        terms:
-          type: array
-          description: |
-            Records representing discharge of agreed consideration.
-          items:
-            $ref: '#/components/schemas/Attributes'
+        #removed terms as it can be decared in the contractAttributes by the needed use cases. 
         status:
           description: The current state of the contract expressed as a Descriptor whose code MUST be one of the standard contract state values.
           allOf:
@@ -1903,11 +1935,7 @@ components:
               properties:
                 code:
                   enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE]
-        forms:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attributes'
-
+        #removed forms as it can be decared in the contractAttributes by the needed use cases. 
         contractAttributes:
           description: Domain-specific extension attributes for this contract.
           allOf:
@@ -2085,68 +2113,6 @@ components:
       - '@type'
       additionalProperties: false
 
-    Entitlement:
-      $id: https://schema.beckn.io/Entitlement/v2.0
-      description: A contractually granted, policy-governed right that allows a specific participant to access, use, or claim a defined economic resource within stated scope and validity constraints. It represents the enforceable permission created by an contract, independent of the credential used to exercise it. It is important to note that entitlements are different from committed resources / offers in the sense that they are derived from the resource commitments covered in a contract and are usually associated with the performance / fulfillment of a contract. Another important distinction is that while an offer can be rejected, an entitlement cannot. Typical examples of entitlements include entry / boarding passes, voucher redemptions. A more sophisticated example would be access to a streaming service (an entitlement) as a consequence of a streaming subscription. 
-      title: Entitlement
-      type: object
-      properties:
-        '@context':
-          description: CPD
-          type: string
-          format: uri
-          default: https://schema.beckn.io/
-        '@type':
-          description: The domain-specific type of entitlement that allows domains to extend this schema
-          type: string
-          default: beckn:Entitlement
-        id:
-          description: A unique identifier for this entitlement within the entitlement provider's namespace
-          type: string
-        performanceId:
-          description: The performace that delivers this entitlement to the 
-          $ref: '#/components/schemas/Performance/properties/id'
-        descriptor:
-          description: Human-readable information regarding the entitlement like QR-code images, attached documents containing terms and conditions, video or audio files instructing the user on how to avail / use the entitlement
-          $ref: '#/components/schemas/Descriptor'
-        entitlementAttributes:
-          description: |
-            Domain-specific extension attributes for this entitlement.
-          allOf:
-            - $ref: '#/components/schemas/Attributes'
-            - required:
-                - '@context'
-                - '@type'
-            - properties:
-                '@context':
-                  description: Domain-specific context in which this entitlement is being created
-                  type: string
-                  format: uri
-                  examples:
-                    - 'https://schema.beckn.io/BoardingPass/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/NationalPermit/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/ImmigrationClearance/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/FirstFreeService/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/ZeroCancellationFee/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/FreeGift/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/CreditVoucher/v2.0/context.jsonld'
-                '@type':
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - BoardingPass
-                    - NationalPermit
-                    - ImmigrationClearance
-                    - FirstFreeService
-                    - ZeroCancellationFee
-                    - FreeGift
-                    - CreditVoucher
-      required:
-      - '@context'
-      - '@type'
-      - id
-      - descriptor
-
     Error:
       $id: '#/components/schemas/Error/v2.0'
       title: Error
@@ -2183,114 +2149,8 @@ components:
               type: string
             details:
               type: object
-    Form:
-      $id: https://schema.beckn.io/Form/v2.1
-      description: Describes a form used in a Beckn transaction
-      title: Form
-      type: object
-      properties:
-        '@context':
-          description: CPD
-          type: string
-          format: uri
-          default: https://schema.beckn.io/Form/v2.0
-        '@type':
-          description: The domain-specific type of entitlement that allows domains to extend this schema
-          type: string
-          default: Form
-        id:
-          description: A unique identifier of this form. 
-          type: string
-        descriptor:
-          description: Description of the form
-          $ref: '#/components/schemas/Descriptor'
-        url:
-          description: | 
-            The URL from where the form can be fetched. The content fetched from the url must be processed as per the mimeType specified in this object. Once fetched, the rendering platform can use the renderer.json of the respective form context choose to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the the render can process the form data and reproduce it as per the standard specified in the form.
-          type: string
-          format: uri
-        status:
-            description: Form availability status
-            allOf:
-              - $ref: '#/components/schemas/Descriptor'
-              - properties:
-                  code:
-                    type: string
-                    enum:
-                      - OPEN
-                      - CLOSED
-                    default: CLOSED
-        validity:
-          description: The period for which this form is valid
-          $ref: '#/components/schemas/TimePeriod'
-        submitAction:
-          type: object
-          properties:
-            status:
-              description: Form availability status
-              allOf:
-                - $ref: '#/components/schemas/Descriptor'
-                - properties:
-                    code:
-                      type: string
-                      enum:
-                        - SAVED-DRAFT
-                        - SUBMITTED
-                        - SUBMISSION-ACCEPTED
-                        - SUBMISSION-REJECTED
-                      default: DRAFT
-            encType:
-              type: string
-              enum:
-                - application/x-www-form-urlencoded
-                - multipart/form-data
-                - text/plain
-            data:
-              description: The data submitted in response to a form input
-              oneOf:
-                - description: Raw form submission in a text/plain, text/html, or application/xml format
-                  type: string
-                - description: Form data in an structured application/json mimetype
-                  type: object  
-        formAttributes:
-          description: Domain-specific extension attributes for this form.
-          allOf:
-            - $ref: '#/components/schemas/Attributes'
-            - required:
-                - '@context'
-                - '@type'
-            - properties:
-                '@context':
-                  description: Domain-specific context in which this contract is being created
-                  type: string
-                  format: uri
-                  examples:
-                    - 'https://schema.beckn.io/JobApplicationForm/v1.0/context.jsonld'
-                    - 'https://schema.beckn.io/WebCheckinForm/v1.0/context.jsonld'
-                    - 'https://schema.beckn.io/TermsOfServiceAgreement/12.0/context.jsonld'
-                    - 'https://schema.beckn.io/KnowYourCustomer/v1.0/context.jsonld'
-                    - 'https://schema.beckn.io/EnergyProgramEnrollmentForm/v1.0/context.jsonld'
-                    - 'https://schema.beckn.io/FeedbackForm/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/RatingForm/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/CancellationForm/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/ReturnForm/v2.0/context.jsonld'
-                '@type':
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - JobApplicationForm
-                    - WebCheckinForm
-                    - TermsOfServiceAgreement
-                    - KnowYourCustomer
-                    - EnergyProgramEnrollmentForm
-                    - FeedbackForm
-                    - RatingForm
-                    - CancellationForm
-                    - ReturnForm
-              additionalProperties: true
-      required:
-      - '@context'
-      - '@type'
+    
+    #removed Forms - should move to common schemas in schema repo 
       
     Participant:
       type: object
@@ -2422,8 +2282,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Commitment/properties/id'
-        schedule:
-          $ref: '#/components/schemas/Schedule'
         performanceAttributes:
           description: >
             Domain-specific extension attributes for this fulfillment.
@@ -2706,19 +2564,7 @@ components:
               quantity:
                 $ref: '#/components/schemas/Quantity'
 
-    ProcessingNotice:
-      $id: https://schema.beckn.io/ProcessingNotice/v2.0
-      type: object
-      required: [code, message]
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: object
-          additionalProperties: true
-
+    #removed unused ProcessingNotice 
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2771,17 +2617,8 @@ components:
         '@id': beckn:Quantity
       additionalProperties: false
 
-    RatingInputDiscarded:
-      $id: https://schema.beckn.io/RatingInput/v2.0
-      title: RatingInput
-      description: |
-        A rating input form. Extends FormInput with the @type fixed to beckn:RatingForm,
-        indicating that this form instance is specifically a rating form.
-      type: array
-      items:
-
-      $ref: '#/components/schemas/Form'
-
+    #ratingInputDiscraded removed 
+    
     RatingInput:
       $id: "https://schema.beckn.io/RatingInput/v2.1"
       $schema: "https://json-schema.org/draft/2020-12/schema"
@@ -2895,6 +2732,7 @@ components:
           default: "beckn:MonetaryTransfer"
         id:
           type: string
+        #@Ravi Cant a settlement be against multiple considerations? 
         considerationId:
           $ref: '#/components/schemas/Consideration/properties/id'
         status:
@@ -2903,250 +2741,12 @@ components:
             - DRAFT
             - COMMITTED
             - COMPLETE
-        settlementTerms:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettlementTerm'
-        settlementActions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettlementAction'
         settlementAttributes:
           $ref: '#/components/schemas/Attributes'
 
+    # The current model is very powerful, but it introduces orchestration semantics into the protocol. My proposal is to keep Settlement minimal in core and move workflow constructs like terms, actions, triggers into a settlement extension pack via settlementAttributes. 
 
-    SettlementAction:
-      $id: 'https://schema.beckn.io/SettlementAction/v2.0'
-      type: object
-      properties:
-        settlementTermId:
-          $ref: '#/components/schemas/SettlementTerm/properties/id'
-        status:
-          $ref: '#/components/schemas/Descriptor'
-        from:
-          $ref: '#/components/schemas/Participant'
-        to:
-          $ref: '#/components/schemas/Participant'
-        method:
-          $ref: '#/components/schemas/SettlementMethod'
-        instrument:
-          $ref: '#/components/schemas/SettlementInstrument'
-
-    SettlementInstrument:
-      type: object
-      properties:
-        '@context':
-          type: string
-        '@type':
-          type: string
-        id:
-          type: string
-        descriptor:
-          $ref: '#/components/schemas/Descriptor'
-    
-    SettlementMethod:
-      type: object
-      properties:
-        '@context':
-          type: string
-        '@type':
-          type: string
-        id:
-          type: string
-        descriptor:
-          $ref: '#/components/schemas/Descriptor'
-
-
-    SettlementTerm:
-      $id: 'https://schema.beckn.io/SettlementTerm/v2.0'
-      type: object
-      properties:
-        id:
-          type: string
-        committed:
-          type: boolean
-          default: false
-        commitments:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                  $ref: '#/components/schemas/Commitment/properties/id'
-            required:
-              - id
-        performance:
-          required:
-            - id
-          oneOf:
-            - type: object
-              properties:
-                id:
-                  $ref: '#/components/schemas/Performance/properties/id'
-            - $ref: '#/components/schemas/Performance'
-          type: string
-        trigger:
-          $ref: '#/components/schemas/ActionTrigger'
-        eligibleInstrument:
-          $ref: '#/components/schemas/SettlementInstrument'
-        schedule:
-          $ref: '#/components/schemas/Schedule'
-        from:
-          $ref: '#/components/schemas/Participant'
-        to:
-          $ref: '#/components/schemas/Participant'
-        eligibleMethods:
-          type: array
-          items:
-            $ref: '#/components/schemas/SettlementMethod'
-        settlementTermAttributes:
-          $ref: '#/components/schemas/Attributes'
-
-    Schedule:
-      $id: 'https://schema.beckn.io/Schedule/v2.0'
-      title: Schedule
-      description: |
-        A schedule defines a repeating time period used to describe a regularly
-        occurring Event. At a minimum a schedule will specify repeatFrequency which
-        describes the interval between occurrences of the event. Additional information
-        can be provided to specify the duration of occurrences, an exception to the
-        schedule (exceptDate), and an end condition (either numberOfRepeats, repeatCount
-        or endDate).
-
-        Modeled after https://schema.org/Schedule.
-      type: object
-      properties:
-        byDay:
-          description: |
-            Defines the day(s) of the week on which a recurring Event takes place.
-            More specifically, to specify the day(s) of the week, use DayOfWeek;
-            for daily recurrence, use schema:DayOfWeek/Everyday.
-            A string value may also be used, for example "Sunday", "MO" (for Monday), or "MO TU" (for Monday and Tuesday).
-          oneOf:
-            - type: string
-              description: A day-of-week string (e.g. "Monday", "MO", "MO TU WE")
-            - type: array
-              items:
-                type: string
-                description: Day-of-week strings (e.g. "Monday", "MO")
-        byMonth:
-          description: |
-            Defines the month(s) of the year on which a recurring Event takes place.
-            Specified as an Integer between 1-12. January is 1.
-          oneOf:
-            - type: integer
-              minimum: 1
-              maximum: 12
-            - type: array
-              items:
-                type: integer
-                minimum: 1
-                maximum: 12
-        byMonthDay:
-          description: |
-            Defines the day(s) of the month on which a recurring Event takes place.
-            Specified as an Integer between 1-31.
-          oneOf:
-            - type: integer
-              minimum: 1
-              maximum: 31
-            - type: array
-              items:
-                type: integer
-                minimum: 1
-                maximum: 31
-        byMonthWeek:
-          description: |
-            Defines the week(s) of the month on which a recurring Event takes place.
-            Specified as an Integer between 1-5. For clarity, byMonthWeek is best
-            used in conjunction with byDay to indicate concepts like the first and
-            third Mondays of a month.
-          oneOf:
-            - type: integer
-              minimum: 1
-              maximum: 5
-            - type: array
-              items:
-                type: integer
-                minimum: 1
-                maximum: 5
-        duration:
-          description: |
-            The duration of the item (e.g., using ISO 8601 duration format).
-          type: string
-          format: duration
-          example: PT1H30M
-        endDate:
-          description: |
-            The end date and time of the item (in ISO 8601 date format).
-          type: string
-          format: date-time
-          example: "2025-12-31T23:59:59Z"
-        endTime:
-          description: |
-            The end time of the item. For a reserved event or service (e.g. EventReservation),
-            the time that it is expected to end. For actions that span a period of time,
-            when the action was performed. e.g. John wrote a book from January to December.
-            For media, including audio and video, it's the time offset of the end of a clip
-            within a larger file.
-          type: string
-          format: time
-          example: "18:00:00"
-        exceptDate:
-          description: |
-            Defines a Date or DateTime during which a scheduled Event will not take place.
-            The property allows exceptions to a Schedule to be specified. If an exception
-            is specified as a DateTime then only the event that would have started at that
-            specific date and time should be excluded from the schedule. If an exception is
-            specified as a Date then any event that is scheduled for that 24 hour period should
-            be excluded from the schedule. This allows a whole day to be excluded from the schedule
-            without having to itemise every scheduled event.
-          oneOf:
-            - type: string
-              format: date
-            - type: string
-              format: date-time
-            - type: array
-              items:
-                oneOf:
-                  - type: string
-                    format: date
-                  - type: string
-                    format: date-time
-        repeatCount:
-          description: |
-            Defines the number of times a recurring Event will take place.
-          type: integer
-          minimum: 1
-        repeatFrequency:
-          description: |
-            Defines the frequency at which Events will occur according to a schedule Schedule.
-            The intervals between events should be defined as a Duration of time.
-            A schema:repeatFrequency value can be specified as either an ISO 8601 string
-            (e.g. "P1W" for weekly) or by using one of the standard values from schema.org
-            such as "Daily", "Weekly", "Monthly", "Yearly".
-          type: string
-          example: P1W
-        scheduleTimezone:
-          description: |
-            Indicates the timezone for which the time(s) indicated in the Schedule are given.
-            The value provided should be among those listed in the IANA Time Zone Database.
-          type: string
-          example: Asia/Kolkata
-        startDate:
-          description: |
-            The start date and time of the item (in ISO 8601 date format).
-          type: string
-          format: date-time
-          example: "2025-01-01T00:00:00Z"
-        startTime:
-          description: |
-            The start time of the item. For a reserved event or service (e.g. EventReservation),
-            the time that it is expected to start. For actions that span a period of time,
-            when the action was performed. e.g. John wrote a book from January to December.
-          type: string
-          format: time
-          example: "09:00:00"
+    # Removing Schedule from here as it is not used - please shift it to schema repo as a reuseable scehma. 
 
     Signature:
       title: Beckn HTTP Signature
