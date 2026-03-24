@@ -958,6 +958,37 @@ components:
             contract:
               $ref: '#/components/schemas/Contract'
 
+    # Bundle-safe legacy catalog (v2.0-style `beckn:` keys). Replaces remote
+    # `https://schema.beckn.io/Catalog/v2.0` in CatalogPublishAction so `$ref` resolution stays
+    # inside this OpenAPI document (remote copy inlined fragment refs to #/components/... that
+    # broke bundlers/validators when nested under CatalogPublishAction.oneOf[0]).
+    CatalogV20:
+      description: |
+        Legacy Beckn catalog document (v2.0 JSON-LD / `beckn:` surface). Semantically aligned with
+        schema.beckn.io/Catalog/v2.0; maintained here with only `#/components/schemas/*` links.
+      type: object
+      additionalProperties: true
+      properties:
+        '@context':
+          type: string
+          format: uri
+        '@type':
+          type: string
+        beckn:id:
+          type: string
+        beckn:providerId:
+          type: string
+        beckn:bppId:
+          type: string
+        beckn:bppUri:
+          type: string
+          format: uri
+        beckn:descriptor:
+          allOf:
+            - $ref: '#/components/schemas/Descriptor'
+        beckn:validity:
+          $ref: '#/components/schemas/TimePeriod'
+
     CatalogPublishAction:
       $id: https://schema.beckn.io/CatalogPublishAction/v2.0
       description: Catalog publish request payload.
@@ -969,7 +1000,7 @@ components:
             catalogs:
               type: array
               items:
-                $ref: https://schema.beckn.io/Catalog/v2.0
+                $ref: '#/components/schemas/CatalogV20'
         - type: object
           properties:
             catalogs:
@@ -1771,72 +1802,107 @@ components:
           additionalProperties: false
         - description: | 
             Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
-          type: object
-          title: Context V1.0
-          properties:
-            domain:
-              description: Domain code that is relevant to this transaction context
-              type: string
-            location:
-              description: The location where the transaction is intended to be fulfilled.
-              type: object
+          allOf:
+            - type: object
+              title: Context V1.0
+              additionalProperties: true
               properties:
-                city:
-                  description: 'The city code where this transaction is restricted to'
+                domain:
+                  description: Domain code that is relevant to this transaction context
+                  type: string
+                location:
+                  description: The location where the transaction is intended to be fulfilled.
                   type: object
                   properties:
-                    code:
-                      type: string
-                country:
-                  description: 'The country code this transaction is restricted to'
-                  type: object
-                  properties:
-                    code:
-                      type: string
-            action:
-              description: The Beckn protocol method being called by the sender and executed at the receiver.
-              type: string
-            version:
-              type: string
-              description: Version of transaction protocol being used by the sender.
-            bap_id:
-              description: Subscriber ID of the BAP as registered on dedi.global
-              type: string
-            bap_uri:
-              description: | 
-                The callback URL of the BAP. 
+                    city:
+                      description: 'The city code where this transaction is restricted to'
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                    country:
+                      description: 'The country code this transaction is restricted to'
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                action:
+                  description: The Beckn protocol method being called by the sender and executed at the receiver.
+                  type: string
+                version:
+                  type: string
+                  description: Version of transaction protocol being used by the sender.
+                bap_id:
+                  description: Subscriber ID of the BAP as registered on dedi.global
+                  type: string
+                bap_uri:
+                  description: | 
+                    The callback URL of the BAP. 
 
-                REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-              type: string
-              format: uri
-            bpp_id:
-              description: Subscriber ID of the BPP as registered on dedi.global
-              type: string
-            bpp_uri:
-              description: | 
-                The request URL of the BPP. 
-                
-                REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-              type: string
-              format: uri
-            transaction_id:
-              description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
-              type: string
-              format: uuid
-            message_id:
-              description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
-              type: string
-              format: uuid
-            timestamp:
-              description: Time of request generation in RFC3339 format
-              type: string
-              format: date-time
-            key:
-              description: The encryption public key of the sender
-              type: string
-            ttl:
-              description: The duration in ISO8601 format after timestamp for which this message holds valid
-              type: string
+                    REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+                  type: string
+                  format: uri
+                bpp_id:
+                  description: Subscriber ID of the BPP as registered on dedi.global
+                  type: string
+                bpp_uri:
+                  description: | 
+                    The request URL of the BPP. 
+                    
+                    REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+                  type: string
+                  format: uri
+                transaction_id:
+                  description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
+                  type: string
+                  format: uuid
+                message_id:
+                  description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
+                  type: string
+                  format: uuid
+                timestamp:
+                  description: Time of request generation in RFC3339 format
+                  type: string
+                  format: date-time
+                key:
+                  description: The encryption public key of the sender
+                  type: string
+                ttl:
+                  description: The duration in ISO8601 format after timestamp for which this message holds valid
+                  type: string
+            - not:
+                description: |
+                  Fingerprint of Context v2.0 required-field set. V1 branch must reject instances
+                  that satisfy this pattern so `oneOf` is mutually exclusive with the v2 branch above.
+                type: object
+                required:
+                  - action
+                  - bapId
+                  - bapUri
+                  - messageId
+                  - timestamp
+                  - transactionId
+                  - version
+                properties:
+                  action:
+                    type: string
+                  bapId:
+                    type: string
+                  bapUri:
+                    type: string
+                    format: uri
+                  messageId:
+                    type: string
+                    format: uuid
+                  transactionId:
+                    type: string
+                    format: uuid
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    const: "2.0.0"
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.1
