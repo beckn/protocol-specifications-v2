@@ -2712,30 +2712,18 @@ components:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
       title: Provider
-      x-tags: [common]
       properties:
-        '@context':
-          type: string
-          format: uri
-          default: "https://schema.beckn.io/"
-        '@type':
-          type: string
-          const: beckn:Provider
-        descriptor:
-          $ref: "#/components/schemas/Descriptor"
         id:
           description: Unique identifier for the provider
           type: string
           example: tech-store-001
-        locations:
+        descriptor:
+          $ref: "#/components/schemas/Descriptor"
+        availableAt:
           description: Physical locations where the provider operates
           type: array
           items:
             $ref: "#/components/schemas/Location"
-        policies:
-          type: array
-          items:
-            $ref: "https://schema.beckn.io/Policy/v2.0"
         providerAttributes:
           $ref: "#/components/schemas/Attributes"
       required:
