@@ -1267,12 +1267,10 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
         - type: object
-          required: [order]
           properties:
             order:
               $ref: 'https://schema.beckn.io/Order/v2.0'
         - type: object
-          required: [contract]
           properties:
             contract:
               $ref: '#/components/schemas/Contract'
@@ -1287,7 +1285,6 @@ components:
       oneOf:
         - type: object
           description: Query by order identifier (legacy)
-          required: [order]
           properties:
             order:
               allOf:
@@ -1295,7 +1292,6 @@ components:
                 - required: ['beckn:id']
         - type: object
           description: Query by contract identifier
-          required: [contract]
           properties:
             contract:
               type: object
