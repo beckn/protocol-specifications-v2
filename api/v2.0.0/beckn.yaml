@@ -2144,6 +2144,115 @@ components:
               type: string
             details:
               type: object
+    Form:
+      $id: https://schema.beckn.io/Form/v2.1
+      description: Describes a form used in a Beckn transaction
+      title: Form
+      type: object
+      properties:
+        '@context':
+          description: CPD
+          type: string
+          format: uri
+          default: https://schema.beckn.io/Form/v2.0
+        '@type':
+          description: The domain-specific type of entitlement that allows domains to extend this schema
+          type: string
+          default: Form
+        id:
+          description: A unique identifier of this form.
+          type: string
+        descriptor:
+          description: Description of the form
+          $ref: '#/components/schemas/Descriptor'
+        url:
+          description: |
+            The URL from where the form can be fetched. The content fetched from the url must be processed as per the mimeType specified in this object. Once fetched, the rendering platform can use the renderer.json of the respective form context choose to render the form as-is as an embeddable element; or process it further to blend with the theme of the application. In case the interface is non-visual, the the render can process the form data and reproduce it as per the standard specified in the form.
+          type: string
+          format: uri
+        status:
+            description: Form availability status
+            allOf:
+              - $ref: '#/components/schemas/Descriptor'
+              - properties:
+                  code:
+                    type: string
+                    enum:
+                      - OPEN
+                      - CLOSED
+                    default: CLOSED
+        validity:
+          description: The period for which this form is valid
+          $ref: '#/components/schemas/TimePeriod'
+        submitAction:
+          type: object
+          properties:
+            status:
+              description: Form availability status
+              allOf:
+                - $ref: '#/components/schemas/Descriptor'
+                - properties:
+                    code:
+                      type: string
+                      enum:
+                        - SAVED-DRAFT
+                        - SUBMITTED
+                        - SUBMISSION-ACCEPTED
+                        - SUBMISSION-REJECTED
+                      default: DRAFT
+            encType:
+              type: string
+              enum:
+                - application/x-www-form-urlencoded
+                - multipart/form-data
+                - text/plain
+            data:
+              description: The data submitted in response to a form input
+              oneOf:
+                - description: Raw form submission in a text/plain, text/html, or application/xml format
+                  type: string
+                - description: Form data in an structured application/json mimetype
+                  type: object
+        formAttributes:
+          description: Domain-specific extension attributes for this form.
+          allOf:
+            - $ref: '#/components/schemas/Attributes'
+            - required:
+                - '@context'
+                - '@type'
+            - properties:
+                '@context':
+                  description: Domain-specific context in which this contract is being created
+                  type: string
+                  format: uri
+                  examples:
+                    - 'https://schema.beckn.io/JobApplicationForm/v1.0/context.jsonld'
+                    - 'https://schema.beckn.io/WebCheckinForm/v1.0/context.jsonld'
+                    - 'https://schema.beckn.io/TermsOfServiceAgreement/12.0/context.jsonld'
+                    - 'https://schema.beckn.io/KnowYourCustomer/v1.0/context.jsonld'
+                    - 'https://schema.beckn.io/EnergyProgramEnrollmentForm/v1.0/context.jsonld'
+                    - 'https://schema.beckn.io/FeedbackForm/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/RatingForm/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/CancellationForm/v2.0/context.jsonld'
+                    - 'https://schema.beckn.io/ReturnForm/v2.0/context.jsonld'
+                '@type':
+                  description: JSON-LD type corresponding to the context
+                  type: string
+                  examples:
+                    - JobApplicationForm
+                    - WebCheckinForm
+                    - TermsOfServiceAgreement
+                    - KnowYourCustomer
+                    - EnergyProgramEnrollmentForm
+                    - FeedbackForm
+                    - RatingForm
+                    - CancellationForm
+                    - ReturnForm
+              additionalProperties: true
+      required:
+      - '@context'
+      - '@type'
+      
     Participant:
       type: object
       properties:
