@@ -1541,18 +1541,12 @@ components:
       $schema: "https://json-schema.org/draft/2020-12/schema"
       description: Catalog schema for Beckn Protocol v2.0.1 — oneOf legacy (v2.0) or new (v2.1) catalog format
       title: Catalog
-      x-tags: [common]
       type: object
       properties:
         bppId:
           description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
           type: string
           example: bpp.example.com
-        bppUri:
-          description: BPP (Beckn Protocol Provider) URI endpoint
-          type: string
-          format: uri
-          example: "https://bpp.example.com"
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
@@ -1566,6 +1560,7 @@ components:
           type: boolean
           default: true
         offers:
+          description: Array of offers optionally linked to resources
           type: array
           items:
             $ref: "#/components/schemas/Offer"
@@ -1574,19 +1569,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Resource'
-        provider:
-          description: The provider of the catalog
-          allOf:
-            - $ref: "#/components/schemas/Provider"
-        visibleTo:
+        addOns:
+          description: Array of offers optionally linked to resources
           type: array
-          description: >
+          items:
+            $ref: "#/components/schemas/AddOn"
+        provider:
+          $ref: "#/components/schemas/Provider"
+        visibleTo:
+          description: |
             Optional visibility constraint indicating which network participants
             (by participantId / networkId / role) are allowed to discover or
             transact on this catalog.
 
             If omitted, the catalog is assumed to be visible to all participants
             in the addressed network(s).
+          type: array
           items:
             type: object
             required: [type, id]
@@ -1604,6 +1602,8 @@ components:
       required:
       - id
       - descriptor
+      - resources
+      - provider
       additionalProperties: false
 
     CatalogOnPublishAction:
