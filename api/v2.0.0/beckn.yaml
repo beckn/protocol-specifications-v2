@@ -101,7 +101,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context' # TODO: fetch this from schema.beckn.io/Context/v2.0
+                    - $ref: '#/components/schemas/Context'
                     - type: object
                       properties:
                         action:
@@ -1807,9 +1807,18 @@ components:
             Every API call in Beckn protocol has a context. It contains addressing information like the bap/bpp identifiers and API base urls, the protocol version implemented by the sender, the method being called, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specify the validity of the request, and a key to encrypt information if necessary.
           title: Context V2.0
           type: object
+          required:
+            - action
+            - bapId
+            - bapUri
+            - messageId
+            - timestamp
+            - transactionId
+            - version
+          additionalProperties: false
           properties:
             action:
-              description: The Beckn endpoint being called. Must conform to BecknEndpoint format.
+              description: The Beckn endpoint being called. 
               type: string
             bapId:
               description: A globally unique identifier of the BAP. Typically the fully qualified domain name (FQDN) of the BAP.
@@ -1867,19 +1876,25 @@ components:
               maxItems: 1
               items:
                 $ref: https://schema.beckn.io/LineageEntry/v2.0
-          required:
-            - action
-            - bapId
-            - bapUri
-            - messageId
-            - timestamp
-            - transactionId
-            - version
-          additionalProperties: false
+            schema_context:
+              type: array
+              items:
+                type: string
+                format: uri
+              description: Optional JSON-LD context URLs indicating item types to search across
         - description: | 
             Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
           type: object
           title: Context V1.0
+          additionalProperties: false
+          required:
+            - action
+            - bap_id
+            - bap_uri
+            - message_id
+            - timestamp
+            - transaction_id
+            - version
           properties:
             domain:
               description: Domain code that is relevant to this transaction context
@@ -1944,8 +1959,12 @@ components:
             ttl:
               description: The duration in ISO8601 format after timestamp for which this message holds valid
               type: string
-          additionalProperties: false
-
+            schemaContext:
+              type: array
+              items:
+                type: string
+                format: uri
+              description: Optional JSON-LD context URLs indicating item types to search across
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
       type: object
