@@ -1076,14 +1076,19 @@ components:
         Supports two forms: intent properties directly at the top level (flat),
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
-      oneOf:
-        - description: Flat intent representation (legacy and current aliases supported)
-          $ref: "#/components/schemas/Intent"
-        - type: object
-          properties:
-            intent:
-              $ref: "#/components/schemas/Intent"
-          additionalProperties: false
+      type: object
+      allOf:
+        - if:
+            required: [intent]
+          then:
+            type: object
+            properties:
+              intent:
+                $ref: "#/components/schemas/Intent"
+            required: [intent]
+            additionalProperties: false
+          else:
+            $ref: "#/components/schemas/Intent"
 
     InitAction:
       $id: https://schema.beckn.io/InitAction/v2.0
