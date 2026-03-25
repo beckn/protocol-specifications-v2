@@ -3447,30 +3447,6 @@ components:
           type: integer
           description: Zero-based offset used in this response
 
-    CatalogEnvelope:
-      type: object
-      description: |
-        Full catalog envelope returned in master search responses.
-        Sourced from `catalog.json` committed to the master item's bare git repo at index time.
-        All published catalog fields (`bppUri`, full `descriptor`, etc.) are present.
-      properties:
-        id:
-          type: string
-          description: Catalog identifier
-        bppId:
-          type: string
-        bppUri:
-          type: string
-          format: uri
-        descriptor:
-          $ref: '#/components/schemas/Descriptor'
-        items:
-          type: array
-          items:
-            type: object
-            description: Full item JSON from git (domain-specific shape)
-            additionalProperties: true
-
     CatalogPullAction:
       type: object
       description: Message payload for catalog/pull
@@ -3519,85 +3495,6 @@ components:
 
     # MasterSearchAction — temporarily removed (master APIs disabled)
 
-    PullMode:
-      type: string
-      enum: [FULL, INCREMENTAL]
-      description: |
-        - `FULL` — returns the latest version of each matching catalog.
-        - `INCREMENTAL` — returns all catalog versions indexed between
-          `fromDate` and `toDate` (inclusive).
-
-    PullFilter:
-      type: object
-      description: Optional filters narrowing which catalogs are returned
-      properties:
-        networkIds:
-          type: array
-          items:
-            type: string
-          description: Filter by network IDs (empty = all networks)
-          default: []
-        schemaTypes:
-          type: array
-          items:
-            type: string
-          description: Filter by schema type URIs (empty = all types)
-          default: []
-
-    PullObjectUrl:
-      type: object
-      description: |
-        Present in the callback when the payload exceeds the inline threshold.
-        The BAP should GET `url` to download the full result.
-      required: [url, format, sizeBytes, checksum]
-      properties:
-        url:
-          type: string
-          description: |
-            Download URL. For local storage: `/catalog/pull/result/{requestId}/catalogs.json`.
-            For GCS: a signed URL with expiry.
-        expiresAt:
-          type: string
-          format: date-time
-          description: Expiry timestamp for signed URLs (GCS); absent for local URLs
-        format:
-          type: string
-          enum: [json, json.gz]
-          description: File format of the result
-        sizeBytes:
-          type: integer
-          format: int64
-          description: Size of the result file in bytes
-        checksum:
-          type: string
-          description: "SHA-256 checksum in the form `sha256:<hex>`"
-          example: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-
-    PullCallbackContext:
-      type: object
-      description: Context block in the async pull callback
-      required: [version, action, bapUri, timestamp]
-      properties:
-        version:
-          type: string
-        action:
-          type: string
-          const: on_catalog_pull
-        bapId:
-          type: string
-        bapUri:
-          type: string
-          format: uri
-        timestamp:
-          type: string
-          format: date-time
-        messageId:
-          type: string
-          format: uuid
-        transactionId:
-          type: string
-          format: uuid
-
     PullResultFile:
       type: object
       description: |
@@ -3612,21 +3509,6 @@ components:
             description: Full catalog distribution envelope (context + message + meta)
             additionalProperties: true
 
-    CatalogAuthErrorResponse:
-      type: object
-      description: |
-        NACK returned when Beckn HTTP Signature verification fails (catalog extension).
-        Align with the standard `Error` schema where possible; kept for backward compatibility
-        with existing catalog extension consumers.
-      required: [status, error]
-      properties:
-        status:
-          type: string
-          const: NACK
-        error:
-          $ref: '#/components/schemas/Error'
-
-  # ── Ack schema (shared by Ack, AckNoCallback, NackBadRequest, NackUnauthorized responses) ──
     AckSchema:
       $id: 'https://schema.beckn.io/Ack'
       title: Ack
@@ -3789,66 +3671,3 @@ components:
             properties:
               error:
                 $ref: '#/components/schemas/Error'
-
-webhooks:
-  on_catalog_pull:
-    post:
-      operationId: onCatalogPull
-      tags: [Catalog Pull]
-      summary: Async pull result callback
-      description: |
-        POSTed by the Catalog Indexer Job to `{context.bapUri}/on_catalog_pull`
-        when pull processing completes.
-
-        The BAP must expose this endpoint and return `{"status":"ACK"}` (HTTP 200).
-        An HTTP 409 response is treated as AckNoCallback — logged and skipped, not an error.
-
-        Exactly one of `message.catalog` (inline) or `message.objectUrl` (large file)
-        will be non-null when `message.status` is `COMPLETED`.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [context, message]
-              properties:
-                context:
-                  $ref: '#/components/schemas/PullCallbackContext'
-                message:
-                  type: object
-                  required: [requestId, status]
-                  properties:
-                    requestId:
-                      type: string
-                      format: uuid
-                      description: Echoed from the pull ACK response
-                    status:
-                      type: string
-                      enum: [COMPLETED, PROCESSING, FAILED]
-                      description: |
-                        - `COMPLETED` — result available inline or via `objectUrl`.
-                        - `PROCESSING` — still running (intermediate callback, rare).
-                        - `FAILED` — pull failed; no catalog data.
-                    catalog:
-                      type: array
-                      items:
-                        type: object
-                        additionalProperties: true
-                      description: Inline catalog data — present when payload is below the inline threshold
-                    objectUrl:
-                      $ref: '#/components/schemas/PullObjectUrl'
-      responses:
-        '200':
-          description: ACK — callback received
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [status]
-                properties:
-                  status:
-                    type: string
-                    const: ACK
-        '409':
-          description: AckNoCallback — logged and skipped by Catalg, not retried
