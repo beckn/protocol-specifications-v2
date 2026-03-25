@@ -572,15 +572,19 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message, action]
+              required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: update
                 message:
                   $ref: '#/components/schemas/UpdateAction'
-                action:
-                  type: string
-                  const: update
+                  
 
       responses:
         '200':
@@ -615,12 +619,15 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_update
                 message:
                   $ref: '#/components/schemas/OnUpdateAction'
-                action:
-                  type: string
-                  const: on_update
 
       responses:
         '200':
@@ -654,7 +661,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: cancel
                 message:
                   $ref: '#/components/schemas/CancelAction'
       responses:
@@ -689,7 +702,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_cancel
                 message:
                   $ref: '#/components/schemas/OnCancelAction'
       responses:
@@ -728,7 +747,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: rate
                 message:
                   $ref: '#/components/schemas/RateAction'
       responses:
@@ -762,7 +787,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_rate
                 message:
                   $ref: '#/components/schemas/OnRateAction'
       responses:
@@ -798,7 +829,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: support
                 message:
                   $ref: '#/components/schemas/SupportAction'
       responses:
@@ -832,7 +869,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_support
                 message:
                   $ref: '#/components/schemas/OnSupportAction'
       responses:
