@@ -1814,7 +1814,7 @@ components:
           oneOf:
             - type: string
               description: Type of the core Resource
-              enum: ["beckn:Consideration", "beckn:MonetaryConsideration", "beckn:TokenConsideration", "beckn:CreditConsideration", "beckn:AssetConsideration", "beckn:ServiceConsideration"]
+              examples: ["beckn:Consideration", "beckn:MonetaryConsideration", "beckn:TokenConsideration", "beckn:CreditConsideration", "beckn:AssetConsideration", "beckn:ServiceConsideration"]
             - type: string
         id:
           description: Identifier of this consideration
@@ -1987,11 +1987,114 @@ components:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
 
+    Context:
+      description: | 
+        Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
+      type: object
+      title: Context V1.0
+      oneOf: 
+        - required: ["bap_id", "bap_uri", "bpp_id", "bpp_uri", "message_id", "transaction_id", "version", "action"]
+        - required: ["bapId", "bapUri", "bppId", "bppUri", "messageId", "transactionId", "version", "action"]
+      properties:
+        domain:
+          description: Domain code that is relevant to this transaction context
+          type: string
+        location:
+          description: The location where the transaction is intended to be fulfilled.
+          type: object
+          properties:
+            city:
+              description: 'The city code where this transaction is restricted to'
+              type: object
+              properties:
+                code:
+                  type: string
+            country:
+              description: 'The country code this transaction is restricted to'
+              type: object
+              properties:
+                code:
+                  type: string
+        action:
+          description: The Beckn protocol method being called by the sender and executed at the receiver.
+          type: string
+        version:
+          type: string
+          description: Version of transaction protocol being used by the sender.
+          const: 2.0.0
+        bap_id:
+          description: Subscriber ID of the BAP as registered on dedi.global
+          type: string
+        bapId:
+          description: Subscriber ID of the BAP as registered on dedi.global
+          type: string
+        bap_uri:
+          description: | 
+            The callback URL of the BAP. 
+
+            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bapUri:
+          description: | 
+            The callback URL of the BAP. 
+
+            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bpp_id:
+          description: Subscriber ID of the BPP as registered on dedi.global
+          type: string
+        bppId:
+          description: Subscriber ID of the BPP as registered on dedi.global
+          type: string
+        bpp_uri:
+          description: | 
+            The request URL of the BPP. 
+            
+            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bppUri:
+          description: | 
+            The request URL of the BPP. 
+            
+            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        transaction_id:
+          description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
+          type: string
+          format: uuid
+        transactionId:
+          description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
+          type: string
+          format: uuid
+        message_id:
+          description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
+          type: string
+          format: uuid
+        messageId:
+          description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
+          type: string
+          format: uuid
+        timestamp:
+          description: Time of request generation in RFC3339 format
+          type: string
+          format: date-time
+        key:
+          description: The encryption public key of the sender
+          type: string
+        ttl:
+          description: The duration in ISO8601 format after timestamp for which this message holds valid
+          type: string
+
     DiscoverContext:
       oneOf:
         - allOf:
-            - $ref: '#/components/schemas/ContextV1'
+            - $ref: '#/components/schemas/Context'
             - type: object
+              required: ["bap_id", "bap_uri", "bpp_id", "bpp_uri", "message_id", "transaction_id", "version", "action", "schema_context"]
               properties:
                 action:
                   type: string
@@ -2002,18 +2105,10 @@ components:
                     type: string
                     format: uri
                   description: Domain-specific JSON-LD contexts for narrowing the search
-              required:
-                - schema_context
-                - action
-                - bap_id
-                - bap_uri
-                - message_id
-                - timestamp
-                - transaction_id
-                - version
         - allOf:
-            - $ref: '#/components/schemas/ContextV2'
+            - $ref: '#/components/schemas/Context'
             - type: object
+              required: ["bapId", "bapUri", "bppId", "bppUri", "messageId", "transactionId", "version", "action", "schemaContext"]
               properties:
                 action:
                   type: string
@@ -2024,15 +2119,6 @@ components:
                     type: string
                     format: uri
                   description: Domain-specific JSON-LD contexts for narrowing the search
-              required:
-                - schemaContext
-                - action
-                - bapId
-                - bapUri
-                - messageId
-                - timestamp
-                - transactionId
-                - version
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
@@ -2061,12 +2147,9 @@ components:
           description: A URL to the reference vocabulary where this schema has been defined. If missing, this field defaults to `https://schema.beckn.io/`. It allows applications to fetch the mapping between the simple JSON keys of this class and absolute Beckn IRIs (Internationalized Resource Identifiers), allowing conversion of standard Beckn JSON payload into linked data.
           type: string
           format: uri
-          const: https://schema.beckn.io/Contract/v2.0
         '@type':
           description: A Beckn IRI on the vocabulary defined in the @context. Must start with "beckn:" followed by URL-safe identifier characters.
           type: string
-          pattern: ^beckn:[A-Za-z0-9._~-]+$
-          default: beckn:Contract
         id:
           description: A UUID string generated at the BPP endpoint at any stage before the confirmation of the order i.e before `/on_confirm` callback. This value is intended typically for indexing or filtering. While the chances of a UUID collision are rare, it is recommended to use a combination of `bppId`, `providerId` and `id` to allow for global uniqueness.
           type: string
@@ -2272,11 +2355,9 @@ components:
           description: Use case specific JSON-LD context. This can change from use case to use case, even within a domain.
           type: string
           format: uri
-          default: "https://schema.beckn.io/"
         '@type':
           description: Type of the descriptor. The type can be overriden with a context-specific type
           type: string
-          default: beckn:Descriptor
         code:
           description: A machine-readable code identifying the state or type of the entity being described. The valid values for this field are defined by the context in which the Descriptor is used (e.g. DRAFT, ACTIVE, CANCELLED, COMPLETE for a Contract status).
           type: string
@@ -2458,11 +2539,9 @@ components:
           description: Domain-specific context in which this fulfillment is taking place
           type: string
           format: uri
-          const: 'https://schema.beckn.io/Performance/v2.1/context.jsonld'
         '@type':
           description: JSON-LD type.
           type: string
-          default: 'Fulfillment'
         id:
           type: string
           description: Unique identifier for this fulfillment record.
@@ -2496,7 +2575,6 @@ components:
                     - 'https://schema.beckn.io/HyperlocalDelivery/v2.0/context.jsonld'
                     - 'https://schema.beckn.io/OnDemandRide/v2.0/context.jsonld'
                     - 'https://schema.beckn.io/P2PEnergyTransfer/v1.1/context.jsonld'
-                  default: 'https://schema.beckn.io/Fulfillment/v2.1/context.jsonld'
                 '@type':
                   description: JSON-LD type.
                   type: string
@@ -2505,9 +2583,6 @@ components:
                     - 'OnDemandRide'
                     - 'P2PEnergyTransfer'
                     - 'Fulfillment'
-      required:
-        - '@context'
-        - '@type'
       additionalProperties: false
 
     InReplyTo:
@@ -2827,10 +2902,8 @@ components:
         '@context':
           type: string
           format: uri
-          const: "https://schema.beckn.io/RatingForm"
         '@type':
           type: string
-          default: RatingForm
         target:
           description: The thing being rated. It could be a person, an application, a service, a product, an instrument used in the fulfillment of the contract, or the overall experience.
           type: object
@@ -2867,8 +2940,6 @@ components:
           description: The submission to the feedback form sent along with a rating request
           $ref: https://schema.beckn.io/FormSubmission/v2.0
       required:
-      - '@context'
-      - '@type'
       - target
       - range
       additionalProperties: false
@@ -2928,7 +2999,6 @@ components:
             - "beckn:CreditSettlement"
             - "beckn:AssetTransfer"
             - "beckn:ServiceSettlement"
-          default: "beckn:MonetaryTransfer"
         id:
           type: string
         #@Ravi Cant a settlement be against multiple considerations? 
@@ -2985,10 +3055,8 @@ components:
         '@context':
           type: string
           format: uri
-          default: https://schema.beckn.io/
         '@type':
           type: string
-          const: "beckn:Support"
         orderId:
           description: The order against which support is required
           type: string
@@ -3001,9 +3069,6 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/Attributes'
-      required:
-      - '@context'
-      - '@type'
       additionalProperties: false
     
     TimePeriod:
@@ -3063,11 +3128,9 @@ components:
           description: TBD
           type: string
           format: uri
-          default: https://schema.beckn.io/
         '@type':
           description: TBD
           type: string
-          default: beckn:Tracking
         refId:
           description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
           type: string
@@ -3083,8 +3146,6 @@ components:
           format: uri
 
       required:
-      - '@context'
-      - '@type'
       - url
       - status
 
