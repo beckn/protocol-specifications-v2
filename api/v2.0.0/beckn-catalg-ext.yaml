@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Beckn Catalog Extension APIs
+  description: |
+    Extension APIs for catalog subscription, pull, and master resource search.
+    These endpoints extend the core Beckn protocol defined in beckn.yaml.
+
+    ## Subscription
+    Beckn v2.0 catalog subscription management.
+    Subscriptions determine which networks and schema types a BAP receives
+    `on_discover` callbacks for. Only `ACTIVE` subscriptions are matched
+    during evaluation.
+
+    ## Catalog Pull
+    Async catalog pull API hosted on the Catalog Indexer Job.
+    The BAP POSTs a pull request and receives an immediate ACK with a `requestId`.
+    The actual catalog data is delivered asynchronously via HTTP callback to
+    `{bapUri}/on_catalog_pull`.
+
+    Two delivery modes:
+    - **FULL** — latest version of each matching catalog
+    - **INCREMENTAL** — all versions within a date range (`fromDate`/`toDate`)
+
+    Large payloads exceeding the configured inline threshold are written to disk
+    and served via `GET /catalog/pull/result/{requestId}/catalogs.json`; the
+    callback's `objectUrl` field carries the download URL and `sha256` checksum.
+
+    ## Master Resource Search
+    Query APIs for master catalog items stored in the Catalog Indexer git
+    repository. All endpoints return a Beckn v2.0 response envelope with
+    `action: "on_catalog_master_search"`.
+
+    ## Authentication
+    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.
+    See the core `beckn.yaml` for the full signing specification.
+  version: 2.0.0
+  contact:
+    name: Beckn Protocol
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+
+tags:
+  - name: Subscription
+    description: |
+      Beckn v2.0 catalog subscription management.
+      Subscriptions determine which networks and schema types a BAP receives
+      `on_discover` callbacks for. Only `ACTIVE` subscriptions are matched
+      during evaluation.
+  - name: Catalog Pull
+    description: |
+      Async catalog pull API hosted on the Catalog Indexer Job.
+      The BAP POSTs a pull request and receives an immediate ACK with a `requestId`.
+      The actual catalog data is delivered asynchronously via HTTP callback to
+      `{bapUri}/on_catalog_pull`.
+
+      Two delivery modes:
+      - **FULL** — latest version of each matching catalog
+      - **INCREMENTAL** — all versions within a date range (`fromDate`/`toDate`)
+
+      Large payloads exceeding the configured inline threshold are written to disk
+      and served via `GET /catalog/pull/result/{requestId}/catalogs.json`; the
+      callback's `objectUrl` field carries the download URL and `sha256` checksum.
+  - name: Master Resource Search
+    description: |
+      Query APIs for master catalog items stored in the Catalog Indexer git
+      repository. All endpoints return a Beckn v2.0 response envelope with
+      `action: "on_catalog_master_search"`.
+
+security: []
+servers:
+  - url: https://{subscriberUrl}
+    description: >
+      Base URL of the Beckn network participant endpoint. Implementations MUST
+      substitute `{subscriberUrl}` with the actual registered subscriber URL
+      obtained from the Beckn Registry.
+    variables:
+      subscriberUrl:
+        default: example.beckn.io
+        description: >
+          Registered subscriber URL of the Beckn network participant
+          (BAP or BPP) as published in the Beckn Registry.
+
+paths:
+
+  # ─────────────────────────────────────────────────────────────────────
+  # SUBSCRIPTION
+  # ─────────────────────────────────────────────────────────────────────
+
+  /catalog/subscribe:
+    post:
+      summary: Subscribe to catalog distribution events
+      operationId: catalogSubscribe
+      tags: [Subscription]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      description: |
+        Creates a new catalog subscription using the Beckn v2.0 envelope
+        (`action: "catalog/subscribe"`). The subscriber identity is derived
+        from `context.bapId` / `context.bapUri`; the callback URL defaults
+        to `bapUri`.
+
+        At least one of `networkIds` or `schemaTypes` must be non-empty.
+        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
+        matching all schema types for the specified networks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'beckn.yaml#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/subscribe
+                message:
+                  $ref: '#/components/schemas/CatalogSubscribeAction'
+            example:
+              context:
+                version: '2.0.0'
+                action: catalog/subscribe
+                messageId: 550e8400-e29b-41d4-a716-446655440000
+                transactionId: 550e8400-e29b-41d4-a716-446655440001
+                timestamp: '2026-03-23T10:00:00.000Z'
+                bapId: bap.example.com
+                bapUri: https://bap.example.com
+              message:
+                subscription:
+                  networkIds: [retail]
+                  schemaTypes:
+                    - 'https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType'
+                  deliveryPolicy:
+                    retryPolicy:
+                      maxRetries: 3
+                      backoffMultiplier: 2.0
+      responses:
+        '200':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [context, message]
+                properties:
+                  context:
+                    allOf:
+                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - type: object
+                        properties:
+                          action:
+                            type: string
+                            const: catalog/on_subscribe
+                  message:
+                    type: object
+                    required: [subscriptions]
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /catalog/subscriptions:
+    get:
+      summary: List subscriptions for a subscriber
+      operationId: catalogSubscribeList
+      tags: [Subscription]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+        - name: subscriberId
+          in: query
+          required: true
+          description: BAP URI, BAP ID, or internal subscriber UUID
+          schema:
+            type: string
+          example: https://bap.example.com
+      responses:
+        '200':
+          description: List of matching subscriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [context, message]
+                properties:
+                  context:
+                    allOf:
+                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - type: object
+                        properties:
+                          action:
+                            type: string
+                            const: catalog/on_subscribe
+                  message:
+                    type: object
+                    required: [subscriptions]
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /catalog/subscribe/{subscriptionId}:
+    get:
+      summary: Get subscription by ID
+      operationId: catalogSubscribeGet
+      tags: [Subscription]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription UUID
+          schema:
+            type: string
+            format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [context, message]
+                properties:
+                  context:
+                    allOf:
+                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - type: object
+                        properties:
+                          action:
+                            type: string
+                            const: catalog/on_subscribe
+                  message:
+                    type: object
+                    required: [subscriptions]
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: Delete (deactivate) subscription
+      operationId: catalogSubscribeDelete
+      tags: [Subscription]
+      description: |
+        Soft-deletes a subscription by setting its status to `DELETED`.
+        The subscription record is retained in the database; it will no longer
+        receive catalog delivery callbacks.
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription UUID
+          schema:
+            type: string
+            format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [context, message]
+                properties:
+                  context:
+                    allOf:
+                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - type: object
+                        properties:
+                          action:
+                            type: string
+                            const: catalog/on_subscribe
+                  message:
+                    type: object
+                    required: [subscriptions]
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─────────────────────────────────────────────────────────────────────
+  # CATALOG PULL
+  # ─────────────────────────────────────────────────────────────────────
+
+  /catalog/pull:
+    post:
+      operationId: catalogPull
+      tags: [Catalog Pull]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      summary: Submit async catalog pull request
+      description: |
+        Accepts a pull request and returns an immediate HTTP 200 ACK with a
+        generated `requestId`. Processing runs asynchronously on the
+        `pullExecutor` thread pool.
+
+        When processing completes, the Catalog Indexer Job POSTs to
+        `{context.bapUri}/on_catalog_pull` with a `PullCallbackPayload`.
+
+        **Required fields:** `context.version`, `context.action`, `context.bapUri`,
+        `message.mode`.
+
+        **FULL mode:** returns the latest version of each catalog matching the filters.
+
+        **INCREMENTAL mode:** returns all catalog versions indexed between
+        `message.fromDate` and `message.toDate` (ISO-8601, inclusive).
+
+        **Payload size:**
+        - Small (< inline threshold): catalogs returned inline in the callback body.
+        - Large (≥ inline threshold): callback contains an `objectUrl` pointing to
+          `GET /catalog/pull/result/{requestId}/catalogs.json`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: 'beckn.yaml#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/pull
+                message:
+                  $ref: '#/components/schemas/CatalogPullAction'
+      responses:
+        '200':
+          description: ACK — pull request accepted; result will be delivered asynchronously via callback
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, requestId]
+                properties:
+                  status:
+                    type: string
+                    const: ACK
+                  requestId:
+                    type: string
+                    format: uuid
+                    description: UUID v4 generated for this pull request; echoed in callback and result download path
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /catalog/pull/result/{requestId}/{filename}:
+    get:
+      operationId: getPullResult
+      tags: [Catalog Pull]
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+        - name: requestId
+          in: path
+          required: true
+          description: UUID v4 returned in the pull ACK response
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        - name: filename
+          in: path
+          required: true
+          description: Result filename — must be `catalogs.json`
+          schema:
+            type: string
+            enum: [catalogs.json]
+          example: catalogs.json
+      summary: Download large pull result file
+      description: |
+        Serves the result file written to disk when the pull payload exceeds the
+        configured inline threshold. Called by the BAP after receiving a callback
+        with a non-null `message.objectUrl`.
+
+        **Path traversal protection:**
+        - `requestId` must match the UUID v4 pattern
+          (`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).
+        - `filename` is validated against an allowlist; only `catalogs.json` is permitted.
+
+        Requests failing either check return HTTP 400 without a body.
+      responses:
+        '200':
+          description: Pull result as JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullResultFile'
+        '400':
+          description: Invalid requestId format or disallowed filename
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          description: Result file not found (processing may still be in progress)
+
+  # ─────────────────────────────────────────────────────────────────────
+  # MASTER RESOURCE SEARCH
+  # Temporarily removed — will be re-added after schema redesign.
+  # Validation disabled via MASTER_SEARCH_VALIDATION_ENABLED=false.
+  # ─────────────────────────────────────────────────────────────────────
+
+  # /catalog/master/search:
+  #   post: ...
+
+  # /catalog/master/schemaTypes:
+  #   get: ...
+
+  # /catalog/master/{masterItemId}:
+  #   get: ...
+
+components:
+
+  parameters:
+    AuthorizationHeader:
+      $ref: 'beckn.yaml#/components/parameters/AuthorizationHeader'
+
+  schemas:
+
+    CatalogSubscribeAction:
+      type: object
+      description: |
+        Message payload for catalog/subscribe.
+        At least one of `networkIds` or `schemaTypes` must be non-empty.
+        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
+        matching all schema types for the specified networks.
+      required: [subscription]
+      properties:
+        subscription:
+          type: object
+          required: [networkIds]
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Network IDs to subscribe to
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Schema type URIs to filter on (empty = wildcard)
+            callbackUrl:
+              type: string
+              format: uri
+              description: Override callback URL (defaults to context.bapUri)
+            deliveryPolicy:
+              $ref: '#/components/schemas/DeliveryPolicy'
+
+    CatalogSubscription:
+      type: object
+      description: Full subscription record
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Subscription UUID
+        networkIds:
+          type: array
+          items:
+            type: string
+          description: Network IDs covered by this subscription
+        schemaTypes:
+          type: array
+          items:
+            type: string
+          description: Schema type URIs filtered by this subscription (empty = wildcard "*")
+        callbackUrl:
+          type: string
+          format: uri
+          description: Delivery callback URL
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, DELETED]
+          description: Lifecycle status of the subscription
+        deliveryPolicy:
+          $ref: '#/components/schemas/DeliveryPolicy'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DeliveryPolicy:
+      type: object
+      description: Callback delivery retry configuration
+      properties:
+        timeoutSeconds:
+          type: integer
+          default: 30
+          description: Per-request HTTP timeout in seconds
+        maxPayloadBytes:
+          type: integer
+          description: Maximum callback payload size in bytes
+        retryPolicy:
+          type: object
+          properties:
+            maxRetries:
+              type: integer
+              default: 5
+              description: Maximum retry attempts before sending to DLT
+            initialDelaySeconds:
+              type: integer
+              default: 5
+              description: Base delay before first retry
+            maxDelaySeconds:
+              type: integer
+              default: 300
+              description: Maximum delay cap for exponential backoff
+            backoffMultiplier:
+              type: number
+              default: 2.0
+              description: Delay multiplied by this after each retry
+
+    Pagination:
+      type: object
+      description: Pagination metadata returned with list responses
+      properties:
+        count:
+          type: integer
+          description: Number of items in this page
+        limit:
+          type: integer
+          description: Page size used in this response
+        offset:
+          type: integer
+          description: Zero-based offset used in this response
+
+    CatalogPullAction:
+      type: object
+      description: Message payload for catalog/pull
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [FULL, INCREMENTAL]
+          description: |
+            - `FULL` — returns the latest version of each matching catalog.
+            - `INCREMENTAL` — returns all catalog versions indexed between
+              `fromDate` and `toDate` (inclusive).
+        filters:
+          type: object
+          description: Optional filters narrowing which catalogs are returned
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Filter by network IDs (empty = all networks)
+              default: []
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Filter by schema type URIs (empty = all types)
+              default: []
+        catalogIds:
+          type: array
+          items:
+            type: string
+          description: Explicit catalog IDs to pull (alternative to filters)
+        limit:
+          type: integer
+          minimum: 1
+          description: Maximum number of catalogs to return (server may apply its own cap)
+        fromDate:
+          type: string
+          format: date-time
+          description: Inclusive lower bound for INCREMENTAL mode
+        toDate:
+          type: string
+          format: date-time
+          description: Inclusive upper bound for INCREMENTAL mode
+
+    PullResultFile:
+      type: object
+      description: |
+        JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
+        Same structure as the inline `catalog` array in the callback payload —
+        a list of distribution-envelope catalog objects.
+      properties:
+        catalogs:
+          type: array
+          items:
+            type: object
+            description: Full catalog distribution envelope (context + message + meta)
+            additionalProperties: true
+
+  responses:
+    Ack:
+      $ref: 'beckn.yaml#/components/responses/Ack'
+    NackBadRequest:
+      $ref: 'beckn.yaml#/components/responses/NackBadRequest'
+    NackUnauthorized:
+      $ref: 'beckn.yaml#/components/responses/NackUnauthorized'
+    ServerError:
+      $ref: 'beckn.yaml#/components/responses/ServerError'
