@@ -100,7 +100,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/Context"
+                    - $ref: "#/components/schemas/DiscoverContext"
                     - type: object
                       properties:
                         action:
@@ -140,7 +140,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/DiscoverContext"
                     - type: object
                       properties:
                         action:
@@ -1994,7 +1994,7 @@ components:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
 
-    Context:
+    DiscoverContext:
       description: |
         Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
       type: object
@@ -2002,25 +2002,23 @@ components:
       oneOf:
         - required:
             [
+              "action",
               "bap_id",
               "bap_uri",
-              "bpp_id",
-              "bpp_uri",
               "message_id",
+              "timestamp",
               "transaction_id",
               "version",
-              "action",
             ]
         - required:
             [
+              "action",
               "bapId",
               "bapUri",
-              "bppId",
-              "bppUri",
               "messageId",
+              "timestamp",
               "transactionId",
               "version",
-              "action",
             ]
       properties:
         domain:
