@@ -1224,43 +1224,18 @@ paths:
           application/json:
             schema:
               type: object
-              required: [message]
+              required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/Context'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/master_search
                 message:
-                  type: object
-                  properties:
-                    filters:
-                      type: object
-                      description: Search filters (empty lists match all)
-                      properties:
-                        networkIds:
-                          type: array
-                          items:
-                            type: string
-                          description: Filter by network IDs (empty = all networks)
-                          default: []
-                        schemaTypes:
-                          type: array
-                          items:
-                            type: string
-                          description: Filter by schema type URIs (empty = all types)
-                          default: []
-                    pagination:
-                      type: object
-                      properties:
-                        limit:
-                          type: integer
-                          minimum: 1
-                          maximum: 100
-                          default: 20
-                          description: Maximum items per page (clamped to [1, 100])
-                        offset:
-                          type: integer
-                          minimum: 0
-                          default: 0
-                          description: Zero-based result offset
+                  $ref: '#/components/schemas/MasterSearchAction'
       responses:
         '200':
           description: Master search results
@@ -1427,14 +1402,35 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CatalogPullRequest'
+              type: object
+              required: [context, message]
+              properties:
+                context:
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/pull
+                message:
+                  $ref: '#/components/schemas/CatalogPullAction'
       responses:
         '200':
           description: ACK — pull request accepted; result will be delivered asynchronously via callback
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PullAckResponse'
+                type: object
+                required: [status, requestId]
+                properties:
+                  status:
+                    type: string
+                    const: ACK
+                  requestId:
+                    type: string
+                    format: uuid
+                    description: UUID v4 generated for this pull request; echoed in callback and result download path
         '400':
           $ref: '#/components/responses/NackBadRequest'
         '401':
@@ -3688,6 +3684,41 @@ components:
           format: date-time
           description: Inclusive upper bound for INCREMENTAL mode
 
+    MasterSearchAction:
+      type: object
+      description: Message payload for catalog/master_search
+      properties:
+        filters:
+          type: object
+          description: Search filters (empty lists match all)
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Filter by network IDs (empty = all networks)
+              default: []
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Filter by schema type URIs (empty = all types)
+              default: []
+        pagination:
+          type: object
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              maximum: 100
+              default: 20
+              description: Maximum items per page (clamped to [1, 100])
+            offset:
+              type: integer
+              minimum: 0
+              default: 0
+              description: Zero-based result offset
+
     PullMode:
       type: string
       enum: [FULL, INCREMENTAL]
@@ -3712,35 +3743,6 @@ components:
             type: string
           description: Filter by schema type URIs (empty = all types)
           default: []
-
-    CatalogPullRequest:
-      type: object
-      description: Request body for POST /catalog/pull
-      required: [context, message]
-      properties:
-        context:
-          allOf:
-            - $ref: '#/components/schemas/Context'
-            - type: object
-              properties:
-                action:
-                  type: string
-                  const: catalog/pull
-        message:
-          $ref: '#/components/schemas/CatalogPullAction'
-
-    PullAckResponse:
-      type: object
-      description: Immediate HTTP 200 ACK — processing continues asynchronously
-      required: [status, requestId]
-      properties:
-        status:
-          type: string
-          const: ACK
-        requestId:
-          type: string
-          format: uuid
-          description: UUID v4 generated for this pull request; echoed in callback and result download path
 
     PullObjectUrl:
       type: object
