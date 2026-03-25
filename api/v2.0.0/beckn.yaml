@@ -1130,14 +1130,8 @@ components:
         response to a /beckn/select call, with updated contract terms.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        - $ref: '#/components/schemas/Contract'
 
     OnStatusAction:
       $id: https://schema.beckn.io/OnStatusAction/v2.0
@@ -1242,14 +1236,8 @@ components:
         items and offers from a catalog, initiating the negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        - $ref: '#/components/schemas/Contract'
 
     StatusAction:
       $id: https://schema.beckn.io/StatusAction/v2.0
