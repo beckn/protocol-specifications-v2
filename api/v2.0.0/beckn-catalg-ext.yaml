@@ -114,7 +114,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'beckn.yaml#/components/schemas/Context'
+                    - $ref: '#/components/schemas/Context'
                     - type: object
                       properties:
                         action:
@@ -151,7 +151,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -197,7 +197,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -244,7 +244,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -296,7 +296,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -360,7 +360,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'beckn.yaml#/components/schemas/Context'
+                    - $ref: '#/components/schemas/Context'
                     - type: object
                       properties:
                         action:
@@ -461,7 +461,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: 'beckn.yaml#/components/schemas/Context'
+                    - $ref: '#/components/schemas/Context'
                     - type: object
                       properties:
                         action:
@@ -480,7 +480,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -522,7 +522,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -565,7 +565,7 @@ paths:
                 properties:
                   context:
                     allOf:
-                      - $ref: 'beckn.yaml#/components/schemas/Context'
+                      - $ref: '#/components/schemas/Context'
                       - type: object
                         properties:
                           action:
@@ -596,6 +596,44 @@ components:
       $ref: 'beckn.yaml#/components/parameters/AuthorizationHeader'
 
   schemas:
+
+    # Inlined from beckn.yaml to make this file self-contained for AJV validation.
+    # This avoids cross-file $ref bundling issues.
+    Context:
+      type: object
+      title: Context
+      description: Beckn protocol context — inlined from beckn.yaml for self-contained validation.
+      properties:
+        action:
+          type: string
+        version:
+          type: string
+          const: "2.0.0"
+        bapId:
+          type: string
+        bapUri:
+          type: string
+          format: uri
+        bppId:
+          type: string
+        bppUri:
+          type: string
+          format: uri
+        messageId:
+          type: string
+        transactionId:
+          type: string
+        networkId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        ttl:
+          type: string
+        try:
+          type: boolean
+        lineage:
+          type: array
 
     CatalogSubscribeAction:
       type: object
