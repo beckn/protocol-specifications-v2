@@ -1134,10 +1134,9 @@ components:
           $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
         contract:
           $ref: '#/components/schemas/Contract'
-      required:
-        oneOf:
-          - order
-          - contract
+      oneOf:
+        - required: ["order"]
+        - required : ["contract"]
               
 
     OnStatusAction:
@@ -1242,9 +1241,14 @@ components:
         Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
         items and offers from a catalog, initiating the negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - $ref: '#/components/schemas/Contract'
+        - required: ["order"]
+        - required : ["contract"]
 
     StatusAction:
       $id: https://schema.beckn.io/StatusAction/v2.0
@@ -1755,13 +1759,13 @@ components:
               items:
                 $ref: https://schema.beckn.io/LineageEntry/v2.0
           required:
-          - action
-          - bapId
-          - bapUri
-          - messageId
-          - timestamp
-          - transactionId
-          - version
+            - action
+            - bapId
+            - bapUri
+            - messageId
+            - timestamp
+            - transactionId
+            - version
           additionalProperties: false
         - description: | 
             Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
