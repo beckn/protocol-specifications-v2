@@ -981,7 +981,6 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-
 # ─────────────────────────────────────────────────────────────────────
 # COMPONENTS
 # ─────────────────────────────────────────────────────────────────────
@@ -3035,17 +3034,10 @@ components:
         - url
         - status
 
-<<<<<<< HEAD
-
-    AckSchema:
-      $id: 'https://schema.beckn.io/Ack'
-      title: Ack
-=======
     Ack:
       description:
         New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver
         authenticated, received, and processed the inbound request.
->>>>>>> draft
       oneOf:
         - $ref: "https://schema.beckn.io/AckResponse/v2.0"
         - type: object
