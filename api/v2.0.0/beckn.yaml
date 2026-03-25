@@ -1135,8 +1135,10 @@ components:
         contract:
           $ref: '#/components/schemas/Contract'
       oneOf:
-        - required: ["order"]
-        - required : ["contract"]
+        - required:
+            - "order"
+        - required :
+            - "contract"
               
 
     OnStatusAction:
@@ -1247,8 +1249,10 @@ components:
         contract:
           $ref: '#/components/schemas/Contract'
       oneOf:
-        - required: ["order"]
-        - required : ["contract"]
+        - required:
+            - "order"
+        - required :
+            - "contract"
 
     StatusAction:
       $id: https://schema.beckn.io/StatusAction/v2.0
@@ -1835,6 +1839,7 @@ components:
             ttl:
               description: The duration in ISO8601 format after timestamp for which this message holds valid
               type: string
+          additionalProperties: false
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.1
