@@ -1958,6 +1958,9 @@ components:
             - $ref: '#/components/schemas/ContextV1'
             - type: object
               properties:
+                action:
+                  type: string
+                  const: discover
                 schema_context:
                   type: array
                   items:
@@ -1977,6 +1980,9 @@ components:
             - $ref: '#/components/schemas/ContextV2'
             - type: object
               properties:
+                action:
+                  type: string
+                  const: discover
                 schemaContext:
                   type: array
                   items:
@@ -1992,7 +1998,7 @@ components:
                 - timestamp
                 - transactionId
                 - version
-                
+
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
       type: object
