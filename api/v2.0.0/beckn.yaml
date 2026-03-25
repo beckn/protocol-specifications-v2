@@ -100,7 +100,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoverContext"
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
@@ -140,7 +140,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoverContext"
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
@@ -183,7 +183,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/Context"
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
@@ -1837,189 +1837,46 @@ components:
           $ref: "#/components/schemas/Attributes"
 
     TransactionContext:
+      description: |
+        Context for transaction endpoints (select, init, confirm, status, etc.).
+        Requires both BAP and BPP identifiers. Supports both snake_case (v1) and
+        camelCase (v2) naming conventions via oneOf.
       oneOf:
-        - $ref: "#/components/schemas/ContextV1"
-        - $ref: "#/components/schemas/ContextV2"
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bap_id
+                - bap_uri
+                - bpp_id
+                - bpp_uri
+                - message_id
+                - timestamp
+                - transaction_id
+                - version
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bapId
+                - bapUri
+                - bppId
+                - bppUri
+                - messageId
+                - timestamp
+                - transactionId
+                - version
 
-    ContextV2:
+    Context:
       description: |
-        Every API call in Beckn protocol has a context. It contains addressing information like the bap/bpp identifiers and API base urls, the protocol version implemented by the sender, the method being called, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specify the validity of the request, and a key to encrypt information if necessary.
-      title: Context V2.0
+        Base context schema for all Beckn API calls. Contains addressing information
+        (BAP/BPP identifiers and API URLs), protocol version, the action being called,
+        transaction and message IDs, timestamp, TTL, and optional encryption key.
+        This schema defines all possible properties but imposes NO required-field
+        constraints. Use DiscoveryContext or TransactionContext for endpoint-specific
+        required-field validation.
       type: object
-      properties:
-        action:
-          description: The Beckn endpoint being called.
-          type: string
-        bapId:
-          description: A globally unique identifier of the BAP. Typically the fully qualified domain name (FQDN) of the BAP.
-          type: string
-        bapUri:
-          description: API URL of the BAP for accepting callbacks from BPPs.
-          type: string
-          format: uri
-        bppId:
-          description: A globally unique identifier of the BPP. Typically the fully qualified domain name (FQDN) of the BPP.
-          type: string
-        bppUri:
-          description: API URL of the BPP for accepting calls from BAPs.
-          type: string
-          format: uri
-        messageId:
-          description: |
-            A unique value which persists during a request/callback cycle. BAPs use
-            this value to match an incoming callback from a BPP to an earlier call.
-            BAPs are expected to generate a fresh messageId for every new interaction. For independent callbacks, BPPs are expected to generate a fresh messageId for each callback.
-          type: string
-          format: uuid
-        networkId:
-          description: A unique identifier representing a group of platforms. By default, the URL of the network registry on the Beckn network.
-          type: string
-        timestamp:
-          description: Time of request generation in RFC3339 format.
-          type: string
-          format: date-time
-        transactionId:
-          description: |
-            A unique value which persists across all API calls from discover through
-            confirm. Used to indicate an active user session across multiple requests.
-          type: string
-          format: uuid
-        try:
-          description: A flag to indicate that this request is intended to try an operation in sandbox mode
-          type: boolean
-          default: false
-        ttl:
-          description: The duration in ISO8601 format after timestamp for which this message holds valid.
-          type: string
-        version:
-          description: Version of Beckn protocol being used by the sender.
-          type: string
-          const: 2.0.0
-        lineage:
-          description: |
-            An optional array of causal attribution records asserting that this
-            Beckn transaction was triggered by one or more upstream Beckn interactions.
-            Present only at transaction boundaries. MUST NOT be populated within
-            subsequent steps of the same transaction. Per current Beckn profiles,
-            this array MUST contain at most one entry when present.
-          type: array
-          maxItems: 1
-          items:
-            $ref: https://schema.beckn.io/LineageEntry/v2.0
-      required:
-        - action
-        - bapId
-        - bapUri
-        - messageId
-        - timestamp
-        - transactionId
-        - version
-
-    ContextV1:
-      description: |
-        Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
-      type: object
-      title: Context V1.0
-      required:
-        - action
-        - bap_id
-        - bap_uri
-        - message_id
-        - timestamp
-        - transaction_id
-        - version
-      properties:
-        domain:
-          description: Domain code that is relevant to this transaction context
-          type: string
-        location:
-          description: The location where the transaction is intended to be fulfilled.
-          type: object
-          properties:
-            city:
-              description: "The city code where this transaction is restricted to"
-              type: object
-              properties:
-                code:
-                  type: string
-            country:
-              description: "The country code this transaction is restricted to"
-              type: object
-              properties:
-                code:
-                  type: string
-        action:
-          description: The Beckn protocol method being called by the sender and executed at the receiver.
-          type: string
-        version:
-          type: string
-          description: Version of transaction protocol being used by the sender.
-          const: 2.0.0
-        bap_id:
-          description: Subscriber ID of the BAP as registered on dedi.global
-          type: string
-        bap_uri:
-          description: |
-            The callback URL of the BAP. 
-
-            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-          type: string
-          format: uri
-        bpp_id:
-          description: Subscriber ID of the BPP as registered on dedi.global
-          type: string
-        bpp_uri:
-          description: |
-            The request URL of the BPP. 
-
-            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-          type: string
-          format: uri
-        transaction_id:
-          description: "This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP."
-          type: string
-          format: uuid
-        message_id:
-          description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
-          type: string
-          format: uuid
-        timestamp:
-          description: Time of request generation in RFC3339 format
-          type: string
-          format: date-time
-        key:
-          description: The encryption public key of the sender
-          type: string
-        ttl:
-          description: The duration in ISO8601 format after timestamp for which this message holds valid
-          type: string
-
-    DiscoverContext:
-      description: |
-        Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
-      type: object
-      title: Context V1.0
-      oneOf:
-        - required:
-            [
-              "action",
-              "bap_id",
-              "bap_uri",
-              "message_id",
-              "timestamp",
-              "transaction_id",
-              "version",
-            ]
-        - required:
-            [
-              "action",
-              "bapId",
-              "bapUri",
-              "messageId",
-              "timestamp",
-              "transactionId",
-              "version",
-            ]
+      title: Context
       properties:
         domain:
           description: Domain code that is relevant to this transaction context
@@ -2113,6 +1970,34 @@ components:
         ttl:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
+
+    DiscoveryContext:
+      description: |
+        Context for discovery endpoints (discover, on_discover).
+        Requires only BAP identifiers — BPP identifiers are NOT required since
+        the BPP is not yet known at discovery time. Supports both snake_case (v1)
+        and camelCase (v2) naming conventions via oneOf.
+      oneOf:
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bap_id
+                - bap_uri
+                - message_id
+                - timestamp
+                - transaction_id
+                - version
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bapId
+                - bapUri
+                - messageId
+                - timestamp
+                - transactionId
+                - version
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
