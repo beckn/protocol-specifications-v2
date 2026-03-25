@@ -863,11 +863,19 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/publish
+                    - oneOf:
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: "catalog_publish"
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: "catalog/publish"
+                        
+                      
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -900,11 +908,17 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/on_publish
+                    - oneOf:
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: on_catalog_publish
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
@@ -948,15 +962,23 @@ components:
         cancellation of an active contract. Set context.try to true to first
         retrieve cancellation terms and fees before committing.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      properties:
+        order:
+          allOf:
+            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+            - required:
+                - "beckn:id"
+        contract:
+          allOf:
+            - $ref: '#/components/schemas/Contract'
+            - required:
+                - "id"
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
+          
 
     CatalogPublishAction:
       $id: https://schema.beckn.io/CatalogPublishAction/v2.0
@@ -987,15 +1009,16 @@ components:
         a contract, finalising the transaction terms agreed during the
         select-init negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     DiscoverAction:
       $id: https://schema.beckn.io/DiscoverAction/v2.0
@@ -1006,11 +1029,14 @@ components:
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: '#/components/schemas/Intent'
+        - allOf:
+            - $ref: '#/components/schemas/Intent'
+            - additionalProperties: false
         - type: object
           properties:
             intent:
               $ref: '#/components/schemas/Intent'
+          additionalProperties: false
       
     InitAction:
       $id: https://schema.beckn.io/InitAction/v2.0
@@ -1019,15 +1045,17 @@ components:
         Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
         a contract with consumer details (billing address, fulfillment preferences, etc.).
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
 
     OnCancelAction:
@@ -1038,15 +1066,17 @@ components:
         response to a /beckn/cancel call, returning the contract with status
         set to CANCELLED and any applicable cancellation outcome.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     OnConfirmAction:
       $id: https://schema.beckn.io/OnConfirmAction/v2.0
@@ -1056,21 +1086,24 @@ components:
         response to a /beckn/confirm call, returning the confirmed contract
         with status set to CONFIRMED.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     OnDiscoverAction:
       $id: https://schema.beckn.io/OnDiscoverAction/v2.0
       description: The on_discover response payload containing matching catalogs.
       type: object
-      required: [catalogs]
+      required: 
+        - "catalogs"
       properties:
         catalogs:
           type: array
@@ -1082,7 +1115,10 @@ components:
             Both types share the common `id` + `descriptor` surface for display rendering.
             See `#/components/schemas/Catalog/v2.0` for the full Catalog schema.
           items:
-            $ref: '#/components/schemas/Catalog'
+            oneOf:
+              - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog'
+              - $ref: '#/components/schemas/Catalog'
+      additionalProperties: false
 
     OnInitAction:
       $id: https://schema.beckn.io/OnInitAction/v2.0
@@ -1092,15 +1128,17 @@ components:
         to a /beckn/init call, with the updated contract including payment terms
         and billing confirmation.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     OnRateAction:
       $id: https://schema.beckn.io/OnRateAction/v2.0
@@ -1111,14 +1149,14 @@ components:
         to collect structured feedback from the consumer.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
+      additionalProperties: false
       properties:
         ratings:
           type: array
           items:
             $ref: '#/components/schemas/RatingInput'
-      ##Ravi - removed form
       required:
-        - ratingForms
+        - ratings
 
     # ── Support Messages ────────────────────────────────────────────
 
@@ -1129,6 +1167,7 @@ components:
         Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
         response to a /beckn/select call, with updated contract terms.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
       properties:
         order:
           $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
@@ -1137,7 +1176,7 @@ components:
       oneOf:
         - required:
             - "order"
-        - required :
+        - required:
             - "contract"
               
 
@@ -1149,15 +1188,17 @@ components:
         response to a /beckn/status call (or as an unsolicited status push),
         returning the current state of the contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     OnSupportAction:
       $id: https://schema.beckn.io/OnSupportAction/v2.0
@@ -1167,10 +1208,12 @@ components:
         response to a /beckn/support call, returning support contact details
         and available channels.
         (Context wrapper stripped; only the message-content portion is inlined.)
-      type: object
+      additionalProperties: false
       properties:
         support:
-          $ref: '#/components/schemas/Support'
+          oneOf: 
+            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
+            - $ref: '#/components/schemas/Support'
       required:
         - support
 
@@ -1186,7 +1229,7 @@ components:
         the URL and/or WebSocket endpoint for real-time fulfillment tracking.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      additionalProperties: true
+      additionalProperties: false
       properties:
         tracking:
           $ref: '#/components/schemas/Tracking'
@@ -1201,15 +1244,17 @@ components:
         response to a /beckn/update call (or as an unsolicited update push),
         returning the updated contract state.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
 
     RateAction:
@@ -1222,13 +1267,14 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
         - type: object
+          additionalProperties: false
           properties:
             ratings:
               type: array
               items:
                 $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/RatingInput'
         - type: object
-          additionalProperties: true
+          additionalProperties: false
           properties:
             ratingInputs:
               type: array
@@ -1243,6 +1289,7 @@ components:
         Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
         items and offers from a catalog, initiating the negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
       properties:
         order:
           $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
@@ -1251,7 +1298,7 @@ components:
       oneOf:
         - required:
             - "order"
-        - required :
+        - required:
             - "contract"
 
     StatusAction:
@@ -1261,23 +1308,22 @@ components:
         Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
         the current state of a contract/order by its identifier.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      properties:
+        order:
+          allOf:
+            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+            - required:
+                - "beckn:id"
+        contract:
+          allOf:
+            - $ref: '#/components/schemas/Contract'
+            - required:
+                - "id"
       oneOf:
-        - type: object
-          description: Query by order identifier (legacy)
-          properties:
-            order:
-              allOf:
-                - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-                - required: ['beckn:id']
-        - type: object
-          description: Query by contract identifier
-          properties:
-            contract:
-              type: object
-              required: [id]
-              properties:
-                id:
-                  $ref: '#/components/schemas/Contract/properties/id'
+        - required:
+            - "order"
+        - required :
+            - "contract"
 
     SupportAction:
       $id: https://schema.beckn.io/SupportAction/v2.0
@@ -1288,8 +1334,19 @@ components:
         order/contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
         - type: object
+          properties:
+            refId:
+              type: string
+              description: ID of the entity for which support is requested (order/item/fulfillment/provider/agent).
+            refType:
+              type: string
+              description: Entity type for which support is requested.
+              enum: [ORDER, FULFILLMENT, ITEM, PROVIDER, AGENT, OTHER]
+            support:
+              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
+        - type: object
+          additionalProperties: false
           properties:
             support:
               $ref: '#/components/schemas/Support'
@@ -1300,11 +1357,6 @@ components:
       oneOf:
         - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/TrackAction'
         - type: object
-          title: Track Action
-          description: |
-            Beckn /beckn/track message payload. Sent by a BAP to a BPP to request
-            a real-time tracking handle for a fulfillment within an active contract.
-            (Context wrapper stripped; only the message-content portion is inlined.)
           properties:
             tracking:
               type: object
@@ -1357,16 +1409,17 @@ components:
         changes to an active contract (e.g., update fulfillment address, add items,
         change quantities). The context.try flag must be true during negotiation.
         (Context wrapper stripped; only the message-content portion is inlined.)
+      additionalProperties: false
+      properties:
+        order:
+          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+        contract:
+          $ref: '#/components/schemas/Contract'
       oneOf:
-        - type: object
-          required: [order]
-          properties:
-            order:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
-        - type: object
-          properties:
-            contract:
-              $ref: '#/components/schemas/Contract'
+        - required:
+            - "order"
+        - required:
+            - "contract"
 
     # ─── Responses ────────────────────────────────────────────────────
 
@@ -1842,7 +1895,7 @@ components:
           additionalProperties: false
 
     Contract:
-      $id: https://schema.beckn.io/Contract/v2.1
+      $id: https://schema.beckn.io/Contract/v2.0
       type: object
       description: | 
         This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract. 
@@ -2779,7 +2832,6 @@ components:
         where `digest` is a BLAKE2b-512 hash of the request body, Base64-encoded.
       type: string
       pattern: '^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$'
-
 
     Support:
       $id: https://schema.beckn.io/Support
