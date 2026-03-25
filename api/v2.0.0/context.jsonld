@@ -1,0 +1,98 @@
+{
+  "@context": {
+    "@version": 2.0.0,
+    "beckn": "https://schema.beckn.io/",
+
+    "id": "@id",
+    "type": "@type",
+
+    "descriptor": "beckn:descriptor",
+    "code": "beckn:code",
+    "name": "beckn:name",
+    "shortDesc": "beckn:shortDesc",
+    "longDesc": "beckn:longDesc",
+
+    "provider": "beckn:provider",
+    "participants": "beckn:participants",
+
+    "resources": "beckn:resources",
+    "resourceIds": "beckn:resourceIds",
+
+    "offers": "beckn:offers",
+    "offer": "beckn:offer",
+    "offerAttributes": "beckn:offerAttributes",
+
+    "addOnIds": "beckn:addOnIds",
+
+    "consideration": "beckn:consideration",
+    "considerationIds": "beckn:considerationIds",
+    "considerationId": "beckn:considerationId",
+
+    "commitments": "beckn:commitments",
+    "commitmentIds": "beckn:commitmentIds",
+
+    "performance": "beckn:performance",
+    "performanceAttributes": "beckn:performanceAttributes",
+
+    "settlements": "beckn:settlements",
+    "settlementAttributes": "beckn:settlementAttributes",
+
+    "status": "beckn:status",
+
+    "tracking": "beckn:tracking",
+    "support": "beckn:support",
+
+    "validity": "beckn:validity",
+    "startDate": "beckn:startDate",
+    "endDate": "beckn:endDate",
+
+    "quantity": "beckn:quantity",
+    "unitCode": "beckn:unitCode",
+    "unitQuantity": "beckn:unitQuantity",
+
+    "price": "beckn:price",
+    "priceUnit": "beckn:priceUnit",
+    "consideredValue": "beckn:consideredValue",
+
+    "components": "beckn:components",
+
+    "catalogs": "beckn:catalogs",
+    "catalogId": "beckn:catalogId",
+
+    "visibleTo": "beckn:visibleTo",
+
+    "attributes": "beckn:attributes",
+    "resourceAttributes": "beckn:resourceAttributes",
+    "contractAttributes": "beckn:contractAttributes",
+    "participantAttributes": "beckn:participantAttributes",
+
+    "address": "beckn:address",
+    "geo": "beckn:geo",
+
+    "url": "beckn:url",
+
+    "messageId": "beckn:messageId",
+    "transactionId": "beckn:transactionId",
+
+    "bapId": "beckn:bapId",
+    "bppId": "beckn:bppId",
+    "bapUri": "beckn:bapUri",
+    "bppUri": "beckn:bppUri",
+
+    "timestamp": "beckn:timestamp",
+    "ttl": "beckn:ttl",
+
+    "action": "beckn:action",
+    "version": "beckn:version",
+
+    "try": "beckn:try",
+
+    "lineage": "beckn:lineage",
+
+    "rating": "beckn:rating",
+    "ratings": "beckn:ratings",
+
+    "trackingData": "beckn:trackingData",
+    "trackingAttributes": "beckn:trackingAttributes"
+  }
+}
