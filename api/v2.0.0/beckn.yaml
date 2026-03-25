@@ -100,7 +100,13 @@ paths:
               required: [context, message]
               properties:
                 context:
-                  $ref: '#/components/schemas/DiscoverContext'
+                  allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: discover
                 message:
                   $ref: '#/components/schemas/DiscoverAction'
       responses:
@@ -178,7 +184,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/TransactionContext'
+                    - $ref: '#/components/schemas/Context'
                     - type: object
                       properties:
                         action:
@@ -2088,37 +2094,6 @@ components:
         ttl:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
-
-    DiscoverContext:
-      oneOf:
-        - allOf:
-            - $ref: '#/components/schemas/Context'
-            - type: object
-              required: ["bap_id", "bap_uri", "bpp_id", "bpp_uri", "message_id", "transaction_id", "version", "action", "schema_context"]
-              properties:
-                action:
-                  type: string
-                  const: discover
-                schema_context:
-                  type: array
-                  items:
-                    type: string
-                    format: uri
-                  description: Domain-specific JSON-LD contexts for narrowing the search
-        - allOf:
-            - $ref: '#/components/schemas/Context'
-            - type: object
-              required: ["bapId", "bapUri", "bppId", "bppUri", "messageId", "transactionId", "version", "action", "schemaContext"]
-              properties:
-                action:
-                  type: string
-                  const: discover
-                schemaContext:
-                  type: array
-                  items:
-                    type: string
-                    format: uri
-                  description: Domain-specific JSON-LD contexts for narrowing the search
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
