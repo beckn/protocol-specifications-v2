@@ -863,11 +863,19 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/publish
+                    - oneOf:
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: "catalog_publish"
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: "catalog/publish"
+                        
+                      
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -900,11 +908,17 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/on_publish
+                    - oneOf:
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: on_catalog_publish
+                        - type: object
+                          properties:
+                            action:
+                              type: string
+                              const: catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
