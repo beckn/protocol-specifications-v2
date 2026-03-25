@@ -1077,44 +1077,8 @@ components:
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
-        - allOf:
-            - type: object
-              description: A declaration of an intent to transact
-              properties:
-                text_search:
-                  description: Free text search query for items
-                  type: string
-                  example: gaming laptop premium tech
-                filters:
-                  description: Filter criteria for items
-                  type: object
-                  properties:
-                    type:
-                      description: Type of filter expression
-                      type: string
-                      enum:
-                        - jsonpath
-                      default: jsonpath
-                    expression:
-                      description: Filter expression based on the specified type
-                      type: string
-                      example: $[?(@.rating.value >= 4.0 && @.electronic.brand.name == 'Premium Tech')]
-                  required:
-                    - type
-                    - expression
-                spatial:
-                  description: Optional array of spatial constraints (CQL2-JSON semantics).
-                  type: array
-                  items:
-                    $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
-                media_search:
-                  $ref: "#/components/schemas/MediaSearch"
-            - additionalProperties: false
-            - anyOf:
-                - required: [text_search]
-                - required: [filters]
-                - required: [spatial]
-                - required: [filters, spatial]
+        - description: Flat intent representation (legacy and current aliases supported)
+          $ref: "#/components/schemas/Intent"
         - type: object
           properties:
             intent:
@@ -2499,6 +2463,10 @@ components:
       title: Intent
       type: object
       properties:
+        text_search:
+          description: Free text search query for items (legacy snake_case alias)
+          type: string
+          example: gaming laptop premium tech
         textSearch:
           description: Free text search query for items
           type: string
@@ -2525,18 +2493,42 @@ components:
           type: array
           items:
             $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
+        media_search:
+          $ref: "#/components/schemas/MediaSearch"
         mediaSearch:
           $ref: "#/components/schemas/MediaSearch"
-      anyOf:
+      allOf:
+        - anyOf:
+            - required:
+                - text_search
+            - required:
+                - textSearch
+            - required:
+                - filters
+            - required:
+                - spatial
+            - required:
+                - filters
+                - spatial
+        - not:
+            required:
+              - text_search
+              - textSearch
+        - not:
+            required:
+              - media_search
+              - mediaSearch
+      oneOf:
+        - required:
+            - text_search
         - required:
             - textSearch
-        - required:
-            - filters
-        - required:
-            - spatial
-        - required:
-            - filters
-            - spatial
+        - not:
+            anyOf:
+              - required:
+                  - text_search
+              - required:
+                  - textSearch
       additionalProperties: false
 
     Location:
