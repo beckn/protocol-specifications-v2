@@ -1108,6 +1108,11 @@ components:
                 media_search:
                   $ref: "#/components/schemas/MediaSearch"
             - additionalProperties: false
+            - anyOf:
+              - required: [text_search]
+              - required: [filters]
+              - required: [spatial]
+              - required: [filters, spatial]
         - type: object
           properties:
             intent:
@@ -1799,7 +1804,7 @@ components:
         - Asset transfer
         - Service exchange
         - Compliance artifact
-      required: ["@context", "@type", "id", "status"]
+      required: ["id", "status"]
       properties:
         "@context":
           type: string
@@ -2651,7 +2656,7 @@ components:
 
         This mirrors the role of Offer in current Beckn (and schema.org patterns),
         but keeps the shape minimal and composable via `beckn:offerAttributes`.
-      required: ["@context", "@type", "id"]
+      required: ["id"]
       properties:
         "@context":
           type: string
@@ -2882,7 +2887,7 @@ components:
 
         Designed for composability through `resourceAttributes` where
         domain packs can plug in their specific fields without changing the core.
-      required: ["@context", "@type", "id", "descriptor"]
+      required: ["id"]
       properties:
         "@context":
           type: string
