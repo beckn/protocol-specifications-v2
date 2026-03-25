@@ -61,7 +61,18 @@ tags:
 # All requests MUST carry a valid Beckn HTTP Signature in the Authorization header.
 # The securityScheme is informational; actual enforcement is done at the network layer.
 security: []
-
+servers:
+  - url: https://{subscriberUrl}
+    description: >
+      Base URL of the Beckn network participant endpoint. Implementations MUST
+      substitute `{subscriberUrl}` with the actual registered subscriber URL
+      obtained from the Beckn Registry.
+    variables:
+      subscriberUrl:
+        default: example.beckn.io
+        description: >
+          Registered subscriber URL of the Beckn network participant
+          (BAP or BPP) as published in the Beckn Registry.
 paths:
 
   # ─────────────────────────────────────────────────────────────────────
@@ -914,19 +925,13 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - oneOf:
-                        - type: object
-                          properties:
-                            action:
-                              type: string
-                              const: "catalog_publish"
-                        - type: object
-                          properties:
-                            action:
-                              type: string
-                              const: "catalog/publish"
-                        
-                      
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum:
+                            - catalog_publish
+                            - catalog/publish                                      
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -959,17 +964,13 @@ paths:
                 context:
                   allOf:
                     - $ref: '#/components/schemas/Context'
-                    - oneOf:
-                        - type: object
-                          properties:
-                            action:
-                              type: string
-                              const: on_catalog_publish
-                        - type: object
-                          properties:
-                            action:
-                              type: string
-                              const: catalog/on_publish
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          enum:
+                            - on_catalog_publish
+                            - catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
@@ -2766,12 +2767,14 @@ components:
                 type: number
           - type: array
             description: A custom rating range indexed from 0 to n
-            properties:
-              index:
-                type: integer
-                minimum: 0
-              value:
-                $ref: "https://schema.beckn.io/Descriptor/v2.1"
+            items:
+              type: object
+              properties:
+                index:
+                  type: integer
+                  minimum: 0
+                value:
+                  $ref: "https://schema.beckn.io/Descriptor/v2.1"
         feedbackFormSubmission:
           description: The submission to the feedback form sent along with a rating request
           $ref: https://schema.beckn.io/FormSubmission/v2.0
