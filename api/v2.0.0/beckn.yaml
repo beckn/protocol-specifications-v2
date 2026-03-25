@@ -111,15 +111,15 @@ paths:
                   $ref: '#/components/schemas/DiscoverAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_discover:
     post:
@@ -151,13 +151,13 @@ paths:
                   $ref: '#/components/schemas/OnDiscoverAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   # ─────────────────────────────────────────────────────────────────────
   # TRANSACTION — ORDERING
@@ -194,15 +194,15 @@ paths:
                   $ref: '#/components/schemas/SelectAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_select:
     post:
@@ -234,13 +234,13 @@ paths:
                   $ref: '#/components/schemas/OnSelectAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /init:
     post:
@@ -273,15 +273,15 @@ paths:
                   $ref: '#/components/schemas/InitAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_init:
     post:
@@ -313,13 +313,13 @@ paths:
                   $ref: '#/components/schemas/OnInitAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /confirm:
     post:
@@ -351,15 +351,15 @@ paths:
                   $ref: '#/components/schemas/ConfirmAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_confirm:
     post:
@@ -391,13 +391,13 @@ paths:
                   $ref: '#/components/schemas/OnConfirmAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   # ─────────────────────────────────────────────────────────────────────
   # FULFILLMENT
@@ -434,15 +434,15 @@ paths:
                   $ref: '#/components/schemas/StatusAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_status:
     post:
@@ -477,13 +477,13 @@ paths:
                   $ref: '#/components/schemas/OnStatusAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /track:
     post:
@@ -516,15 +516,15 @@ paths:
                   $ref: '#/components/schemas/TrackAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_track:
     post:
@@ -553,13 +553,13 @@ paths:
                   $ref: '#/components/schemas/OnTrackAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /update:
     post:
@@ -599,15 +599,15 @@ paths:
 
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_update:
     post:
@@ -642,13 +642,13 @@ paths:
 
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /cancel:
     post:
@@ -683,15 +683,15 @@ paths:
                   $ref: '#/components/schemas/CancelAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_cancel:
     post:
@@ -724,13 +724,13 @@ paths:
                   $ref: '#/components/schemas/OnCancelAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   # ─────────────────────────────────────────────────────────────────────
   # POST-FULFILLMENT
@@ -769,15 +769,15 @@ paths:
                   $ref: '#/components/schemas/RateAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_rate:
     post:
@@ -809,13 +809,13 @@ paths:
                   $ref: '#/components/schemas/OnRateAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /support:
     post:
@@ -851,15 +851,15 @@ paths:
                   $ref: '#/components/schemas/SupportAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /on_support:
     post:
@@ -891,13 +891,13 @@ paths:
                   $ref: '#/components/schemas/OnSupportAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   # ─────────────────────────────────────────────────────────────────────
   # CATALOG PUBLISHING SERVICE
@@ -936,15 +936,15 @@ paths:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '409':
-          $ref: '#/components/responses/AckNoCallback'
+          $ref: '#/components/schemas/AckNoCallback'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
   /catalog/on_publish:
     post:
@@ -975,13 +975,13 @@ paths:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
         '200':
-          $ref: '#/components/responses/Ack'
+          $ref: '#/components/schemas/Ack'
         '400':
-          $ref: '#/components/responses/NackBadRequest'
+          $ref: '#/components/schemas/NackBadRequest'
         '401':
-          $ref: '#/components/responses/NackUnauthorized'
+          $ref: '#/components/schemas/NackUnauthorized'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '#/components/schemas/ServerError'
 
 # ─────────────────────────────────────────────────────────────────────
 # COMPONENTS
@@ -3124,92 +3124,74 @@ components:
       - url
       - status
 
-  # ── Ack schema (shared by Ack, AckNoCallback, NackBadRequest, NackUnauthorized responses) ──
-    AckSchema:
+    Ack:
       $id: 'https://schema.beckn.io/Ack'
+      description: |
+        New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver
+        authenticated, received, and processed the inbound request.
       title: Ack
       oneOf:
-        - $ref: 'https://schema.beckn.io/Ack/v2.0'
+        - $ref: https://schema.beckn.io/AckResponse/v2.0
         - type: object
           properties:
             status:
-              description: ACK if the request was accepted; NACK if rejected.
               type: string
-              enum:
-                - ACK
-                - NACK
+              enum: [ACK, NACK]
+              description: ACK if the request was accepted; NACK if rejected.
             signature:
-              description: Counter-signature proving the receiver authenticated and processed the inbound request.
-              $ref: '#/components/schemas/CounterSignature'
-            error:
-              description: Optional error detail explaining why no callback will follow.
-              $ref: '#/components/schemas/Error'
-          required:
-            - status
-            - signature
-
-  responses:
-    Ack:
-      description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AckSchema'
-
+              $ref: https://schema.beckn.io/CounterSignature/v2.0
+              description: |
+                Counter-signature proving the receiver authenticated and processed
+                the inbound request.
+          required: [status, signature]
+          additionalProperties: false
     AckNoCallback:
       description: |
         Request received but no callback will follow (e.g. agents not found,
         inventory unavailable, provider closed, context.try preview complete).
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - required:
-                  - status
-                  - signature
-                  - error
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - required:
+            - status
+            - signature
+            - error
+            
 
 
     NackBadRequest:
       description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - type: object
-                properties:
-                  status:
-                    type: string
-                    const: NACK
-                  error:
-                    $ref: '#/components/schemas/Error'
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - type: object
+          properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              $ref: '#/components/schemas/Error'
+            
 
     NackUnauthorized:
       description: Invalid or missing authentication credentials; signature could not be verified.
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - type: object
-                properties:
-                  status:
-                    type: string
-                    const: NACK
-                  error:
-                    $ref: '#/components/schemas/Error'
+      allOf:
+        - $ref: '#/components/schemas/Ack'
+        - type: object
+          properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              $ref: '#/components/schemas/Error'
+            
 
     ServerError:
       description: Internal failure on the network participant's application; the request could not be processed.
         The response body MAY contain an `error` object with additional details.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+          
+
         
       
