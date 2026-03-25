@@ -1076,7 +1076,37 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       oneOf:
         - allOf:
-            - $ref: '#/components/schemas/Intent'
+            - type: object
+              description: A declaration of an intent to transact
+              properties:
+                text_search:
+                  description: Free text search query for items
+                  type: string
+                  example: gaming laptop premium tech
+                filters:
+                  description: Filter criteria for items
+                  type: object
+                  properties:
+                    type:
+                      description: Type of filter expression
+                      type: string
+                      enum:
+                      - jsonpath
+                      default: jsonpath
+                    expression:
+                      description: Filter expression based on the specified type
+                      type: string
+                      example: $[?(@.rating.value >= 4.0 && @.electronic.brand.name == 'Premium Tech')]
+                  required:
+                  - type
+                  - expression
+                spatial:
+                  description: Optional array of spatial constraints (CQL2-JSON semantics).
+                  type: array
+                  items:
+                    $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
+                media_search:
+                  $ref: "#/components/schemas/MediaSearch"
             - additionalProperties: false
         - type: object
           properties:
@@ -1443,7 +1473,6 @@ components:
               required:
               - contract
       additionalProperties: false
-            
 
     # ── Status Message ──────────────────────────────────────────────
 
@@ -1913,6 +1942,7 @@ components:
         version:
           type: string
           description: Version of transaction protocol being used by the sender.
+          const: 2.0.0
         bap_id:
           description: Subscriber ID of the BAP as registered on dedi.global
           type: string
@@ -2534,7 +2564,7 @@ components:
           type: array
           items:
             $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
-        media_search:
+        mediaSearch:
           $ref: "#/components/schemas/MediaSearch"
       anyOf:
       - required:
@@ -2627,7 +2657,7 @@ components:
           type: string
           format: uri
           description: JSON-LD context URI for the core Offer schema
-          enum: ["https://schema.beckn.io/Offer/v2.2/context.jsonld"]
+          enum: ["https://schema.beckn.io/Offer/v2.1/context.jsonld"]
         "@type":
           type: string
           description: Type of the core Offer
