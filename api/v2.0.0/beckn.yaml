@@ -572,12 +572,16 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required: [context, message, action]
               properties:
                 context:
                   $ref: '#/components/schemas/Context'
                 message:
                   $ref: '#/components/schemas/UpdateAction'
+                action:
+                  type: string
+                  const: update
+
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -614,6 +618,10 @@ paths:
                   $ref: '#/components/schemas/Context'
                 message:
                   $ref: '#/components/schemas/OnUpdateAction'
+                action:
+                  type: string
+                  const: on_update
+
       responses:
         '200':
           $ref: '#/components/responses/Ack'
