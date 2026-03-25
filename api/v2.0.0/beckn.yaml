@@ -74,7 +74,6 @@ servers:
           Registered subscriber URL of the Beckn network participant
           (BAP or BPP) as published in the Beckn Registry.
 paths:
-
   # ─────────────────────────────────────────────────────────────────────
   # DISCOVERY
   # ─────────────────────────────────────────────────────────────────────
@@ -90,7 +89,7 @@ paths:
       operationId: discover
       tags: [Discovery]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -101,25 +100,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: discover
                 message:
-                  $ref: '#/components/schemas/DiscoverAction'
+                  $ref: "#/components/schemas/DiscoverAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_discover:
     post:
@@ -130,7 +129,7 @@ paths:
       operationId: onDiscover
       tags: [Discovery]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -141,23 +140,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_discover
                 message:
-                  $ref: '#/components/schemas/OnDiscoverAction'
+                  $ref: "#/components/schemas/OnDiscoverAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   # ─────────────────────────────────────────────────────────────────────
   # TRANSACTION — ORDERING
@@ -173,7 +172,7 @@ paths:
       operationId: select
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -184,25 +183,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: select
                 message:
-                  $ref: '#/components/schemas/SelectAction'
+                  $ref: "#/components/schemas/SelectAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_select:
     post:
@@ -213,7 +212,7 @@ paths:
       operationId: onSelect
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -224,23 +223,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_select
                 message:
-                  $ref: '#/components/schemas/OnSelectAction'
+                  $ref: "#/components/schemas/OnSelectAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /init:
     post:
@@ -252,7 +251,7 @@ paths:
       operationId: init
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -263,25 +262,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: init
                 message:
-                  $ref: '#/components/schemas/InitAction'
+                  $ref: "#/components/schemas/InitAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_init:
     post:
@@ -292,7 +291,7 @@ paths:
       operationId: onInit
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -303,23 +302,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_init
                 message:
-                  $ref: '#/components/schemas/OnInitAction'
+                  $ref: "#/components/schemas/OnInitAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /confirm:
     post:
@@ -330,7 +329,7 @@ paths:
       operationId: confirm
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -341,25 +340,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: confirm
                 message:
-                  $ref: '#/components/schemas/ConfirmAction'
+                  $ref: "#/components/schemas/ConfirmAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_confirm:
     post:
@@ -370,7 +369,7 @@ paths:
       operationId: onConfirm
       tags: [Transaction]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -381,23 +380,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_confirm
                 message:
-                  $ref: '#/components/schemas/OnConfirmAction'
+                  $ref: "#/components/schemas/OnConfirmAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   # ─────────────────────────────────────────────────────────────────────
   # FULFILLMENT
@@ -413,7 +412,7 @@ paths:
       operationId: status
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -424,25 +423,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: status
                 message:
-                  $ref: '#/components/schemas/StatusAction'
+                  $ref: "#/components/schemas/StatusAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_status:
     post:
@@ -456,7 +455,7 @@ paths:
       operationId: onStatus
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -467,23 +466,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_status
                 message:
-                  $ref: '#/components/schemas/OnStatusAction'
+                  $ref: "#/components/schemas/OnStatusAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /track:
     post:
@@ -495,7 +494,7 @@ paths:
       operationId: track
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -506,25 +505,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: track
                 message:
-                  $ref: '#/components/schemas/TrackAction'
+                  $ref: "#/components/schemas/TrackAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_track:
     post:
@@ -532,7 +531,7 @@ paths:
       operationId: onTrack
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -543,23 +542,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_track
                 message:
-                  $ref: '#/components/schemas/OnTrackAction'
+                  $ref: "#/components/schemas/OnTrackAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /update:
     post:
@@ -576,7 +575,7 @@ paths:
       operationId: update
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -587,27 +586,26 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: update
                 message:
-                  $ref: '#/components/schemas/UpdateAction'
-                  
+                  $ref: "#/components/schemas/UpdateAction"
 
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_update:
     post:
@@ -620,7 +618,7 @@ paths:
       operationId: onUpdate
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -631,24 +629,24 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_update
                 message:
-                  $ref: '#/components/schemas/OnUpdateAction'
+                  $ref: "#/components/schemas/OnUpdateAction"
 
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /cancel:
     post:
@@ -662,7 +660,7 @@ paths:
       operationId: cancel
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -673,25 +671,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: cancel
                 message:
-                  $ref: '#/components/schemas/CancelAction'
+                  $ref: "#/components/schemas/CancelAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_cancel:
     post:
@@ -703,7 +701,7 @@ paths:
       operationId: onCancel
       tags: [Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -714,23 +712,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_cancel
                 message:
-                  $ref: '#/components/schemas/OnCancelAction'
+                  $ref: "#/components/schemas/OnCancelAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   # ─────────────────────────────────────────────────────────────────────
   # POST-FULFILLMENT
@@ -748,7 +746,7 @@ paths:
       operationId: rate
       tags: [Post-Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -759,25 +757,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: rate
                 message:
-                  $ref: '#/components/schemas/RateAction'
+                  $ref: "#/components/schemas/RateAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_rate:
     post:
@@ -788,7 +786,7 @@ paths:
       operationId: onRate
       tags: [Post-Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -799,23 +797,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_rate
                 message:
-                  $ref: '#/components/schemas/OnRateAction'
+                  $ref: "#/components/schemas/OnRateAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /support:
     post:
@@ -830,7 +828,7 @@ paths:
       operationId: support
       tags: [Post-Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -841,25 +839,25 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: support
                 message:
-                  $ref: '#/components/schemas/SupportAction'
+                  $ref: "#/components/schemas/SupportAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /on_support:
     post:
@@ -870,7 +868,7 @@ paths:
       operationId: onSupport
       tags: [Post-Fulfillment]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -881,23 +879,23 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           const: on_support
                 message:
-                  $ref: '#/components/schemas/OnSupportAction'
+                  $ref: "#/components/schemas/OnSupportAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   # ─────────────────────────────────────────────────────────────────────
   # CATALOG PUBLISHING SERVICE
@@ -913,7 +911,7 @@ paths:
       operationId: catalogPublish
       tags: [Catalog Publishing]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -924,27 +922,27 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
                           type: string
                           enum:
                             - catalog_publish
-                            - catalog/publish                                      
+                            - catalog/publish
                 message:
-                  $ref: '#/components/schemas/CatalogPublishAction'
+                  $ref: "#/components/schemas/CatalogPublishAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '409':
-          $ref: '#/components/responses/AckNoCallback'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "409":
+          $ref: "#/components/responses/AckNoCallback"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
   /catalog/on_publish:
     post:
@@ -952,7 +950,7 @@ paths:
       operationId: catalogOnPublish
       tags: [Catalog Publishing]
       parameters:
-        - $ref: '#/components/parameters/AuthorizationHeader'
+        - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
         required: true
         content:
@@ -963,7 +961,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: '#/components/schemas/Context'
+                    - $ref: "#/components/schemas/TransactionContext"
                     - type: object
                       properties:
                         action:
@@ -972,23 +970,22 @@ paths:
                             - on_catalog_publish
                             - catalog/on_publish
                 message:
-                  $ref: '#/components/schemas/CatalogOnPublishAction'
+                  $ref: "#/components/schemas/CatalogOnPublishAction"
       responses:
-        '200':
-          $ref: '#/components/responses/Ack'
-        '400':
-          $ref: '#/components/responses/NackBadRequest'
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
+        "200":
+          $ref: "#/components/responses/Ack"
+        "400":
+          $ref: "#/components/responses/NackBadRequest"
+        "401":
+          $ref: "#/components/responses/NackUnauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 
 
 # ─────────────────────────────────────────────────────────────────────
 # COMPONENTS
 # ─────────────────────────────────────────────────────────────────────
 components:
-
   # ─── Parameters ──────────────────────────────────────────────────
   parameters:
     AuthorizationHeader:
@@ -999,7 +996,7 @@ components:
         Beckn HTTP Signature authentication header.
         See `#/components/schemas/Signature` for the expected format.
       schema:
-        $ref: '#/components/schemas/Signature'
+        $ref: "#/components/schemas/Signature"
 
   # ─── Message Schemas ──────────────────────────────────────────────
 
@@ -1018,12 +1015,12 @@ components:
       properties:
         order:
           allOf:
-            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
             - required:
                 - "beckn:id"
         contract:
           allOf:
-            - $ref: '#/components/schemas/Contract'
+            - $ref: "#/components/schemas/Contract"
             - required:
                 - "id"
       oneOf:
@@ -1031,7 +1028,6 @@ components:
             - "order"
         - required:
             - "contract"
-          
 
     CatalogPublishAction:
       $id: https://schema.beckn.io/CatalogPublishAction/v2.0
@@ -1044,7 +1040,7 @@ components:
             catalogs:
               type: array
               items:
-                $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog'
+                $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog"
         - type: object
           properties:
             catalogs:
@@ -1052,7 +1048,7 @@ components:
               minItems: 1
               description: One or more catalogs to be indexed by the CDS
               items:
-                $ref: '#/components/schemas/Catalog'
+                $ref: "#/components/schemas/Catalog"
 
     ConfirmAction:
       $id: https://schema.beckn.io/ConfirmAction/v2.0
@@ -1064,9 +1060,9 @@ components:
         (Context wrapper stripped; only the message-content portion is inlined.)
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1081,16 +1077,20 @@ components:
         Supports two forms: intent properties directly at the top level (flat),
         or all intent properties nested inside an `intent` container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
-      oneOf:
-        - allOf:
-            - $ref: '#/components/schemas/Intent'
-            - additionalProperties: false
-        - type: object
-          properties:
-            intent:
-              $ref: '#/components/schemas/Intent'
-          additionalProperties: false
-      
+      type: object
+      allOf:
+        - if:
+            required: [intent]
+          then:
+            type: object
+            properties:
+              intent:
+                $ref: "#/components/schemas/Intent"
+            required: [intent]
+            additionalProperties: false
+          else:
+            $ref: "#/components/schemas/Intent"
+
     InitAction:
       $id: https://schema.beckn.io/InitAction/v2.0
       title: Init Action
@@ -1101,15 +1101,14 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
         - required:
             - "contract"
-
 
     OnCancelAction:
       $id: https://schema.beckn.io/OnCancelAction/v2.0
@@ -1122,9 +1121,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1142,9 +1141,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1155,7 +1154,7 @@ components:
       $id: https://schema.beckn.io/OnDiscoverAction/v2.0
       description: The on_discover response payload containing matching catalogs.
       type: object
-      required: 
+      required:
         - "catalogs"
       properties:
         catalogs:
@@ -1169,8 +1168,8 @@ components:
             See `#/components/schemas/Catalog/v2.0` for the full Catalog schema.
           items:
             oneOf:
-              - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog'
-              - $ref: '#/components/schemas/Catalog'
+              - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog"
+              - $ref: "#/components/schemas/Catalog"
       additionalProperties: false
 
     OnInitAction:
@@ -1184,9 +1183,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1207,7 +1206,7 @@ components:
         ratings:
           type: array
           items:
-            $ref: '#/components/schemas/RatingInput'
+            $ref: "#/components/schemas/RatingInput"
       required:
         - ratings
 
@@ -1223,15 +1222,14 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
         - required:
             - "contract"
-              
 
     OnStatusAction:
       $id: https://schema.beckn.io/OnStatusAction/v2.0
@@ -1244,9 +1242,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1264,12 +1262,11 @@ components:
       additionalProperties: false
       properties:
         support:
-          oneOf: 
-            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
-            - $ref: '#/components/schemas/Support'
+          oneOf:
+            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo"
+            - $ref: "#/components/schemas/Support"
       required:
         - support
-
 
     # ── Catalog Publishing Messages ─────────────────────────────────
 
@@ -1285,7 +1282,7 @@ components:
       additionalProperties: false
       properties:
         tracking:
-          $ref: '#/components/schemas/Tracking'
+          $ref: "#/components/schemas/Tracking"
       required:
         - tracking
 
@@ -1300,15 +1297,14 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
         - required:
             - "contract"
-
 
     RateAction:
       $id: https://schema.beckn.io/RateAction/v2.0
@@ -1325,18 +1321,17 @@ components:
             ratings:
               type: array
               items:
-                $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/RatingInput'
+                $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/RatingInput"
         - type: object
           additionalProperties: false
           properties:
             ratingInputs:
               type: array
               items:
-                $ref: '#/components/schemas/RatingInput'
-      
+                $ref: "#/components/schemas/RatingInput"
 
     SelectAction:
-      $id: 'https://schema.beckn.io/SelectAction/v2.0'
+      $id: "https://schema.beckn.io/SelectAction/v2.0"
       title: Select Action
       description: |
         Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
@@ -1345,9 +1340,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1364,18 +1359,18 @@ components:
       properties:
         order:
           allOf:
-            - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
             - required:
                 - "beckn:id"
         contract:
           allOf:
-            - $ref: '#/components/schemas/Contract'
+            - $ref: "#/components/schemas/Contract"
             - required:
                 - "id"
       oneOf:
         - required:
             - "order"
-        - required :
+        - required:
             - "contract"
 
     SupportAction:
@@ -1397,48 +1392,48 @@ components:
               description: Entity type for which support is requested.
               enum: [ORDER, FULFILLMENT, ITEM, PROVIDER, AGENT, OTHER]
             support:
-              $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo'
+              $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo"
         - type: object
           additionalProperties: false
           properties:
             support:
-              $ref: '#/components/schemas/Support'
+              $ref: "#/components/schemas/Support"
           required:
             - support
-  
+
     TrackAction:
       oneOf:
-        - $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/TrackAction'
+        - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/TrackAction"
         - type: object
           properties:
             tracking:
               type: object
               properties:
                 contract:
-                  allOf: 
-                    - $ref: '#/components/schemas/Contract'
+                  allOf:
+                    - $ref: "#/components/schemas/Contract"
                     - required:
                         - id
                 trackingData:
-                  $ref: '#/components/schemas/Attributes'
+                  $ref: "#/components/schemas/Attributes"
                 trackingAttributes:
                   description: Domain-specific extension attributes for this Tracking.
                   allOf:
-                    - $ref: '#/components/schemas/Attributes'
+                    - $ref: "#/components/schemas/Attributes"
                     - required:
-                        - '@context'
-                        - '@type'
+                        - "@context"
+                        - "@type"
                     - properties:
-                        '@context':
+                        "@context":
                           description: Domain-specific context in which this contract is being created
                           type: string
                           format: uri
                           examples:
-                            - 'https://schema.beckn.io/LongPolling/v2.0/context.jsonld'
-                            - 'https://schema.beckn.io/WebhookPush/v2.0/context.jsonld'
-                            - 'https://schema.beckn.io/Streaming/v2.0/context.jsonld'
-                            - 'https://schema.beckn.io/WebPage/v2.0/context.jsonld'
-                        '@type':
+                            - "https://schema.beckn.io/LongPolling/v2.0/context.jsonld"
+                            - "https://schema.beckn.io/WebhookPush/v2.0/context.jsonld"
+                            - "https://schema.beckn.io/Streaming/v2.0/context.jsonld"
+                            - "https://schema.beckn.io/WebPage/v2.0/context.jsonld"
+                        "@type":
                           description: JSON-LD type corresponding to the context
                           type: string
                           examples:
@@ -1448,9 +1443,8 @@ components:
                             - WebPage
                       additionalProperties: true
               required:
-              - contract
+                - contract
       additionalProperties: false
-            
 
     # ── Status Message ──────────────────────────────────────────────
 
@@ -1465,9 +1459,9 @@ components:
       additionalProperties: false
       properties:
         order:
-          $ref: 'https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order'
+          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
-          $ref: '#/components/schemas/Contract'
+          $ref: "#/components/schemas/Contract"
       oneOf:
         - required:
             - "order"
@@ -1480,16 +1474,16 @@ components:
     # CORE DATA SCHEMAS — Reusable types, domain objects, and infrastructure
     # ─────────────────────────────────────────────────────────────────────
     ActionTrigger:
-      description: Describes a trigger that initiates an action, like triggering a settlement on fulfillment completion. 
+      description: Describes a trigger that initiates an action, like triggering a settlement on fulfillment completion.
       type: object
       properties:
-        '@context':
+        "@context":
           type: string
           format: uri
-        '@type':
+        "@type":
           type: string
         descriptor:
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
 
     AddOn:
       type: object
@@ -1498,25 +1492,25 @@ components:
         id:
           type: string
         descriptor:
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         addOnAttributes:
           description: |
             Domain-specific extension attributes for this add-on.
           allOf:
-            - $ref: '#/components/schemas/Attributes'
+            - $ref: "#/components/schemas/Attributes"
             - required:
-                - '@context'
-                - '@type'
+                - "@context"
+                - "@type"
             - properties:
-                '@context':
+                "@context":
                   description: Domain-specific context in which this add-on exists
                   type: string
                   format: uri
                   examples:
-                    - 'https://schema.beckn.io/FnbAddOn/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/GroceryAddOn/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/RideAddOn/v2.0/context.jsonld'
-                '@type':
+                    - "https://schema.beckn.io/FnbAddOn/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/GroceryAddOn/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/RideAddOn/v2.0/context.jsonld"
+                "@type":
                   description: JSON-LD type corresponding to the context
                   type: string
                   examples:
@@ -1525,8 +1519,9 @@ components:
                     - RideAddOn
     Address:
       $id: https://schema.beckn.io/Address/v2.0
-      description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses.
-        Geometry lives in `Location.geo` as GeoJSON.'
+      description:
+        "**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses.
+        Geometry lives in `Location.geo` as GeoJSON."
       title: Address
       type: object
       properties:
@@ -1549,47 +1544,48 @@ components:
         postalCode:
           description: Postal/ZIP code.
           type: string
-          example: '560001'
+          example: "560001"
         streetAddress:
           description: Street address (building name/number and street).
           type: string
           example: 123 Tech Street
       additionalProperties: false
 
-    AsyncError: 
+    AsyncError:
       title: Asynchronous Error
       description: |
         Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type annotations to allow linked-data processing.
       allOf:
-        - $ref: '#/components/schemas/Error'
+        - $ref: "#/components/schemas/Error"
         - type: object
           properties:
-            '@context':
+            "@context":
               type: string
               format: uri
-            '@type':
+            "@type":
               type: string
               default: AsyncError
           additionalProperties: true
-    
+
     Attributes:
-      $id: 'https://schema.beckn.io/Attributes/v2.0'
-      description: JSON-LD aware container for domain-specific attributes of an Item. MUST include @context
+      $id: "https://schema.beckn.io/Attributes/v2.0"
+      description:
+        JSON-LD aware container for domain-specific attributes of an Item. MUST include @context
         (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the
         provided JSON-LD context.
       title: Attributes
       type: object
       properties:
-        '@context':
+        "@context":
           description: Use case specific JSON-LD context URI
           type: string
           format: uri
-        '@type':
+        "@type":
           description: JSON-LD type defined within the context
           type: string
       required:
-      - '@context'
-      - '@type'
+        - "@context"
+        - "@type"
       additionalProperties: true
 
     Catalog:
@@ -1663,12 +1659,12 @@ components:
           description: Array of generalized Resource entities in this catalog (new model)
           type: array
           items:
-            $ref: '#/components/schemas/Resource'     
-#        addOns: addOns is available insode offers - not needed here. 
-#          description: Array of offers optionally linked to resources
-#          type: array
-#          items:
-#            $ref: "#/components/schemas/AddOn"
+            $ref: "#/components/schemas/Resource"
+        #        addOns: addOns is available insode offers - not needed here.
+        #          description: Array of offers optionally linked to resources
+        #          type: array
+        #          items:
+        #            $ref: "#/components/schemas/AddOn"
         provider:
           $ref: "#/components/schemas/Provider"
         visibleTo:
@@ -1695,16 +1691,16 @@ components:
           description: The time period during which this catalog is valid
           $ref: "#/components/schemas/TimePeriod"
       required:
-      - id
-      - descriptor
-      - provider
+        - id
+        - descriptor
+        - provider
       anyOf:
         - required: [resources]
-        - required: [offers]      
+        - required: [offers]
       additionalProperties: false
 
     CatalogOnPublishAction:
-      $id: 'https:schema.beckn.io/CatalogOnPublishMessage/v2.0'
+      $id: "https:schema.beckn.io/CatalogOnPublishMessage/v2.0"
       description: Catalog publish processing results from CDS to BPP.
       type: object
       required: [results]
@@ -1713,10 +1709,10 @@ components:
           type: array
           description: Per-catalog processing results
           items:
-            $ref: '#/components/schemas/CatalogProcessingResult'
+            $ref: "#/components/schemas/CatalogProcessingResult"
 
     CatalogProcessingResult:
-      $id: 'https://schema.beckn.io/CatalogProcessingResult/v2.0'
+      $id: "https://schema.beckn.io/CatalogProcessingResult/v2.0"
       description: Processing result for a single catalog submission.
       type: object
       required: [catalogId, status]
@@ -1738,19 +1734,19 @@ components:
                 - PARTIAL — some items accepted, some rejected (see errors)
             - type: object
               properties:
-                '@context':
+                "@context":
                   type: string
                   format: uri
-                  const: '#/components/schemas/'
-                '@type':
+                  const: "#/components/schemas/"
+                "@type":
                   type: string
-                  pattern: '^beckn:[A-Za-z0-9._~-]+$'
+                  pattern: "^beckn:[A-Za-z0-9._~-]+$"
               additionalProperties: true
         errors:
           type: array
           description: Per-item or per-catalog errors (present when REJECTED or PARTIAL)
           items:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
         stats:
           type: object
           description: Optional statistics about the processed catalog
@@ -1777,7 +1773,7 @@ components:
         - Asset transfer
         - Service exchange
         - Compliance artifact
-      required: ["@context", "@type", "id", "status"]
+      required: ["id", "status"]
       properties:
         "@context":
           type: string
@@ -1787,189 +1783,196 @@ components:
           oneOf:
             - type: string
               description: Type of the core Resource
-              enum: ["beckn:Consideration", "beckn:MonetaryConsideration", "beckn:TokenConsideration", "beckn:CreditConsideration", "beckn:AssetConsideration", "beckn:ServiceConsideration"]
+              examples:
+                [
+                  "beckn:Consideration",
+                  "beckn:MonetaryConsideration",
+                  "beckn:TokenConsideration",
+                  "beckn:CreditConsideration",
+                  "beckn:AssetConsideration",
+                  "beckn:ServiceConsideration",
+                ]
             - type: string
         id:
           description: Identifier of this consideration
           type: string
         status:
           description: The status of this consideration
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         considerationAttributes:
           description: |
             Domain-specific attributes of this consideration. For monetary considerations,
             use the PriceSpecification schema to capture total value with breakup.
             For other consideration types, use a generic Attributes bag.
-          $ref: '#/components/schemas/Attributes'
+          $ref: "#/components/schemas/Attributes"
+
+    TransactionContext:
+      description: |
+        Context for transaction endpoints (select, init, confirm, status, etc.).
+        Requires both BAP and BPP identifiers. Supports both snake_case (v1) and
+        camelCase (v2) naming conventions via oneOf.
+      oneOf:
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bap_id
+                - bap_uri
+                - bpp_id
+                - bpp_uri
+                - message_id
+                - timestamp
+                - transaction_id
+                - version
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bapId
+                - bapUri
+                - bppId
+                - bppUri
+                - messageId
+                - timestamp
+                - transactionId
+                - version
 
     Context:
-      oneOf:
-        - description: |-
-            Every API call in Beckn protocol has a context. It contains addressing information like the bap/bpp identifiers and API base urls, the protocol version implemented by the sender, the method being called, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specify the validity of the request, and a key to encrypt information if necessary.
-          title: Context V2.0
+      description: |
+        Base context schema for all Beckn API calls. Contains addressing information
+        (BAP/BPP identifiers and API URLs), protocol version, the action being called,
+        transaction and message IDs, timestamp, TTL, and optional encryption key.
+        This schema defines all possible properties but imposes NO required-field
+        constraints. Use DiscoveryContext or TransactionContext for endpoint-specific
+        required-field validation.
+      type: object
+      title: Context
+      properties:
+        domain:
+          description: Domain code that is relevant to this transaction context
+          type: string
+        location:
+          description: The location where the transaction is intended to be fulfilled.
           type: object
-          required:
-            - action
-            - bapId
-            - bapUri
-            - messageId
-            - timestamp
-            - transactionId
-            - version
-          additionalProperties: false
           properties:
-            action:
-              description: The Beckn endpoint being called. 
-              type: string
-            bapId:
-              description: A globally unique identifier of the BAP. Typically the fully qualified domain name (FQDN) of the BAP.
-              type: string
-            bapUri:
-              description: API URL of the BAP for accepting callbacks from BPPs.
-              type: string
-              format: uri
-            bppId:
-              description: A globally unique identifier of the BPP. Typically the fully qualified domain name (FQDN) of the BPP.
-              type: string
-            bppUri:
-              description: API URL of the BPP for accepting calls from BAPs.
-              type: string
-              format: uri
-            messageId:
-              description: |
-                A unique value which persists during a request/callback cycle. BAPs use
-                this value to match an incoming callback from a BPP to an earlier call.
-                BAPs are expected to generate a fresh messageId for every new interaction. For independent callbacks, BPPs are expected to generate a fresh messageId for each callback. 
-              type: string
-              format: uuid
-            networkId:
-              description: A unique identifier representing a group of platforms. By default, the URL of the network registry on the Beckn network.
-              type: string
-            timestamp:
-              description: Time of request generation in RFC3339 format.
-              type: string
-              format: date-time
-            transactionId:
-              description: |
-                A unique value which persists across all API calls from discover through
-                confirm. Used to indicate an active user session across multiple requests.
-              type: string
-              format: uuid
-            try:
-              description: A flag to indicate that this request is intended to try an operation in sandbox mode
-              type: boolean
-              default: false
-            ttl:
-              description: The duration in ISO8601 format after timestamp for which this message holds valid.
-              type: string
-            version:
-              description: Version of Beckn protocol being used by the sender.
-              type: string
-              const: 2.0.0
-            lineage:
-              description: |
-                An optional array of causal attribution records asserting that this
-                Beckn transaction was triggered by one or more upstream Beckn interactions.
-                Present only at transaction boundaries. MUST NOT be populated within
-                subsequent steps of the same transaction. Per current Beckn profiles,
-                this array MUST contain at most one entry when present.
-              type: array
-              maxItems: 1
-              items:
-                $ref: https://schema.beckn.io/LineageEntry/v2.0
-            schema_context:
-              type: array
-              items:
-                type: string
-                format: uri
-              description: Optional JSON-LD context URLs indicating item types to search across
-        - description: | 
-            Every API call in beckn protocol has a context. It provides a high-level overview to the receiver about the nature of the intended transaction. Typically, it is the BAP that sets the transaction context based on the consumer''s location and action on their UI. But sometimes, during unsolicited callbacks, the BPP also sets the transaction context but it is usually the same as the context of a previous full-cycle, request-callback interaction between the BAP and the BPP. The context object contains four types of fields. <ol><li>Demographic information about the transaction using fields like `domain`, `country`, and `region`.</li><li>Addressing details like the sending and receiving platform''s ID and API URL.</li><li>Interoperability information like the protocol version that implemented by the sender and,</li><li>Transaction details like the method being called at the receiver''s endpoint, the transaction_id that represents an end-to-end user session at the BAP, a message ID to pair requests with callbacks, a timestamp to capture sending times, a ttl to specifiy the validity of the request, and a key to encrypt information if necessary.</li></ol> This object must be passed in every interaction between a BAP and a BPP. In HTTP/S implementations, it is not necessary to send the context during the synchronous response. However, in asynchronous protocols, the context must be sent during all interactions.
-          type: object
-          title: Context V1.0
-          additionalProperties: false
-          required:
-            - action
-            - bap_id
-            - bap_uri
-            - message_id
-            - timestamp
-            - transaction_id
-            - version
-          properties:
-            domain:
-              description: Domain code that is relevant to this transaction context
-              type: string
-            location:
-              description: The location where the transaction is intended to be fulfilled.
+            city:
+              description: "The city code where this transaction is restricted to"
               type: object
               properties:
-                city:
-                  description: 'The city code where this transaction is restricted to'
-                  type: object
-                  properties:
-                    code:
-                      type: string
-                country:
-                  description: 'The country code this transaction is restricted to'
-                  type: object
-                  properties:
-                    code:
-                      type: string
-            action:
-              description: The Beckn protocol method being called by the sender and executed at the receiver.
-              type: string
-            version:
-              type: string
-              description: Version of transaction protocol being used by the sender.
-            bap_id:
-              description: Subscriber ID of the BAP as registered on dedi.global
-              type: string
-            bap_uri:
-              description: | 
-                The callback URL of the BAP. 
+                code:
+                  type: string
+            country:
+              description: "The country code this transaction is restricted to"
+              type: object
+              properties:
+                code:
+                  type: string
+        action:
+          description: The Beckn protocol method being called by the sender and executed at the receiver.
+          type: string
+        version:
+          type: string
+          description: Version of transaction protocol being used by the sender.
+          const: 2.0.0
+        bap_id:
+          description: Subscriber ID of the BAP as registered on dedi.global
+          type: string
+        bapId:
+          description: Subscriber ID of the BAP as registered on dedi.global
+          type: string
+        bap_uri:
+          description: |
+            The callback URL of the BAP. 
 
-                REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-              type: string
-              format: uri
-            bpp_id:
-              description: Subscriber ID of the BPP as registered on dedi.global
-              type: string
-            bpp_uri:
-              description: | 
-                The request URL of the BPP. 
-                
-                REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-              type: string
-              format: uri
-            transaction_id:
-              description: 'This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.'
-              type: string
-              format: uuid
-            message_id:
-              description: 'This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.'
-              type: string
-              format: uuid
-            timestamp:
-              description: Time of request generation in RFC3339 format
-              type: string
-              format: date-time
-            key:
-              description: The encryption public key of the sender
-              type: string
-            ttl:
-              description: The duration in ISO8601 format after timestamp for which this message holds valid
-              type: string
-            schemaContext:
-              type: array
-              items:
-                type: string
-                format: uri
-              description: Optional JSON-LD context URLs indicating item types to search across
+            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bapUri:
+          description: |
+            The callback URL of the BAP. 
+
+            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bpp_id:
+          description: Subscriber ID of the BPP as registered on dedi.global
+          type: string
+        bppId:
+          description: Subscriber ID of the BPP as registered on dedi.global
+          type: string
+        bpp_uri:
+          description: |
+            The request URL of the BPP. 
+
+            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        bppUri:
+          description: |
+            The request URL of the BPP. 
+
+            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
+          type: string
+          format: uri
+        transaction_id:
+          description: "This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP."
+          type: string
+          format: uuid
+        transactionId:
+          description: "This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP."
+          type: string
+          format: uuid
+        message_id:
+          description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
+          type: string
+          format: uuid
+        messageId:
+          description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
+          type: string
+          format: uuid
+        timestamp:
+          description: Time of request generation in RFC3339 format
+          type: string
+          format: date-time
+        key:
+          description: The encryption public key of the sender
+          type: string
+        ttl:
+          description: The duration in ISO8601 format after timestamp for which this message holds valid
+          type: string
+
+    DiscoveryContext:
+      description: |
+        Context for discovery endpoints (discover, on_discover).
+        Requires only BAP identifiers — BPP identifiers are NOT required since
+        the BPP is not yet known at discovery time. Supports both snake_case (v1)
+        and camelCase (v2) naming conventions via oneOf.
+      oneOf:
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bap_id
+                - bap_uri
+                - message_id
+                - timestamp
+                - transaction_id
+                - version
+        - allOf:
+            - $ref: "#/components/schemas/Context"
+            - required:
+                - action
+                - bapId
+                - bapUri
+                - messageId
+                - timestamp
+                - transactionId
+                - version
+
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
       type: object
-      description: | 
+      description: |
         This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract. 
         Alternate description A digitally agreed commitment between two or more participants
         governing the exchange of economic or non-economic value.
@@ -1989,44 +1992,41 @@ components:
         subscriptions, and other use cases.
       title: Contract
       properties:
-        '@context':
+        "@context":
           description: A URL to the reference vocabulary where this schema has been defined. If missing, this field defaults to `https://schema.beckn.io/`. It allows applications to fetch the mapping between the simple JSON keys of this class and absolute Beckn IRIs (Internationalized Resource Identifiers), allowing conversion of standard Beckn JSON payload into linked data.
           type: string
           format: uri
-          const: https://schema.beckn.io/Contract/v2.0
-        '@type':
+        "@type":
           description: A Beckn IRI on the vocabulary defined in the @context. Must start with "beckn:" followed by URL-safe identifier characters.
           type: string
-          pattern: ^beckn:[A-Za-z0-9._~-]+$
-          default: beckn:Contract
         id:
           description: A UUID string generated at the BPP endpoint at any stage before the confirmation of the order i.e before `/on_confirm` callback. This value is intended typically for indexing or filtering. While the chances of a UUID collision are rare, it is recommended to use a combination of `bppId`, `providerId` and `id` to allow for global uniqueness.
           type: string
           format: uuid
         descriptor:
           description: Describes the nature of the contract in human / agent readable terms
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         commitments:
           type: array
           description: |
-            Structured commitments governed by this contract. 
+            Structured commitments governed by this contract.
           minItems: 1
           items:
-            $ref: '#/components/schemas/Commitment'
+            $ref: "#/components/schemas/Commitment"
         consideration:
           type: array
           description: Value agreed to be exchanged under this contract.
           items:
-            $ref: '#/components/schemas/Consideration'
+            $ref: "#/components/schemas/Consideration"
         participants:
           description: |
             The participants involved in the contract. Contracts are not always between two individuals.
-            
+
             Several entities may play a specific role in the creation, fulfillment, and post-fulfillment of
             the contract.
           type: array
           items:
-            $ref: '#/components/schemas/Participant'
+            $ref: "#/components/schemas/Participant"
         performance:
           type: array
           description: |
@@ -2047,44 +2047,44 @@ components:
             Tracking and Support interactions may be linked to
             individual Performance units.
           items:
-            $ref: '#/components/schemas/Performance'
+            $ref: "#/components/schemas/Performance"
         #removed entitlements as the data is beign captrued across different atributes
         settlements:
           type: array
           description: |
             Records representing discharge of agreed consideration.
           items:
-            $ref: '#/components/schemas/Settlement'
-        #removed terms as it can be decared in the contractAttributes by the needed use cases. 
+            $ref: "#/components/schemas/Settlement"
+        #removed terms as it can be decared in the contractAttributes by the needed use cases.
         status:
           description: The current state of the contract expressed as a Descriptor whose code MUST be one of the standard contract state values.
           allOf:
-            - $ref: '#/components/schemas/Descriptor'
+            - $ref: "#/components/schemas/Descriptor"
             - type: object
               properties:
                 code:
                   enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE]
-        #removed forms as it can be decared in the contractAttributes by the needed use cases. 
+        #removed forms as it can be decared in the contractAttributes by the needed use cases.
         contractAttributes:
           description: Domain-specific extension attributes for this contract.
           allOf:
-            - $ref: '#/components/schemas/Attributes'
+            - $ref: "#/components/schemas/Attributes"
             - required:
-                - '@context'
-                - '@type'
+                - "@context"
+                - "@type"
             - properties:
-                '@context':
+                "@context":
                   description: Domain-specific context in which this contract is being created
                   type: string
                   format: uri
                   examples:
-                    - 'https://schema.beckn.io/GroceryOrder/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/FnBOrder/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/ShippingOrder/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/MobilityBooking/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/BusTicketBooking/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/P2PEnergyTrade/v1.1/context.jsonld'
-                '@type':
+                    - "https://schema.beckn.io/GroceryOrder/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/FnBOrder/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/ShippingOrder/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/MobilityBooking/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/BusTicketBooking/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/P2PEnergyTrade/v1.1/context.jsonld"
+                "@type":
                   description: JSON-LD type corresponding to the context
                   type: string
                   examples:
@@ -2121,7 +2121,7 @@ components:
           properties:
             descriptor:
               allOf:
-                - $ref: '#/components/schemas/Descriptor'
+                - $ref: "#/components/schemas/Descriptor"
                 - properties:
                     code:
                       enum:
@@ -2134,32 +2134,32 @@ components:
             required:
               - id
               - quantity
-            $ref: '#/components/schemas/Resource'
+            $ref: "#/components/schemas/Resource"
         offer:
           required:
             - id
             - resourceIds
-          $ref: '#/components/schemas/Offer'
+          $ref: "#/components/schemas/Offer"
         commitmentAttributes:
           description: Domain-specific extension attributes for this commitment.
           allOf:
-            - $ref: '#/components/schemas/Attributes'
+            - $ref: "#/components/schemas/Attributes"
             - required:
-                - '@context'
-                - '@type'
+                - "@context"
+                - "@type"
               properties:
-                '@context':
+                "@context":
                   description: Domain-specific attributes for this commitment
                   type: string
                   format: uri
                   examples:
-                    - 'https://schema.beckn.io/ShoppingCart/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/ShippingManifest/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/TravelItinerary/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/BillOfMaterials/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/DiagnosticTests/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/TodoList/v2.0/context.jsonld'
-                '@type':
+                    - "https://schema.beckn.io/ShoppingCart/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/ShippingManifest/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/TravelItinerary/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/BillOfMaterials/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/DiagnosticTests/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/TodoList/v2.0/context.jsonld"
+                "@type":
                   description: JSON-LD type corresponding to the context
                   type: string
                   examples:
@@ -2191,7 +2191,7 @@ components:
         (message-id): {messageId}
         ```
       allOf:
-        - $ref: '#/components/schemas/Signature'
+        - $ref: "#/components/schemas/Signature"
 
     Descriptor:
       $id: "#/components/schemas/Descriptor"
@@ -2200,15 +2200,13 @@ components:
       title: Descriptor
       type: object
       properties:
-        '@context':
+        "@context":
           description: Use case specific JSON-LD context. This can change from use case to use case, even within a domain.
           type: string
           format: uri
-          default: "https://schema.beckn.io/"
-        '@type':
+        "@type":
           description: Type of the descriptor. The type can be overriden with a context-specific type
           type: string
-          default: beckn:Descriptor
         code:
           description: A machine-readable code identifying the state or type of the entity being described. The valid values for this field are defined by the context in which the Descriptor is used (e.g. DRAFT, ACTIVE, CANCELLED, COMPLETE for a Contract status).
           type: string
@@ -2239,11 +2237,11 @@ components:
           items:
             $ref: "https://schema.beckn.io/MediaFile/v2.0"
       required:
-      - '@type'
+        - "@type"
       additionalProperties: false
 
     Error:
-      $id: '#/components/schemas/Error/v2.0'
+      $id: "#/components/schemas/Error/v2.0"
       title: Error
       description: |
         Base error container returned in NACK responses and async error callbacks.
@@ -2251,7 +2249,7 @@ components:
         (see docs/11_Error_Codes.md). Custom error objects may be expressed as
         `oneOf [string, object]` payloads via the `errorDetails` field.
       oneOf:
-        - description: Newest version of the error object properties. 
+        - description: Newest version of the error object properties.
           type: object
           properties:
             errorCode:
@@ -2278,39 +2276,39 @@ components:
               type: string
             details:
               type: object
-    
-    #removed Forms - should move to common schemas in schema repo 
-      
+
+    #removed Forms - should move to common schemas in schema repo
+
     Participant:
       type: object
       properties:
         id:
           type: string
         descriptor:
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         participantAttributes:
           description: |
             Domain-specific extension attributes for this contract.
             Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
           allOf:
-            - $ref: '#/components/schemas/Attributes'
+            - $ref: "#/components/schemas/Attributes"
             - required:
-                - '@context'
-                - '@type'
+                - "@context"
+                - "@type"
               properties:
-                '@context':
+                "@context":
                   description: Domain-specific entity which is is participating in this transaction
                   type: string
                   format: uri
                   examples:
-                    - 'https://schema.beckn.io/Consumer/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/Provider/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/FulfillmentAgent/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/NetworkParticipant/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/EscrowAgent/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/Guarantor/v2.0/context.jsonld'
-                '@type':
+                    - "https://schema.beckn.io/Consumer/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/Provider/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/FulfillmentAgent/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/NetworkParticipant/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/EscrowAgent/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/Guarantor/v2.0/context.jsonld"
+                "@type":
                   description: JSON-LD type corresponding to the context
                   type: string
                   examples:
@@ -2320,10 +2318,11 @@ components:
                     - NetworkParticipant
                     - EscrowAgent
                     - Guarantor
-    
+
     GeoJSONGeometry:
-      $id: 'https://schema.beckn.io/GeoJSONGeometry/v2.0'
-      description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow\
+      $id: "https://schema.beckn.io/GeoJSONGeometry/v2.0"
+      description:
+        "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow\
         \ **[longitude, latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint,\
         \ MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)\n\
         Notes: - For rectangles, use a Polygon with a single linear ring where the first\n  and last positions\
@@ -2341,7 +2340,8 @@ components:
           items:
             type: number
         coordinates:
-          description: Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon,
+          description:
+            Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon,
             lat, (alt)]**. For Polygons, this is an array of linear rings; each ring is an array of positions.
           type: array
           items: {}
@@ -2349,19 +2349,19 @@ components:
           description: Member geometries when `type` is **GeometryCollection**.
           type: array
           items:
-            $ref: '#/components/schemas/GeoJSONGeometry'
+            $ref: "#/components/schemas/GeoJSONGeometry"
         type:
           type: string
           enum:
-          - Point
-          - LineString
-          - Polygon
-          - MultiPoint
-          - MultiLineString
-          - MultiPolygon
-          - GeometryCollection
+            - Point
+            - LineString
+            - Polygon
+            - MultiPoint
+            - MultiLineString
+            - MultiPolygon
+            - GeometryCollection
       required:
-      - type
+        - type
       additionalProperties: true
 
     Performance:
@@ -2375,7 +2375,7 @@ components:
 
         A minimal envelope that carries identity, status, and a performanceAttributes
         bag that holds the concrete domain-specific delivery schema. 
-        
+
         Domain specification authors can attach rich context and types via `performanceAttributes`.
 
         For example, Hyperlocal delivery details (pickup/delivery locations, items shipped, agent, etc.)
@@ -2386,31 +2386,29 @@ components:
       x-tags: [common, fulfillment]
       type: object
       properties:
-        '@context':
+        "@context":
           description: Domain-specific context in which this fulfillment is taking place
           type: string
           format: uri
-          const: 'https://schema.beckn.io/Performance/v2.1/context.jsonld'
-        '@type':
+        "@type":
           description: JSON-LD type.
           type: string
-          default: 'Fulfillment'
         id:
           type: string
           description: Unique identifier for this fulfillment record.
           x-jsonld:
-            '@id': 'beckn:id'
+            "@id": "beckn:id"
         status:
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
           description: >
             Current status of this fulfillment, expressed as a Descriptor.
             Use Descriptor.code for machine-readable status values.
           x-jsonld:
-            '@id': 'beckn:status'
+            "@id": "beckn:status"
         commitmentIds:
           type: array
           items:
-            $ref: '#/components/schemas/Commitment/properties/id'
+            $ref: "#/components/schemas/Commitment/properties/id"
         performanceAttributes:
           description: >
             Domain-specific extension attributes for this fulfillment.
@@ -2418,32 +2416,28 @@ components:
             hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
           allOf:
-            - $ref: '#/components/schemas/Attributes'
+            - $ref: "#/components/schemas/Attributes"
             - properties:
-                '@context':
+                "@context":
                   description: Domain-specific context in which this fulfillment is taking place
                   type: string
                   format: uri
                   examples:
-                    - 'https://schema.beckn.io/HyperlocalDelivery/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/OnDemandRide/v2.0/context.jsonld'
-                    - 'https://schema.beckn.io/P2PEnergyTransfer/v1.1/context.jsonld'
-                  default: 'https://schema.beckn.io/Fulfillment/v2.1/context.jsonld'
-                '@type':
+                    - "https://schema.beckn.io/HyperlocalDelivery/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/OnDemandRide/v2.0/context.jsonld"
+                    - "https://schema.beckn.io/P2PEnergyTransfer/v1.1/context.jsonld"
+                "@type":
                   description: JSON-LD type.
                   type: string
                   examples:
-                    - 'HyperlocalDelivery'
-                    - 'OnDemandRide'
-                    - 'P2PEnergyTransfer'
-                    - 'Fulfillment'
-      required:
-        - '@context'
-        - '@type'
+                    - "HyperlocalDelivery"
+                    - "OnDemandRide"
+                    - "P2PEnergyTransfer"
+                    - "Fulfillment"
       additionalProperties: false
 
     InReplyTo:
-      $id: 'https://schema.beckn.io/InReplyTo/v2.0'
+      $id: "https://schema.beckn.io/InReplyTo/v2.0"
       title: In-Reply-To Reference
       description: |
         A cryptographic binding that ties an asynchronous `on_<action>` callback to the
@@ -2464,7 +2458,7 @@ components:
           description: The `messageId` of the parent request from its `Context`.
         digest:
           type: string
-          pattern: '^BLAKE-512=[A-Za-z0-9+/]+=*$'
+          pattern: "^BLAKE-512=[A-Za-z0-9+/]+=*$"
           description: |
             BLAKE2b-512 hash of the parent request body, Base64-encoded with algorithm prefix.
             Format: `BLAKE-512={base64EncodedHash}`
@@ -2475,6 +2469,10 @@ components:
       title: Intent
       type: object
       properties:
+        text_search:
+          description: Free text search query for items (legacy snake_case alias)
+          type: string
+          example: gaming laptop premium tech
         textSearch:
           description: Free text search query for items
           type: string
@@ -2487,15 +2485,15 @@ components:
               description: Type of filter expression
               type: string
               enum:
-              - jsonpath
+                - jsonpath
               default: jsonpath
             expression:
               description: Filter expression based on the specified type
               type: string
               example: $[?(@.rating.value >= 4.0 && @.electronic.brand.name == 'Premium Tech')]
           required:
-          - type
-          - expression
+            - type
+            - expression
         spatial:
           description: Optional array of spatial constraints (CQL2-JSON semantics).
           type: array
@@ -2503,18 +2501,41 @@ components:
             $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
         media_search:
           $ref: "#/components/schemas/MediaSearch"
-      anyOf:
-      - required:
-        - textSearch
-      - required:
-        - filters
-      - required:
-        - spatial
-      - required:
-        - filters
-        - spatial
+        mediaSearch:
+          $ref: "#/components/schemas/MediaSearch"
+      allOf:
+        - anyOf:
+            - required:
+                - text_search
+            - required:
+                - textSearch
+            - required:
+                - filters
+            - required:
+                - spatial
+            - required:
+                - filters
+                - spatial
+        - not:
+            required:
+              - text_search
+              - textSearch
+        - not:
+            required:
+              - media_search
+              - mediaSearch
+      oneOf:
+        - required:
+            - text_search
+        - required:
+            - textSearch
+        - not:
+            anyOf:
+              - required:
+                  - text_search
+              - required:
+                  - textSearch
       additionalProperties: false
-
 
     Location:
       description: |
@@ -2528,11 +2549,11 @@ components:
           type: string
           enum: ["beckn:Location"]
         geo:
-          $ref: '#/components/schemas/GeoJSONGeometry'
+          $ref: "#/components/schemas/GeoJSONGeometry"
         address:
           oneOf:
             - type: string
-            - $ref: '#/components/schemas/Address'
+            - $ref: "#/components/schemas/Address"
 
     MediaInput:
       $id: https://schema.beckn.io/MediaInput/v2.0
@@ -2556,9 +2577,9 @@ components:
         media:
           type: array
           items:
-            $ref: '#/components/schemas/MediaInput'
+            $ref: "#/components/schemas/MediaInput"
         options:
-          $ref: '#/components/schemas/MediaSearchOptions'
+          $ref: "#/components/schemas/MediaSearchOptions"
       additionalProperties: false
 
     MediaSearchOptions:
@@ -2569,13 +2590,21 @@ components:
           type: array
           items:
             type: string
-            enum: [visual-similarity, visual-object-detect, text-from-image, text-from-audio, semantic-audio-match, semantic-video-match]
+            enum:
+              [
+                visual-similarity,
+                visual-object-detect,
+                text-from-image,
+                text-from-audio,
+                semantic-audio-match,
+                semantic-video-match,
+              ]
         augment_text_search: { type: boolean, default: true }
         restrict_results_to_media_proximity: { type: boolean, default: false }
       additionalProperties: false
 
     Offer:
-      $id: 'https://schema.beckn.io/Offer/v2.1'
+      $id: "https://schema.beckn.io/Offer/v2.1"
       type: object
       description: |
         A generalized, cross-domain Offer that captures the terms under which
@@ -2588,13 +2617,13 @@ components:
 
         This mirrors the role of Offer in current Beckn (and schema.org patterns),
         but keeps the shape minimal and composable via `beckn:offerAttributes`.
-      required: ["@context", "@type", "id"]
+      required: ["id"]
       properties:
         "@context":
           type: string
           format: uri
           description: JSON-LD context URI for the core Offer schema
-          enum: ["https://schema.beckn.io/Offer/v2.2/context.jsonld"]
+          enum: ["https://schema.beckn.io/Offer/v2.1/context.jsonld"]
         "@type":
           type: string
           description: Type of the core Offer
@@ -2604,7 +2633,7 @@ components:
           description: Unique identifier of the offer.
         descriptor:
           description: Human / agent-readable description of this offer.
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         provider:
           description: |
             Provider of this offer.
@@ -2619,26 +2648,26 @@ components:
                 id:
                   type: string
                   description: Identifier of the provider (same as the item's provider).
-            - $ref: '#/components/schemas/Provider'
+            - $ref: "#/components/schemas/Provider"
         resourceIds:
           type: array
           description: References (IDs) to resources covered by this offer.
           items:
-            $ref: '#/components/schemas/Resource/properties/id'
+            $ref: "#/components/schemas/Resource/properties/id"
         addOnIds:
           type: array
           description: IDs of optional extra Offers or Resources that can be attached.
           items:
-            $ref: '#/components/schemas/AddOn/properties/id'
+            $ref: "#/components/schemas/AddOn/properties/id"
         considerationIds:
           type: array
           items:
-            $ref: '#/components/schemas/Consideration/properties/id'
+            $ref: "#/components/schemas/Consideration/properties/id"
         fulfillmentIds:
           description: Details regarding the fulfillment of this offer
-          $ref: '#/components/schemas/Consideration'
+          $ref: "#/components/schemas/Consideration"
         validity:
-          $ref: '#/components/schemas/TimePeriod'
+          $ref: "#/components/schemas/TimePeriod"
         availableTo:
           type: array
           description: |
@@ -2660,7 +2689,7 @@ components:
                 type: string
                 description: Identifier of the network, participant, or role.
         offerAttributes:
-          $ref: '#/components/schemas/Attributes'
+          $ref: "#/components/schemas/Attributes"
 
     PriceSpecification:
       description: TODO-get from schema.org
@@ -2685,15 +2714,15 @@ components:
               lineSummary:
                 type: string
               value:
-                  type: number
+                type: number
               currency:
                 type: string
               commitmentId:
-                $ref: '#/components/schemas/Commitment/properties/id'
+                $ref: "#/components/schemas/Commitment/properties/id"
               quantity:
-                $ref: '#/components/schemas/Quantity'
+                $ref: "#/components/schemas/Quantity"
 
-    #removed unused ProcessingNotice 
+    #removed unused ProcessingNotice
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2713,8 +2742,8 @@ components:
         providerAttributes:
           $ref: "#/components/schemas/Attributes"
       required:
-      - id
-      - descriptor
+        - id
+        - descriptor
       additionalProperties: false
 
     Quantity:
@@ -2724,7 +2753,7 @@ components:
       type: object
       properties:
         maxQuantity:
-          description: Maximum value 
+          description: Maximum value
           type: number
           example: 100
         minQuantity:
@@ -2743,11 +2772,11 @@ components:
           description: Unit for the quoted price (e.g., kWh, minute, hour, month)
           type: string
       x-jsonld:
-        '@id': beckn:Quantity
+        "@id": beckn:Quantity
       additionalProperties: false
 
-    #ratingInputDiscraded removed 
-    
+    #ratingInputDiscraded removed
+
     RatingInput:
       $id: "https://schema.beckn.io/RatingInput/v2.1"
       $schema: "https://json-schema.org/draft/2020-12/schema"
@@ -2756,13 +2785,11 @@ components:
       x-tags: [common]
       type: object
       properties:
-        '@context':
+        "@context":
           type: string
           format: uri
-          const: "https://schema.beckn.io/RatingForm"
-        '@type':
+        "@type":
           type: string
-          default: RatingForm
         target:
           description: The thing being rated. It could be a person, an application, a service, a product, an instrument used in the fulfillment of the contract, or the overall experience.
           type: object
@@ -2771,42 +2798,40 @@ components:
               description: ID of the entity being rated (order/item/fulfillment/provider/agent).
               type: string
             descriptor:
-              $ref: '#/components/schemas/Descriptor'
+              $ref: "#/components/schemas/Descriptor"
             targetAttributes:
-              $ref: '#/components/schemas/Attributes'
+              $ref: "#/components/schemas/Attributes"
 
         range:
           oneOf:
-          - type: object
-            properties:
-              bestRating:
-                description: Maximum of the rating scale (default 5 if omitted).
-                type: number
-              worstRating:
-                description: Minimum of the rating scale (default 1 or 0 if omitted).
-                type: number
-          - type: array
-            description: A custom rating range indexed from 0 to n
-            items:
-              type: object
+            - type: object
               properties:
-                index:
-                  type: integer
-                  minimum: 0
-                value:
-                  $ref: "https://schema.beckn.io/Descriptor/v2.1"
+                bestRating:
+                  description: Maximum of the rating scale (default 5 if omitted).
+                  type: number
+                worstRating:
+                  description: Minimum of the rating scale (default 1 or 0 if omitted).
+                  type: number
+            - type: array
+              description: A custom rating range indexed from 0 to n
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                    minimum: 0
+                  value:
+                    $ref: "https://schema.beckn.io/Descriptor/v2.1"
         feedbackFormSubmission:
           description: The submission to the feedback form sent along with a rating request
           $ref: https://schema.beckn.io/FormSubmission/v2.0
       required:
-      - '@context'
-      - '@type'
-      - target
-      - range
+        - target
+        - range
       additionalProperties: false
 
     Resource:
-      $id: 'https://schema.beckn.io/Resource/v2.0'
+      $id: "https://schema.beckn.io/Resource/v2.0"
       type: object
       description: |
         A minimal, domain-neutral abstraction representing any discoverable,
@@ -2819,7 +2844,7 @@ components:
 
         Designed for composability through `resourceAttributes` where
         domain packs can plug in their specific fields without changing the core.
-      required: ["@context", "@type", "id", "descriptor"]
+      required: ["id"]
       properties:
         "@context":
           type: string
@@ -2833,13 +2858,13 @@ components:
           type: string
           description: Globally unique identifier of the resource.
         descriptor:
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         resourceAttributes:
           description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
-          $ref: '#/components/schemas/Attributes'
+          $ref: "#/components/schemas/Attributes"
 
     Settlement:
-      $id: 'https://schema.beckn.io/Settlement/v2.0'
+      $id: "https://schema.beckn.io/Settlement/v2.0"
       type: object
       properties:
         "@context":
@@ -2847,8 +2872,8 @@ components:
           format: uri
           description: The domain-specific context in which this settlement is taking place.
           examples:
-            - https://schema.beckn.io/Settlement/2.0/context.jsonld 
-            - https://schema.beckn.io/RetailOrderSettlement/2.0/context.jsonld 
+            - https://schema.beckn.io/Settlement/2.0/context.jsonld
+            - https://schema.beckn.io/RetailOrderSettlement/2.0/context.jsonld
             - https://schema.beckn.io/P2PTradeSettlement/context.jsonld
         "@type":
           type: string
@@ -2860,12 +2885,11 @@ components:
             - "beckn:CreditSettlement"
             - "beckn:AssetTransfer"
             - "beckn:ServiceSettlement"
-          default: "beckn:MonetaryTransfer"
         id:
           type: string
-        #@Ravi Cant a settlement be against multiple considerations? 
+        #@Ravi Cant a settlement be against multiple considerations?
         considerationId:
-          $ref: '#/components/schemas/Consideration/properties/id'
+          $ref: "#/components/schemas/Consideration/properties/id"
         status:
           type: string
           enum:
@@ -2873,11 +2897,11 @@ components:
             - COMMITTED
             - COMPLETE
         settlementAttributes:
-          $ref: '#/components/schemas/Attributes'
+          $ref: "#/components/schemas/Attributes"
 
-    # The current model is very powerful, but it introduces orchestration semantics into the protocol. My proposal is to keep Settlement minimal in core and move workflow constructs like terms, actions, triggers into a settlement extension pack via settlementAttributes. 
+    # The current model is very powerful, but it introduces orchestration semantics into the protocol. My proposal is to keep Settlement minimal in core and move workflow constructs like terms, actions, triggers into a settlement extension pack via settlementAttributes.
 
-    # Removing Schedule from here as it is not used - please shift it to schema repo as a reuseable scehma. 
+    # Removing Schedule from here as it is not used - please shift it to schema repo as a reuseable scehma.
 
     Signature:
       title: Beckn HTTP Signature
@@ -2914,30 +2938,25 @@ components:
       title: Support
       type: object
       properties:
-        '@context':
+        "@context":
           type: string
           format: uri
-          default: https://schema.beckn.io/
-        '@type':
+        "@type":
           type: string
-          const: "beckn:Support"
         orderId:
           description: The order against which support is required
           type: string
         descriptor:
           description: A description of the nature of support needed
-          $ref: '#/components/schemas/Descriptor'
+          $ref: "#/components/schemas/Descriptor"
         channels:
           description: Available support channels described in individual linked data JSON objects
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/Attributes'
-      required:
-      - '@context'
-      - '@type'
+            $ref: "#/components/schemas/Attributes"
       additionalProperties: false
-    
+
     TimePeriod:
       $id: "https://schema.beckn.io/TimePeriod/v2.1"
       description: Time window with date-time precision for availability/validity
@@ -2945,11 +2964,11 @@ components:
       x-tags: [common]
       type: object
       properties:
-        '@context':
+        "@context":
           description: JSON-LD type for a date-time period
           type: string
           const: "https://schema.beckn.io/TimePeriod/v2.1"
-        '@type':
+        "@type":
           description: JSON-LD type for a date-time period
           type: string
           const: TimePeriod
@@ -2957,12 +2976,12 @@ components:
           description: Start instant (inclusive)
           type: string
           format: date-time
-          example: '2025-01-27T09:00:00Z'
+          example: "2025-01-27T09:00:00Z"
         endDate:
           description: End instant (exclusive or inclusive per domain semantics)
           type: string
           format: date-time
-          example: '2025-12-31T23:59:59Z'
+          example: "2025-12-31T23:59:59Z"
         startTime:
           description: Start time of the time period
           type: string
@@ -2972,209 +2991,160 @@ components:
           description: End time of the time period
           type: string
           format: time
-          example: '22:00:00'
+          example: "22:00:00"
       required:
-      - '@type'
+        - "@type"
       anyOf:
-      - required:
-        - startDate
-      - required:
-        - endDate
-      - required:
-        - startTime
-        - endTime
+        - required:
+            - startDate
+        - required:
+            - endDate
+        - required:
+            - startTime
+            - endTime
       additionalProperties: false
 
     Tracking:
       $id: https://schema.beckn.io/Tracking
-      description: Information regarding live tracking of the fufillment of a contract 
+      description: Information regarding live tracking of the fufillment of a contract
       title: Tracking
       type: object
       properties:
-        '@context':
+        "@context":
           description: TBD
           type: string
           format: uri
-          default: https://schema.beckn.io/
-        '@type':
+        "@type":
           description: TBD
           type: string
-          default: beckn:Tracking
         refId:
           description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
           type: string
         status:
           type: string
           enum:
-          - ACTIVE
-          - INACTIVE
-          - NOT-SUPPORTED
+            - ACTIVE
+            - INACTIVE
+            - NOT-SUPPORTED
         url:
           description: Link/handle to off-network tracking UI or endpoint.
           type: string
           format: uri
 
       required:
-      - '@context'
-      - '@type'
-      - url
-      - status
+        - url
+        - status
 
+<<<<<<< HEAD
 
     AckSchema:
       $id: 'https://schema.beckn.io/Ack'
       title: Ack
+=======
+    Ack:
+      description:
+        New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver
+        authenticated, received, and processed the inbound request.
+>>>>>>> draft
       oneOf:
-        - $ref: 'https://schema.beckn.io/Ack/v2.0'
+        - $ref: "https://schema.beckn.io/AckResponse/v2.0"
         - type: object
           properties:
             status:
-              description: ACK if the request was accepted; NACK if rejected.
               type: string
-              enum:
-                - ACK
-                - NACK
+              enum: [ACK, NACK]
+              description: ACK if the request was accepted; NACK if rejected.
             signature:
-              description: Counter-signature proving the receiver authenticated and processed the inbound request.
-              $ref: '#/components/schemas/CounterSignature'
+              $ref: https://schema.beckn.io/CounterSignature/v2.0
+              description: |
+                Counter-signature proving the receiver authenticated and processed
+                the inbound request.
+          required: [status, signature]
+
+    AckNoCallback:
+      description: Request received but no callback will follow (e.g. agents not found,
+        inventory unavailable, provider closed, context.try preview complete).
+      allOf:
+        - $ref: "#/components/schemas/Ack"
+        - type: object
+          properties:
             error:
-              description: Optional error detail explaining why no callback will follow.
-              $ref: '#/components/schemas/Error'
-          required:
+              $ref: "#/components/schemas/Error"
+        - required:
             - status
             - signature
+            - error
 
-  securitySchemes:
-    BecknSignature:
-      type: http
-      scheme: signature
-      description: |
-        **Beckn HTTP Signature** — Ed25519 asymmetric signature over the request body.
+    NackBadRequest:
+      description: "NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload."
+      allOf:
+        - $ref: "#/components/schemas/Ack"
+        - type: object
+          properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              $ref: "#/components/schemas/Error"
 
-        Verified by the Publish API service using the
-        [`beckn-auth-sdk`](https://github.com/manjudr/beck-auth-sdk) against the
-        Beckn Registry (`REGISTRY_BASE_URL`). The registry holds each subscriber's
-        Ed25519 public key.
+    NackUnauthorized:
+      description: Invalid or missing authentication credentials; signature could not be verified.
+      allOf:
+        - $ref: "#/components/schemas/Ack"
+        - type: object
+          properties:
+            status:
+              type: string
+              const: NACK
+            error:
+              $ref: "#/components/schemas/Error"
 
-        Controlled by the `SIGNATURE_AUTH_ENABLED` environment variable
-        (default `true` in production; can be disabled for local development).
+    ServerError:
+      description:
+        Internal failure on the network participant's application; the request could not be processed.
+        The response body MAY contain an `error` object with additional details.
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
 
-        **Endpoints protected:** all routes defined in this specification and in
-        `beckn-catalg-ext.yaml` (catalog extension APIs: subscription, pull).
-        See `beckn-catalg-ext.yaml` for the full list of extension endpoints.
-
-        ---
-
-        ### Authorization Header Format
-
-        ```
-        Authorization: Signature keyId="{subscriberId}|{uniqueKeyId}|ed25519",
-                                  algorithm="ed25519",
-                                  created="{unix_epoch_seconds}",
-                                  expires="{unix_epoch_seconds}",
-                                  headers="(created) (expires) digest",
-                                  signature="{base64_ed25519_signature}"
-        ```
-
-        | Parameter | Description |
-        |-----------|-------------|
-        | `keyId` | `{subscriberId}\|{uniqueKeyId}\|ed25519` — all three segments required |
-        | `algorithm` | Always `ed25519` |
-        | `created` | Unix timestamp (seconds) when the signature was created |
-        | `expires` | Unix timestamp (seconds) when the signature expires |
-        | `headers` | Always `(created) (expires) digest` |
-        | `signature` | Base64-encoded Ed25519 signature of the signing string |
-
-        ### Signing String
-
-        ```
-        (created): {unix_epoch_seconds}
-        (expires): {unix_epoch_seconds}
-        digest: BLAKE-512={base64_blake2b512_hash_of_body}
-        ```
-
-        The digest is a **BLAKE2b-512** hash of the raw request body, Base64-encoded.
-
-        ### Error Responses
-
-        | HTTP | `errorCode` | Cause |
-        |------|-------------|-------|
-        | 400 | `SEC_SIGNATURE_MISSING` | `Authorization` header absent |
-        | 400 | `INVALID_REQUEST` | Header present but malformed |
-        | 401 | `SEC_SIGNATURE_INVALID` | Signature does not verify, expired, or created in future |
-        | 401 | `SEC_KEY_NOT_FOUND` | Key ID not found in registry |
-        | 401 | `SEC_KEY_EXPIRED_OR_REVOKED` | Public key expired in registry |
-        | 401 | `SEC_SUBSCRIBER_NOT_FOUND` | Subscriber not registered |
-        | 401 | `SEC_UNAUTHORIZED_ACTION` | Other auth failure |
-        | 500 | `NET_INTERNAL_ERROR` | Registry unreachable or timed out |
-
-        ### Whitelisting
-
-        Endpoints can be exempted per-deployment via the
-        `SIGNATURE_WHITELISTED_ENDPOINTS` env var
-        (comma-separated `METHOD:/path` entries, e.g. `POST:/catalog/publish`).
-
+  # ─── Responses ─────────────────────────────────────────────────────
   responses:
     Ack:
       description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AckSchema'
+            $ref: '#/components/schemas/Ack'
 
     AckNoCallback:
-      description: |
+      description: >
         Request received but no callback will follow (e.g. agents not found,
         inventory unavailable, provider closed, context.try preview complete).
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - required:
-                  - status
-                  - signature
-                  - error
-
+            $ref: '#/components/schemas/AckNoCallback'
 
     NackBadRequest:
       description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - type: object
-                properties:
-                  status:
-                    type: string
-                    const: NACK
-                  error:
-                    $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/NackBadRequest'
 
     NackUnauthorized:
       description: Invalid or missing authentication credentials; signature could not be verified.
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: '#/components/schemas/AckSchema'
-              - type: object
-                properties:
-                  status:
-                    type: string
-                    const: NACK
-                  error:
-                    $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/NackUnauthorized'
 
     ServerError:
-      description: |
+      description: >
         Internal failure on the network participant's application; the request could not be processed.
         The response body MAY contain an `error` object with additional details.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/ServerError'
