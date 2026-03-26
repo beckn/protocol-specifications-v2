@@ -1932,7 +1932,6 @@ components:
         networkId:
           description: "Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}` suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique  Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should be `acmenet.org/charge-net`"
           type: string
-          format: uuid
         timestamp:
           description: Time of request generation in RFC3339 format
           type: string
