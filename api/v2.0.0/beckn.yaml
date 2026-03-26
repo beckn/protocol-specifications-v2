@@ -1776,21 +1776,20 @@ components:
         "@context":
           type: string
           format: uri
-          description: JSON-LD context URI for the core Resource schema
+          description: JSON-LD URL describing the context of this consideration
         "@type":
-          oneOf:
-            - type: string
-              description: Type of the core Resource
-              examples:
-                [
-                  "beckn:Consideration",
-                  "beckn:MonetaryConsideration",
-                  "beckn:TokenConsideration",
-                  "beckn:CreditConsideration",
-                  "beckn:AssetConsideration",
-                  "beckn:ServiceConsideration",
-                ]
-            - type: string
+          type: string
+          description: Type of the consideration
+          examples:
+            [
+              "beckn:Consideration",
+              "beckn:MonetaryConsideration",
+              "beckn:TokenConsideration",
+              "beckn:CreditConsideration",
+              "beckn:AssetConsideration",
+              "beckn:ServiceConsideration",
+            ]
+
         id:
           description: Identifier of this consideration
           type: string
