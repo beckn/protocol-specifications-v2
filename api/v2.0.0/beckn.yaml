@@ -928,8 +928,8 @@ paths:
                         action:
                           type: string
                           enum:
-                            - catalog_publish
                             - catalog/publish
+                            - catalog_publish
                 message:
                   $ref: "#/components/schemas/CatalogPublishAction"
       responses:
