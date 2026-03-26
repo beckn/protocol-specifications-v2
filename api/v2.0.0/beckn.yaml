@@ -1929,6 +1929,10 @@ components:
           description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
           type: string
           format: uuid
+        networkId:
+          description: "Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}` suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique  Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should be `acmenet.org/charge-net`"
+          type: string
+          format: uuid
         timestamp:
           description: Time of request generation in RFC3339 format
           type: string
@@ -1939,6 +1943,18 @@ components:
         ttl:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
+        schema_context:
+          description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
+          type: array
+          items:
+            type: string
+            format: uri
+        schemaContext:
+          description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
+          type: array
+          items:
+            type: string
+            format: uri
 
     DiscoveryContext:
       description: |
@@ -1957,16 +1973,19 @@ components:
                 - timestamp
                 - transaction_id
                 - version
+                - schema_context
         - allOf:
             - $ref: "#/components/schemas/Context"
             - required:
                 - action
                 - bapId
                 - bapUri
+                - networkId
                 - messageId
                 - timestamp
                 - transactionId
                 - version
+                - schemaContext
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
