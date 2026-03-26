@@ -1972,7 +1972,6 @@ components:
                 - timestamp
                 - transaction_id
                 - version
-                - schema_context
         - allOf:
             - $ref: "#/components/schemas/Context"
             - required:
@@ -1984,7 +1983,6 @@ components:
                 - timestamp
                 - transactionId
                 - version
-                - schemaContext
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
