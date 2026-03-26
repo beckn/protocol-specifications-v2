@@ -88,7 +88,7 @@ paths:
   # SUBSCRIPTION
   # ─────────────────────────────────────────────────────────────────────
 
-  /catalog/subscribe:
+  /catalog/subscription:
     post:
       summary: Subscribe to catalog distribution events
       operationId: catalogSubscribe
@@ -97,7 +97,7 @@ paths:
         - $ref: '#/components/parameters/AuthorizationHeader'
       description: |
         Creates a new catalog subscription using the Beckn v2.0 envelope
-        (`action: "catalog/subscribe"`). The subscriber identity is derived
+        (`action: "catalog/subscription"`). The subscriber identity is derived
         from `context.bapId` / `context.bapUri`; the callback URL defaults
         to `bapUri`.
 
@@ -119,13 +119,13 @@ paths:
                       properties:
                         action:
                           type: string
-                          const: catalog/subscribe
+                          const: catalog/subscription
                 message:
                   $ref: '#/components/schemas/CatalogSubscribeAction'
             example:
               context:
                 version: '2.0.0'
-                action: catalog/subscribe
+                action: catalog/subscription
                 messageId: 550e8400-e29b-41d4-a716-446655440000
                 transactionId: 550e8400-e29b-41d4-a716-446655440001
                 timestamp: '2026-03-23T10:00:00.000Z'
@@ -156,7 +156,7 @@ paths:
                         properties:
                           action:
                             type: string
-                            const: catalog/on_subscribe
+                            const: catalog/on_subscription
                   message:
                     type: object
                     required: [subscriptions]
@@ -202,7 +202,7 @@ paths:
                         properties:
                           action:
                             type: string
-                            const: catalog/on_subscribe
+                            const: catalog/on_subscription
                   message:
                     type: object
                     required: [subscriptions]
@@ -218,7 +218,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /catalog/subscribe/{subscriptionId}:
+  /catalog/subscription/{subscriptionId}:
     get:
       summary: Get subscription by ID
       operationId: catalogSubscribeGet
@@ -249,7 +249,7 @@ paths:
                         properties:
                           action:
                             type: string
-                            const: catalog/on_subscribe
+                            const: catalog/on_subscription
                   message:
                     type: object
                     required: [subscriptions]
@@ -301,7 +301,7 @@ paths:
                         properties:
                           action:
                             type: string
-                            const: catalog/on_subscribe
+                            const: catalog/on_subscription
                   message:
                     type: object
                     required: [subscriptions]
@@ -597,48 +597,43 @@ components:
 
   schemas:
 
-    # Inlined from beckn.yaml to make this file self-contained for AJV validation.
-    # This avoids cross-file $ref bundling issues.
+    # Inlined from beckn.yaml — only fields relevant to catalog extension APIs.
+    # Subscription is BAP→Catalg (no BPP), so bppId/bppUri not required.
     Context:
       type: object
       title: Context
-      description: Beckn protocol context — inlined from beckn.yaml for self-contained validation.
+      description: Beckn protocol context for catalog extension APIs.
+      required: [action, version, messageId, transactionId, timestamp, bapId, bapUri]
       properties:
         action:
           type: string
+          description: The Beckn action being performed
         version:
           type: string
           const: "2.0.0"
-        bapId:
-          type: string
-        bapUri:
-          type: string
-          format: uri
-        bppId:
-          type: string
-        bppUri:
-          type: string
-          format: uri
+          description: Protocol version
         messageId:
           type: string
+          description: Unique message identifier
         transactionId:
           type: string
-        networkId:
-          type: string
+          description: Session/transaction identifier
         timestamp:
           type: string
           format: date-time
-        ttl:
+          description: Request timestamp
+        bapId:
           type: string
-        try:
-          type: boolean
-        lineage:
-          type: array
+          description: BAP subscriber ID
+        bapUri:
+          type: string
+          format: uri
+          description: BAP callback URL
 
     CatalogSubscribeAction:
       type: object
       description: |
-        Message payload for catalog/subscribe.
+        Message payload for catalog/subscription.
         At least one of `networkIds` or `schemaTypes` must be non-empty.
         An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
         matching all schema types for the specified networks.
