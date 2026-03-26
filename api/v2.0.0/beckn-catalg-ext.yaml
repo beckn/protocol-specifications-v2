@@ -593,7 +593,12 @@ components:
 
   parameters:
     AuthorizationHeader:
-      $ref: 'beckn.yaml#/components/parameters/AuthorizationHeader'
+      name: Authorization
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Beckn HTTP Signature authorization header
 
   schemas:
 
@@ -836,10 +841,63 @@ components:
 
   responses:
     Ack:
-      $ref: 'beckn.yaml#/components/responses/Ack'
+      description: Acknowledged
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                const: ACK
     NackBadRequest:
-      $ref: 'beckn.yaml#/components/responses/NackBadRequest'
+      description: Bad request — validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                const: NACK
+              error:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
     NackUnauthorized:
-      $ref: 'beckn.yaml#/components/responses/NackUnauthorized'
+      description: Unauthorized — missing or invalid signature
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                const: NACK
+              error:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
     ServerError:
-      $ref: 'beckn.yaml#/components/responses/ServerError'
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                const: NACK
+              error:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
