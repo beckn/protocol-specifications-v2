@@ -922,7 +922,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
@@ -961,7 +961,7 @@ paths:
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/DiscoveryContext"
                     - type: object
                       properties:
                         action:
