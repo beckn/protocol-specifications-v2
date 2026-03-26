@@ -1069,7 +1069,6 @@ components:
             - "contract"
 
     DiscoverAction:
-      $id: https://schema.beckn.io/DiscoverAction/v2.0
       title: Discover Action (External)
       description: |
         Beckn /beckn/discover message payload as published at schema.beckn.io.
@@ -2479,7 +2478,6 @@ components:
             Format: `BLAKE-512={base64EncodedHash}`
 
     Intent:
-      $id: https://schema.beckn.io/Intent/v2.0
       description: A declaration of an intent to transact
       title: Intent
       type: object
