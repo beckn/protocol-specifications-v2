@@ -1367,7 +1367,6 @@ components:
         - "@type"
       additionalProperties: true
     Catalog:
-      $schema: https://json-schema.org/draft/2020-12/schema
       description: Catalog schema for Beckn Protocol v2.0.0
       title: Catalog
       type: object
@@ -1445,31 +1444,6 @@ components:
             $ref: "#/components/schemas/Resource"
         provider:
           $ref: "#/components/schemas/Provider"
-        visibleTo:
-          description: |-
-            Optional visibility constraint indicating which network participants
-            (by participantId / networkId / role) are allowed to discover or
-            transact on this catalog.
-
-            If omitted, the catalog is assumed to be visible to all participants
-            in the addressed network(s).
-          type: array
-          items:
-            type: object
-            required:
-              - type
-              - id
-            properties:
-              type:
-                type: string
-                enum:
-                  - NETWORK
-                  - PARTICIPANT
-                  - ROLE
-                description: Scope of visibility constraint.
-              id:
-                type: string
-                description: Identifier of the network, participant, or role.
         validity:
           description: The time period during which this catalog is valid
           $ref: "#/components/schemas/TimePeriod"
