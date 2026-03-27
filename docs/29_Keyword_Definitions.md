@@ -1,12 +1,83 @@
 # Keyword Definitions for Technical Specifications
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./29_Keyword_Definitions.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Introduction](#1-introduction)
+  - [2. Definitions](#2-definitions)
+    - [MUST](#must)
+    - [MUST NOT](#must-not)
+    - [SHOULD](#should)
+    - [SHOULD NOT](#should-not)
+    - [MAY](#may)
+  - [3. Usage Examples](#3-usage-examples)
+    - [Example 1 — MUST and REQUIRED](#example-1-must-and-required)
+    - [Example 2 — SHOULD and RECOMMENDED](#example-2-should-and-recommended)
+    - [Example 3 — MAY and OPTIONAL](#example-3-may-and-optional)
+  - [4. Conformance Requirements](#4-conformance-requirements)
+  - [5. References](#5-references)
+  - [6. Changelog](#6-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Released  
-**Author(s):** Ravi Prakash (FIDE / Beckn Foundation)  
+**Author(s):** Ravi Prakash (Beckn Labs)  
 **Created:** 2023-09-01  
 **Updated:** 2026-02-01  
 **Conformance impact:** Informative  
 **Security/privacy implications:** No security or privacy implications identified.  
-**Replaces / Relates to:** Adapted from BECKN-010 (v1.x). Aligned with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119) and [RFC 8174](https://datatracker.ietf.org/doc/html/rfc8174).
+**Replaces / Relates to:** Adapted from BECKN-010 (legacy pre-v2). Aligned with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119) and [RFC 8174](https://datatracker.ietf.org/doc/html/rfc8174).
 
 ---
 
@@ -72,13 +143,13 @@ The following examples illustrate correct usage in the context of Beckn Protocol
 
 ### Example 2 — SHOULD and RECOMMENDED
 
-> RECOMMENDED. Upon receiving a `discover` request, the CDS SHOULD return a `Catalog` that best matches the `Intent` in the request.
+> RECOMMENDED. Upon receiving a `discover` request, the DS SHOULD return a `Catalog` that best matches the `Intent` in the request.
 
 > Participants SHOULD cache registry lookup results for the duration of the key's validity period.
 
 ### Example 3 — MAY and OPTIONAL
 
-> The CDS MAY support synchronous (non-callback) responses for `discover` requests, subject to network policy.
+> The DS MAY support synchronous (non-callback) responses for `discover` requests, subject to network policy.
 
 > Participants MAY implement additional response schemas beyond those defined in `beckn.yaml` for network-specific error conditions.
 
@@ -102,5 +173,5 @@ These keyword definitions apply to all normative text in this repository and all
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| Draft-01 | 2023-09-01 | Ravi Prakash | Initial draft (BECKN-010 in v1.x) |
+| Draft-01 | 2023-09-01 | Ravi Prakash | Initial draft (BECKN-010 in legacy pre-v2) |
 | Draft-02 | 2026-02-01 | — | Updated for v2 governance model; added RFC 8174 alignment; added examples |

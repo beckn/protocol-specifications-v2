@@ -1,4 +1,73 @@
 # Error Codes and Error Handling
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./06_Error_Codes.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Transport-Level Errors](#1-transport-level-errors)
+  - [2. Application-Level Error Object](#2-application-level-error-object)
+  - [3. Application-Level Error Code Registry](#3-application-level-error-code-registry)
+    - [3.1 Request Errors (3xxxx)](#31-request-errors-3xxxx)
+    - [3.2 Business Errors (4xxxx)](#32-business-errors-4xxxx)
+    - [3.3 Policy Errors (5xxxx)](#33-policy-errors-5xxxx)
+    - [3.4 Transport / Authentication Errors (6xxxx)](#34-transport-authentication-errors-6xxxx)
+  - [4. AsyncError](#4-asyncerror)
+  - [5. Conformance Requirements](#5-conformance-requirements)
+  - [6. Changes from legacy pre-v2 (BECKN-005)](#6-changes-from-legacy-pre-v2-beckn-005)
+  - [7. References](#7-references)
+  - [8. Changelog](#8-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):** Ravi Prakash (Beckn Foundation)  
@@ -6,19 +75,19 @@
 **Updated:** 2026-02-01  
 **Conformance impact:** Minor (extends transport error model with application-level codes)  
 **Security/privacy implications:** Error messages MUST NOT expose internal system details, stack traces, or sensitive data.  
-**Replaces / Relates to:** Supersedes BECKN-005 (v1.x). Transport-level errors are now defined in `beckn.yaml`; this RFC defines the application-level error code taxonomy.
+**Replaces / Relates to:** Supersedes BECKN-005 (legacy pre-v2). Transport-level errors are now defined in `beckn.yaml`; this RFC defines the application-level error code taxonomy.
 
 ---
 
 ## Abstract
 
-This RFC defines the error code taxonomy for Beckn Protocol v2. It covers two layers: (1) transport-level errors, expressed via `NackBadRequest`, `NackUnauthorized`, and `ServerError` schemas defined in `beckn.yaml`; and (2) application-level error codes, expressed via the `Error` object inside those transport schemas. It supersedes the BECKN-005 v1.x error code table.
+This RFC defines the error code taxonomy for Beckn Protocol v2. It covers two layers: (1) transport-level errors, expressed via `NackBadRequest`, `NackUnauthorized`, and `ServerError` schemas defined in `beckn.yaml`; and (2) application-level error codes, expressed via the `Error` object inside those transport schemas. It supersedes the BECKN-005 legacy pre-v2 error code table.
 
 ---
 
 ## 1. Transport-Level Errors
 
-Transport-level errors are returned as HTTP response schemas and are defined in `api/v2.0.1/beckn.yaml`.
+Transport-level errors are returned as HTTP response schemas and are defined in `api/v2.0.0/beckn.yaml`.
 
 | HTTP Code | Schema | When to Use |
 |---|---|---|
@@ -69,8 +138,8 @@ When returning `NackBadRequest`, `AckNoCallback`, or `ServerError`, the response
 | `30008` | Order not found | BPP cannot find the `order.id` |
 | `30009` | Invalid cancellation reason | BPP cannot find or accept the `cancellationReasonId` |
 | `30010` | Invalid update target | BPP cannot process the requested `updateTarget` |
-| `30011` | Entity to rate not found | BPP cannot find the entity referenced in the `rating` request |
-| `30012` | Invalid rating value | BPP received an invalid value in the `rating` request |
+| `30011` | Entity to rate not found | BPP cannot find the entity referenced in the `rate` request |
+| `30012` | Invalid rate value | BPP received an invalid value in the `rate` request |
 
 ### 3.2 Business Errors (4xxxx)
 
@@ -92,7 +161,7 @@ When returning `NackBadRequest`, `AckNoCallback`, or `ServerError`, the response
 | `50000` | Policy error | Generic policy violation error |
 | `50001` | Cancellation not possible | BPP cannot cancel the order per its cancellation policy |
 | `50002` | Update not possible | BPP cannot update the order per its update policy |
-| `50003` | Unsupported rating category | BPP does not support the rating category sent |
+| `50003` | Unsupported rate category | BPP does not support the rate category sent |
 | `50004` | Support unavailable | BPP does not provide support for the referenced entity |
 | `50005` | Domain not supported | BPP does not operate in the domain specified in `context.domain` |
 | `50006` | Version not supported | BPP does not support the `context.version` value |
@@ -143,9 +212,9 @@ When an error occurs during asynchronous processing and must be communicated via
 
 ---
 
-## 6. Changes from v1.x (BECKN-005)
+## 6. Changes from legacy pre-v2 (BECKN-005)
 
-| Aspect | v1.x | v2.0.x |
+| Aspect | legacy pre-v2 | v2.0.x |
 |---|---|---|
 | Transport error schemas | Single `Nack` | Typed: `NackBadRequest`, `NackUnauthorized`, `ServerError`, `AckNoCallback` |
 | Error code range | `30000`–`50004` | Extended to include `40007`, `50005`, `50006`, `6xxxx` range |
@@ -155,8 +224,8 @@ When an error occurs during asynchronous processing and must be communicated via
 
 ## 7. References
 
-- `api/v2.0.1/beckn.yaml` — `NackBadRequest`, `NackUnauthorized`, `ServerError`, `Error`, `AsyncError` schemas
-- [8_Core_API_Envelope.md](./8_Core_API_Envelope.md)
+- `api/v2.0.0/beckn.yaml` — `NackBadRequest`, `NackUnauthorized`, `ServerError`, `Error`, `AsyncError` schemas
+- [03_Core_API_Envelope.md](./03_Core_API_Envelope.md)
 
 ---
 
@@ -164,5 +233,5 @@ When an error occurs during asynchronous processing and must be communicated via
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| Draft-01 | 2022-01-21 | Ravi Prakash | Initial draft (BECKN-005 v1.x) |
+| Draft-01 | 2022-01-21 | Ravi Prakash | Initial draft (BECKN-005 legacy pre-v2) |
 | Draft-02 | 2026-02-01 | — | v2 update: extended error code registry, added 6xxxx range, added AsyncError |

@@ -1,7 +1,7 @@
 # Versioning and Compatibility
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
@@ -23,10 +23,10 @@ A MAJOR version bump is a new protocol line. Existing implementations do not nee
 
 | Version | Status | Key Changes |
 |---|---|---|
-| **v2.0.1** | **LTS (Long Term Support)** | Universal `/beckn/{becknEndpoint}` endpoint (GET + POST), GET Body Mode and Query Mode, transport schemas inlined in `beckn.yaml`, non-repudiation types (`CounterSignature`, `InReplyTo`, `LineageEntry`) |
+| **v2.0.0** | **LTS (Long Term Support)** | Universal `/discover, /on_discover, /select, /on_select, and related action endpoints` endpoint (GET + POST), legacy GET Body mode and Query Mode, transport schemas inlined in `beckn.yaml`, non-repudiation types (`CounterSignature`, `InReplyTo`, `LineageEntry`) |
 | v2.0.0-rc1 | **End of Support (EoS)** | Frozen on `core-2.0.0-eos` branch — no further updates |
-| v2.0.0 | Superseded | Initial v2 architecture — JSON-LD alignment, CDS/CPS and DeDi protocol based Registry |
-| v1.x | End of Support | Original Beckn protocol — OpenAPI/JSON Schema, Beckn Gateway, bespoke registry |
+| v2.0.0 | Superseded | Initial v2 architecture — JSON-LD alignment, DS/PS and DeDi protocol based Registry |
+| legacy pre-v2 | End of Support | Original Beckn protocol — OpenAPI/JSON Schema, legacy gateway layer, bespoke registry |
 
 ---
 
@@ -37,7 +37,7 @@ A version designated **Long Term Support (LTS)** receives:
 - Critical bug fixes via PATCH releases.
 - No new features (new features go into the next MINOR or MAJOR release).
 
-The current LTS version is **v2.0.1**. Implementors SHOULD target the current LTS version for new implementations.
+The current LTS version is **v2.0.0**. Implementors SHOULD target the current LTS version for new implementations.
 
 ---
 
@@ -75,9 +75,9 @@ A MINOR release MUST NOT:
 
 A MINOR release MAY:
 - Add new optional fields to existing schemas.
-- Add new endpoint modes (as v2.0.1 did with GET Query Mode).
+- Add new endpoint modes (as v2.0.0 did with legacy GET Query mode).
 - Add new response schemas for new response codes.
-- Add new normative requirements that are additive (i.e., conformant v2.0.0 implementations are also conformant with v2.0.1 unless they trigger new error conditions).
+- Add new normative requirements that are additive (i.e., conformant v2.0.0 implementations are also conformant with v2.0.0 unless they trigger new error conditions).
 
 ### Core–Domain–Network Compatibility
 
@@ -87,31 +87,31 @@ A MINOR release MAY:
 
 ---
 
-## 7. Migration from v1.x to v2
+## 7. Migration from legacy pre-v2 to v2
 
 v2 is a **new protocol line**, not an in-place upgrade. The recommended migration approach:
 
 ### Phase 1 — Parallel Operation
 
-- Keep existing v1.x infrastructure running for production traffic.
-- Deploy v2 infrastructure (CPS, CDS, DeDi Registry) for pilot traffic.
+- Keep existing legacy pre-v2 infrastructure running for production traffic.
+- Deploy v2 infrastructure (PS, DS, DeDi Registry) for pilot traffic.
 - Register v2 participants in the DeDi registry in parallel with v1 registry entries.
 
 ### Phase 2 — Catalog Migration
 
 - Convert v1 item models to v2 `Item` + `Offer` JSON-LD graphs with appropriate domain schema pack compositions.
-- Deploy CPS; begin BPP → CPS catalog publication.
-- Validate CDS index quality against v1 catalog.
+- Deploy PS; begin BPP → PS catalog publication.
+- Validate DS index quality against v1 catalog.
 
 ### Phase 3 — Traffic Migration
 
-- Onboard BAPs to use the CDS for discovery (replacing BG multicast calls).
-- Migrate BAP → BPP transaction flows to the v2 universal endpoint.
-- Remove v1 BG dependency.
+- Onboard BAPs to use the DS for discovery (replacing legacy gateway multicast calls).
+- Migrate BAP → BPP transaction flows to the v2 action-specific endpoint set.
+- Remove v1 legacy gateway dependency.
 
 ### Phase 4 — v1 Decommission
 
-- Decommission v1 Beckn Gateway.
+- Decommission v1 legacy gateway layer.
 - Archive v1 registry entries.
 - Complete migration of all participants to v2 DeDi registry.
 
@@ -124,7 +124,7 @@ The `context.version` field in every `RequestContainer` and `CallbackContainer` 
 ```json
 {
   "context": {
-    "version": "2.0.1",
+    "version": "2.0.0",
     ...
   }
 }
@@ -135,5 +135,5 @@ The `context.version` field in every `RequestContainer` and `CallbackContainer` 
 ## 9. Further Reading
 
 - [GOVERNANCE.md](../GOVERNANCE.md) — versioning governance rules (SemVer, deprecation, removal)
-- [8_Core_API_Envelope.md](./8_Core_API_Envelope.md) — normative transport contract
-- [24_Conformance_and_Testing.md](./24_Conformance_and_Testing.md) — conformance rules per version
+- [03_Core_API_Envelope.md](./03_Core_API_Envelope.md) — normative transport contract
+- [07_Conformance_and_Testing.md](./07_Conformance_and_Testing.md) — conformance rules per version

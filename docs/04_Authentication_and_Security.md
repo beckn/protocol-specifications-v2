@@ -1,7 +1,7 @@
 # Authentication and Security
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
@@ -13,13 +13,13 @@ Every request and callback on a Beckn v2 network is digitally signed by the send
 - **Message integrity** — the receiver can detect if the message was altered in transit.
 - **Non-repudiation** — the sender cannot later deny having sent the message.
 
-Beckn v2 uses the **Ed25519** signature scheme and **BLAKE2b-512** hashing, consistent with v1.x. The key material is published in and resolved from the **DeDi-compliant Registry**.
+Beckn v2 uses the **Ed25519** signature scheme and **BLAKE2b-512** hashing, consistent with legacy pre-v2. The key material is published in and resolved from the **DeDi-compliant Registry**.
 
 ---
 
 ## 2. Beckn Signature Format
 
-All requests (except GET Query Mode) MUST carry a Beckn Signature in the `Authorization` header:
+All requests (except legacy GET Query mode) MUST carry a Beckn Signature in the `Authorization` header:
 
 ```
 Authorization: Signature keyId="{subscriberId}|{keyId}|{algorithm}",
@@ -81,7 +81,7 @@ signature = Base64(Ed25519_sign(signingString, privateKey))
 
 Assemble the header as shown in Section 2.
 
-For a complete worked example with test vectors, see [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md).
+For a complete worked example with test vectors, see [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md).
 
 ---
 
@@ -102,9 +102,9 @@ When a receiver needs to verify an incoming request:
 
 ---
 
-## 5. Non-Repudiation Schemas (v2.0.1)
+## 5. Non-Repudiation Schemas (v2.0.0)
 
-v2.0.1 introduces three transport schemas that strengthen the non-repudiation guarantees of the protocol:
+v2.0.0 introduces three transport schemas that strengthen the non-repudiation guarantees of the protocol:
 
 ### 5.1 CounterSignature
 
@@ -132,13 +132,13 @@ The `inReplyTo` field in a `CallbackContainer` cryptographically binds the callb
 
 A `LineageEntry` records cross-transaction causal attribution — for example, when a fulfillment update is causally linked to a prior `confirm` message. This enables auditability of multi-step transaction flows.
 
-For the normative specification of these schemas, see [17_Non_Repudiation_and_Lineage.md](./17_Non_Repudiation_and_Lineage.md).
+For the normative specification of these schemas, see [22_Non_Repudiation_and_Lineage.md](./22_Non_Repudiation_and_Lineage.md).
 
 ---
 
-## 6. GET Query Mode — Signature Encoding
+## 6. legacy GET Query mode — Signature Encoding
 
-In GET Query Mode, the Beckn Signature cannot be placed in the `Authorization` header (there is no request body). Instead:
+In legacy GET Query mode, the Beckn Signature cannot be placed in the `Authorization` header (there is no request body). Instead:
 
 - The `Authorization` parameter encodes the Signature in the same format as the header value.
 - The request action payload is encoded in the `RequestAction` query parameter.
@@ -146,7 +146,7 @@ In GET Query Mode, the Beckn Signature cannot be placed in the `Authorization` h
 
 Query Mode requests MUST NOT expect callbacks. They are acknowledged with `Ack` (HTTP 200) only.
 
-See [19_Get_Query_Mode.md](./19_Get_Query_Mode.md) for the full encoding rules.
+See [24_Get_Query_Mode.md](./24_Get_Query_Mode.md) for the full encoding rules.
 
 ---
 
@@ -172,7 +172,7 @@ See [19_Get_Query_Mode.md](./19_Get_Query_Mode.md) for the full encoding rules.
 
 ## 9. Further Reading
 
-- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md) — complete step-by-step signing example with test vectors
-- [17_Non_Repudiation_and_Lineage.md](./17_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry` schemas
-- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md) — DeDi registry key registration and lookup
-- `api/v2.0.1/beckn.yaml` — authoritative `Signature`, `CounterSignature`, `InReplyTo`, `LineageEntry` schema definitions
+- [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md) — complete step-by-step signing example with test vectors
+- [22_Non_Repudiation_and_Lineage.md](./22_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry` schemas
+- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md) — DeDi registry key registration and lookup
+- `api/v2.0.0/beckn.yaml` — authoritative `Signature`, `CounterSignature`, `InReplyTo`, `LineageEntry` schema definitions

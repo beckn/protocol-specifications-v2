@@ -1,7 +1,7 @@
 # Network Architecture
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
@@ -17,7 +17,7 @@ A Beckn v2 network is a set of independently operated platforms that communicate
 
 A BAP is a buyer-side platform. It represents the consumer's interface to the network. A BAP:
 
-- Sends `RequestContainer` messages to CDS (for discovery) and BPPs (for transactions).
+- Sends `RequestContainer` messages to DS (for discovery) and BPPs (for transactions).
 - Implements a callback endpoint to receive `CallbackContainer` responses.
 - Resolves BPP endpoints and signing keys via the DeDi-compliant Registry.
 
@@ -27,27 +27,27 @@ Examples: consumer apps, aggregator platforms, agent interfaces, IoT clients.
 
 A BPP is a seller-side platform. It represents a provider's catalog, transaction engine, and fulfillment logic. A BPP:
 
-- Publishes catalog updates to the CPS.
+- Publishes catalog updates to the PS.
 - Receives `RequestContainer` messages from BAPs and responds via `CallbackContainer` callbacks.
 - Registers itself in the DeDi-compliant Registry with its endpoint, signing keys, and capabilities.
 
 Examples: e-commerce backends, mobility providers, logistics platforms, healthcare providers.
 
-### 2.3 Catalog Publishing Service (CPS)
+### 2.3 Publishing Service (PS)
 
-A CPS is the catalog ingestion layer. It:
+A PS is the catalog ingestion layer. It:
 
 - Accepts asynchronous catalog push publications from BPPs (as `RequestContainer` messages on the `publish` endpoint).
 - Normalizes catalog data against the Beckn v2 `core_schema` and domain schema packs.
-- Forwards indexed catalog graphs to one or more CDS instances.
+- Forwards indexed catalog graphs to one or more DS instances.
 
-A network may operate multiple CPS instances. A BPP may publish to more than one CPS.
+A network may operate multiple PS instances. A BPP may publish to more than one PS.
 
-### 2.4 Catalog Discovery Service (CDS)
+### 2.4 Discovery Service (DS)
 
-A CDS is the discovery query engine. It:
+A DS is the discovery query engine. It:
 
-- Maintains a continuously updated index of `Catalog` / `Item` / `Offer` graphs received from CPS.
+- Maintains a continuously updated index of `Catalog` / `Item` / `Offer` graphs received from PS.
 - Answers discovery queries from BAPs (on the `discover` endpoint), returning matching catalog subsets.
 - Does **not** multicast to BPPs; all discovery is served from its own index.
 
@@ -55,11 +55,11 @@ A CDS is the discovery query engine. It:
 
 The Registry is the identity and trust anchor of the network. It:
 
-- Stores participant records (BAP, BPP, CPS, CDS) as [DeDi](https://dedi.global)-compliant directory entries.
+- Stores participant records (BAP, BPP, PS, DS) as [DeDi](https://dedi.global)-compliant directory entries.
 - Exposes DeDi-standard APIs for participant registration (`subscribe`), key publication, and lookup (`lookup`).
 - Allows any participant to resolve a `subscriberId` to its public signing key, endpoint URL, and capabilities.
 
-In v1.x this was a bespoke Beckn registry. In v2 it is a DeDi-compliant public directory.
+In legacy pre-v2 this was a bespoke Beckn registry. In v2 it is a DeDi-compliant public directory.
 
 ---
 
@@ -71,7 +71,7 @@ Beckn v2 adopts an explicit three-layer governance and schema model:
 ┌─────────────────────────────────────────────────────────┐
 │  Network Layer                                          │
 │  Network-specific constraints, regional policies,       │
-│  mandatory schema pack lists, CDS configuration         │
+│  mandatory schema pack lists, DS configuration         │
 ├─────────────────────────────────────────────────────────┤
 │  Domain Layer                                           │
 │  Domain schema packs, domain IGs, sector-specific       │
@@ -79,7 +79,7 @@ Beckn v2 adopts an explicit three-layer governance and schema model:
 ├─────────────────────────────────────────────────────────┤
 │  Core Layer                                             │
 │  Transport envelope (this repo), core_schema,           │
-│  DeDi registry contract, CPS/CDS interface contracts    │
+│  DeDi registry contract, PS/DS interface contracts    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -89,25 +89,25 @@ Beckn v2 adopts an explicit three-layer governance and schema model:
 
 ## 4. Component Interaction Model
 
-### 4.1 Catalog Publication Flow (BPP → CPS → CDS)
+### 4.1 Catalog Publication Flow (BPP → PS → DS)
 
 ```
-BPP ──publish(catalog)──► CPS ──normalize & index──► CDS
+BPP ──publish(catalog)──► PS ──normalize & index──► DS
 ```
 
-1. BPP sends a `RequestContainer` with a `publish` action to CPS.
-2. CPS normalizes the payload against `core_schema` and domain schema packs.
-3. CPS forwards `Item` / `Offer` / `Provider` graphs to CDS for indexing.
+1. BPP sends a `RequestContainer` with a `publish` action to PS.
+2. PS normalizes the payload against `core_schema` and domain schema packs.
+3. PS forwards `Item` / `Offer` / `Provider` graphs to DS for indexing.
 4. This flow runs continuously and is decoupled from any BAP request.
 
-### 4.2 Discovery Flow (BAP → CDS)
+### 4.2 Discovery Flow (BAP → DS)
 
 ```
-BAP ──discover(query)──► CDS ──catalog subset──► BAP
+BAP ──discover(query)──► DS ──catalog subset──► BAP
 ```
 
-1. BAP sends a `RequestContainer` with a `discover` action to CDS.
-2. CDS resolves, scores, and returns matching catalog data.
+1. BAP sends a `RequestContainer` with a `discover` action to DS.
+2. DS resolves, scores, and returns matching catalog data.
 3. BAP receives results as a `CallbackContainer` (or synchronously, depending on network policy).
 
 ### 4.3 Transaction Flow (BAP → BPP)
@@ -116,7 +116,7 @@ BAP ──discover(query)──► CDS ──catalog subset──► BAP
 BAP ──select/init/confirm/...──► BPP ──on_select/on_init/on_confirm/...──► BAP
 ```
 
-Post-discovery, BAP communicates directly with BPP for all transactional actions (`select`, `init`, `confirm`, `status`, `cancel`, `update`, `rating`).
+Post-discovery, BAP communicates directly with BPP for all transactional actions (`select`, `init`, `confirm`, `status`, `cancel`, `update`, `rate`).
 
 ### 4.4 Registry Lookup Flow
 
@@ -138,13 +138,13 @@ Before sending a request, a participant resolves the recipient's endpoint and pu
           ┌──────────────────┼──────────────────┐
           │                  │                  │
     ┌─────▼─────┐     ┌──────▼──────┐    ┌──────▼──────┐
-    │    BAP    │     │     CDS     │    │     BPP     │
+    │    BAP    │     │     DS     │    │     BPP     │
     └─────┬─────┘     └──────▲──────┘    └──────┬──────┘
           │                  │                  │
           │ discover ────────┘        publish   │
           │                                     ▼
           │                             ┌───────────────┐
-          │                             │      CPS      │
+          │                             │      PS      │
           │                             └───────────────┘
           │
           │ select/init/confirm/...
@@ -154,21 +154,21 @@ Before sending a request, a participant resolves the recipient's endpoint and pu
 
 ---
 
-## 6. Comparison with v1.x Architecture
+## 6. Comparison with legacy pre-v2 Architecture
 
-| Aspect | v1.x | v2.0.x |
+| Aspect | legacy pre-v2 | v2.0.x |
 |---|---|---|
-| Discovery | BG multicast `search` to all BPPs | BAP queries CDS index |
-| Catalog updates | Pull on demand (search triggers BPP response) | BPP pushes asynchronously to CPS |
+| Discovery | legacy gateway multicast `discover` to all BPPs | BAP queries DS index |
+| Catalog updates | Pull on demand (discover triggers BPP response) | BPP pushes asynchronously to PS |
 | Registry | Bespoke Beckn `lookup`/`subscribe` | DeDi-compliant public directory |
 | Schema | OpenAPI/JSON Schema, ad-hoc fields | JSON-LD + schema.org, typed graphs |
-| Endpoint model | Per-action endpoints (`/search`, `/confirm`, etc.) | Universal `/beckn/{becknEndpoint}` |
+| Endpoint model | Per-action endpoints (`/discover`, `/confirm`, etc.) | Universal `/discover, /on_discover, /select, /on_select, and related action endpoints` |
 
 ---
 
 ## 7. Further Reading
 
-- [7_Communication_Protocol.md](./7_Communication_Protocol.md) — how messages flow between actors
-- [14_Discovery_Architecture.md](./14_Discovery_Architecture.md) — CPS and CDS in depth
-- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md) — DeDi registry in depth
-- [RFC-002: Core API Envelope](./8_Core_API_Envelope.md)
+- [02_Communication_Protocol.md](./02_Communication_Protocol.md) — how messages flow between actors
+- [12_Discovery_Architecture.md](./12_Discovery_Architecture.md) — PS and DS in depth
+- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md) — DeDi registry in depth
+- [RFC-002: Core API Envelope](./03_Core_API_Envelope.md)

@@ -1,7 +1,7 @@
 # Schema Distribution Model
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
@@ -16,7 +16,7 @@ Beckn v2 distributes schema definitions across three tiers, each governed and ev
 ### Tier 1 — Transport Envelope (This Repository)
 
 **Repository:** `beckn/protocol-specifications-v2`  
-**File:** `api/v2.0.1/beckn.yaml`
+**File:** `api/v2.0.0/beckn.yaml`
 
 This tier defines the **transport contract only**: the universal API endpoint, the message envelope structure, the authentication contract, and the non-repudiation schemas. It carries no domain semantics.
 
@@ -77,7 +77,7 @@ At design time, a network defines:
 - Which domain schema packs are required, optional, or prohibited.
 - The JSON-LD `@context` documents to be used by participants.
 
-This produces the network's **schema profile**, published as a Network Profile document (see [22_Network_Policy_Profiles.md](./22_Network_Policy_Profiles.md)).
+This produces the network's **schema profile**, published as a Network Profile document (see [20_Network_Policy_Profiles.md](./20_Network_Policy_Profiles.md)).
 
 ### Run-Time Composability
 
@@ -125,7 +125,7 @@ This repository intentionally contains **no `schema/` directory**. All transacti
 
 ## 7. Further Reading
 
-- [20_JSONld_Context_and_Schema_Alignment.md](./20_JSONld_Context_and_Schema_Alignment.md) — JSON-LD context design rules
-- [21_Schema_Pack_Contract.md](./21_Schema_Pack_Contract.md) — how domain schema packs are authored and versioned
+- [16_JSONld_Context_and_Schema_Alignment.md](./16_JSONld_Context_and_Schema_Alignment.md) — JSON-LD context design rules
+- [17_Schema_Pack_Contract.md](./17_Schema_Pack_Contract.md) — how domain schema packs are authored and versioned
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 - [schema.beckn.io](https://schema.beckn.io)

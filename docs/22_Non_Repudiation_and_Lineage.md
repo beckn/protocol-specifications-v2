@@ -1,4 +1,71 @@
 # Non-Repudiation, Counter-Signatures, and Message Lineage
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./22_Non_Repudiation_and_Lineage.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. Problem](#2-problem)
+  - [3. Specification (Normative)](#3-specification-normative)
+    - [3.1 CounterSignature](#31-countersignature)
+    - [3.2 InReplyTo](#32-inreplyto)
+    - [3.3 LineageEntry](#33-lineageentry)
+  - [4. Conformance Requirements](#4-conformance-requirements)
+  - [5. Security Considerations](#5-security-considerations)
+  - [6. References](#6-references)
+  - [7. Changelog](#7-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):**  
@@ -6,13 +73,13 @@
 **Updated:**  
 **Conformance impact:** Minor (additive — introduces new required schemas to existing Ack and CallbackContainer)  
 **Security/privacy implications:** Strengthens non-repudiation guarantees. Counter-signatures carry timestamps and identity claims that could be used to infer communication patterns.  
-**Replaces / Relates to:** New in v2.0.1. Formalizes GitHub Issue #69.
+**Replaces / Relates to:** New in v2.0.0. Formalizes GitHub Issue #69.
 
 ---
 
 ## Abstract
 
-This RFC specifies three transport schemas introduced in Beckn Protocol v2.0.1 that strengthen non-repudiation and auditability: `CounterSignature` (receiver's signed receipt returned in every `Ack`), `InReplyTo` (cryptographic binding of a callback to its originating request), and `LineageEntry` (cross-transaction causal attribution). Together, these schemas enable a complete, cryptographically verifiable audit trail for any Beckn transaction.
+This RFC specifies three transport schemas introduced in Beckn Protocol v2.0.0 that strengthen non-repudiation and auditability: `CounterSignature` (receiver's signed receipt returned in every `Ack`), `InReplyTo` (cryptographic binding of a callback to its originating request), and `LineageEntry` (cross-transaction causal attribution). Together, these schemas enable a complete, cryptographically verifiable audit trail for any Beckn transaction.
 
 ---
 
@@ -24,7 +91,7 @@ In commercial transactions, both parties need proof: the sender needs proof that
 
 ## 2. Problem
 
-The v1.x Beckn Signature only proves who sent a message. It does not prove that the receiver received and validated it, nor does it bind callbacks to their originating requests. Without these guarantees, a party could deny receiving a message or dispute the causal relationship between messages.
+The legacy pre-v2 Beckn Signature only proves who sent a message. It does not prove that the receiver received and validated it, nor does it bind callbacks to their originating requests. Without these guarantees, a party could deny receiving a message or dispute the causal relationship between messages.
 
 ---
 
@@ -119,7 +186,7 @@ timestamp: {original request context.timestamp}
 
 ```json
 {
-  "context": { "action": "on_search", ... },
+  "context": { "action": "on_discover", ... },
   "message": { ... },
   "inReplyTo": {
     "messageId": "a2fe6d52-9fe4-4d1a-9d0b-dccb8b48522d",
@@ -198,8 +265,8 @@ LineageEntry:
 
 ## 6. References
 
-- `api/v2.0.1/beckn.yaml` — authoritative schema definitions
-- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
+- `api/v2.0.0/beckn.yaml` — authoritative schema definitions
+- [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md)
 - GitHub Issue #69
 
 ---

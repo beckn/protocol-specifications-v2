@@ -1,4 +1,74 @@
 # DeDi-Compliant Network Registry
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./11_DeDi_Registry_Integration.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. Specification (Normative)](#2-specification-normative)
+    - [2.1 DeDi Compliance Requirement](#21-dedi-compliance-requirement)
+    - [2.2 Participant Record](#22-participant-record)
+    - [2.3 Subscribe (Registration)](#23-subscribe-registration)
+    - [2.4 Lookup (Key Resolution)](#24-lookup-key-resolution)
+    - [2.5 Key Rotation](#25-key-rotation)
+    - [2.6 Unsubscribe](#26-unsubscribe)
+    - [2.7 Integration with Beckn Authentication](#27-integration-with-beckn-authentication)
+  - [3. Conformance Requirements](#3-conformance-requirements)
+  - [4. Security Considerations](#4-security-considerations)
+  - [5. References](#5-references)
+  - [6. Changelog](#6-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):**  
@@ -6,7 +76,7 @@
 **Updated:**  
 **Conformance impact:** Major (replaces bespoke Beckn registry with DeDi-compliant registry)  
 **Security/privacy implications:** The registry is publicly accessible. Participant public keys and endpoints are publicly visible by design. Private keys MUST never be stored in the registry.  
-**Replaces / Relates to:** Replaces bespoke Beckn v1.x `lookup`/`subscribe` registry. Aligns with the [DeDi protocol](https://dedi.global).
+**Replaces / Relates to:** Replaces bespoke Beckn legacy pre-v2 `lookup`/`subscribe` registry. Aligns with the [DeDi protocol](https://dedi.global).
 
 ---
 
@@ -18,7 +88,7 @@ This RFC defines how Beckn Protocol v2 uses a DeDi-compliant directory as its Ne
 
 ## 1. Context
 
-A Beckn network requires a shared, publicly accessible directory of participant identities, signing keys, and endpoints. In v1.x, this was a bespoke Beckn registry with custom `lookup` and `subscribe` APIs. In v2, the registry is aligned with the [Decentralized Directory (DeDi) protocol](https://dedi.global), enabling cross-ecosystem discoverability and a shared trust layer.
+A Beckn network requires a shared, publicly accessible directory of participant identities, signing keys, and endpoints. In legacy pre-v2, this was a bespoke Beckn registry with custom `lookup` and `subscribe` APIs. In v2, the registry is aligned with the [Decentralized Directory (DeDi) protocol](https://dedi.global), enabling cross-ecosystem discoverability and a shared trust layer.
 
 ---
 
@@ -35,8 +105,8 @@ Each Beckn Network Participant MUST have a record in the DeDi registry with the 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `subscriberId` | string | MUST | Unique identifier (typically FQDN) |
-| `subscriberUrl` | string (URI) | MUST | HTTPS endpoint implementing `/beckn/{becknEndpoint}` |
-| `role` | string enum | MUST | `BAP`, `BPP`, `CPS`, `CDS` |
+| `subscriberUrl` | string (URI) | MUST | HTTPS endpoint implementing `/discover, /on_discover, /select, /on_select, and related action endpoints` |
+| `role` | string enum | MUST | `BAP`, `BPP`, `PS`, `DS` |
 | `domain` | string array | MUST | Supported interaction domains |
 | `networkId` | string | MUST | Network identifier |
 | `signingPublicKey` | string (Base64) | MUST | Ed25519 public key for signature verification |
@@ -147,9 +217,9 @@ Participants SHOULD cache lookup results for the duration of `validUntil - now` 
 ## 5. References
 
 - [DeDi protocol](https://dedi.global)
-- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md)
-- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md)
-- [10_Signing_Beckn_APIs_in_HTTP.md](./10_Signing_Beckn_APIs_in_HTTP.md)
+- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md)
+- [04_Authentication_and_Security.md](./04_Authentication_and_Security.md)
+- [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md)
 
 ---
 

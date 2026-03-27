@@ -92,9 +92,9 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 | `bppUri` | `string (uri)` | ✅ | BPP endpoint for all post-discovery actions. |
 | `items` | `oneOf [Item, Resource][]` | ✅ | Array of items in the catalog. Each entry is either a legacy `Item` (2.0-rc1 backward compat) or a new cross-domain `Resource`. Using `oneOf [Item, Resource]` allows old BAPs to continue sending/receiving `Item` objects while new implementations use the more abstract `Resource`. Both types share a common `id` + `descriptor` surface. |
 | `offers` | `Offer[]` | ✅ (bc compat) | Backward compatible with 2.0-rc1. |
-| `providers` | `Provider[]` | ✅ | A catalog may be hosted by a CDS on behalf of multiple BPPs. Provider association is required. |
+| `providers` | `Provider[]` | ✅ | A catalog may be hosted by a DS on behalf of multiple BPPs. Provider association is required. |
 | `validity` | `TimePeriod` | ❌ | Optional. Defined in `schemas/schema/TimePeriod`. Referenced via `$ref`. |
-| `isActive` | `boolean` | ❌ | Optional. CDS-level operational attribute. Not needed in core; defaults to `true`. |
+| `isActive` | `boolean` | ❌ | Optional. DS-level operational attribute. Not needed in core; defaults to `true`. |
 
 **Source for new `resources` field:** Abhishek's version ([`beckn-v2-abhisheks-version.yaml`](../api/v2.0.0/beckn-v2-abhisheks-version.yaml)) — introduces `beckn:resources[]` alongside `beckn:items[]`  
 **Author of `resources` field:** Abhishek  
@@ -104,7 +104,7 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 
 ### 3. `Intent` (DiscoverMessage)
 
-**Verdict: FIRST-CLASS.** The `discover` request message is `{ intent: Intent }`. The BAP expresses what it is looking for; the BPP/CDS uses it to filter its catalog.
+**Verdict: FIRST-CLASS.** The `discover` request message is `{ intent: Intent }`. The BAP expresses what it is looking for; the BPP/DS uses it to filter its catalog.
 
 | Property | Type | Required | Justification |
 |----------|------|----------|---------------|
@@ -120,13 +120,13 @@ Schemas that fail T1 (not directly in a message body) still live in `schemas/sch
 
 | Property | Type | Required | Justification |
 |----------|------|----------|---------------|
-| `textSearch` | `string` | ❌ (one of) | Free-text search query. Required for discovery to be practically usable by non-technical consumers. |
+| `textSearch` | `string` | ❌ (one of) | Free-text discover query. Required for discovery to be practically usable by non-technical consumers. |
 | `filters` | JSONPath expression | ❌ (one of) | Structured filtering via RFC 9535 JSONPath. Required for programmatic consumers. |
 | `spatial` | `SpatialConstraint[]` | ❌ (one of) | Geo-spatial filtering. Required for location-based discovery (mobility, logistics). |
-| `mediaSearch` | `MediaSearch` | ❌ | Optional visual/audio search input. |
+| `mediaSearch` | `MediaSearch` | ❌ | Optional visual/audio discover input. |
 
 **Source:** Ravi's version for `textSearch`, `filters`, `spatial`, `mediaSearch`. Abhishek's version for the structural `oneOf` validation pattern.  
-**Authors:** Ravi Prakash (search fields), Abhishek (validation pattern)  
+**Authors:** Ravi Prakash (discover fields), Abhishek (validation pattern)  
 **Proposed `$id`:** `https://schema.beckn.io/Intent/v2.0`
 
 ---
@@ -286,19 +286,19 @@ Abhishek's version improves on Ravi's by making the reference type explicit:
 
 | Property (`RatingInput`) | Type | Required | Justification |
 |--------------------------|------|----------|---------------|
-| `id` | `string` | ✅ | ID of the entity being rated. Without it, the rating cannot be associated. |
+| `id` | `string` | ✅ | ID of the entity being rated. Without it, the rate cannot be associated. |
 | `ratingCategory` | `string (enum)` | ✅ | `ORDER`, `FULFILLMENT`, `ITEM`, `PROVIDER`, `AGENT`, `SUPPORT`, `OTHER`. Rating category determines how the score is stored and displayed. |
-| `value` | `number` | ✅ | The actual rating value. Required — a rating without a value is not a rating. |
+| `value` | `number` | ✅ | The actual rate value. Required — a rate without a value is not a rate. |
 | `feedback` | `Feedback` | ❌ | Optional free-text feedback. |
 
-**Source:** `schemas/schema/RatingInput` (external). Rate action pattern resolution: adopt Abhishek's simpler single-phase `rate`/`on_rate` (drop `context.try` for rating). The `try` pattern adds complexity without sufficient benefit for the rating use case.  
+**Source:** `schemas/schema/RatingInput` (external). Rate action pattern resolution: adopt Abhishek's simpler single-phase `rate`/`on_rate` (drop `context.try` for rate). The `try` pattern adds complexity without sufficient benefit for the rate use case.  
 **Proposed `$id` (RatingInput):** `https://schema.beckn.io/RatingInput/v2.0`
 
 ---
 
 ### 12. `CatalogPublishMessage` / `CatalogProcessingResult`
 
-**Verdict: FIRST-CLASS.** `/beckn/catalog/publish` and `/beckn/catalog/on_publish` are in both Ravi's and Abhishek's versions. Required for the Catalog Publishing Service (CPS) module.
+**Verdict: FIRST-CLASS.** `/beckn/catalog/publish` and `/beckn/catalog/on_publish` are in both Ravi's and Abhishek's versions. Required for the Publishing Service (PS) module.
 
 | Property (`CatalogPublishMessage`) | Type | Required | Justification |
 |------------------------------------|------|----------|---------------|
@@ -389,26 +389,26 @@ This allows JSON Schema 2020-12 validators to resolve schemas by their canonical
 
 | Path | HTTP Method | Message Schema (proposed) |
 |------|-------------|--------------------------|
-| `/beckn/discover` | `POST` | `{ context, message: { intent: Intent } }` |
-| `/beckn/on_discover` | `POST` | `{ context, message: { catalogs: Catalog[] } }` |
-| `/beckn/select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/status` | `POST` | `{ context, message: oneOf[ { order: { id } }, { contract: { id } } ] }` |
-| `/beckn/on_status` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/on_update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/cancel` | `POST` | `{ context, message: oneOf[ { order: { id, reason } }, { contract: { id, reason } } ] }` |
-| `/beckn/on_cancel` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
-| `/beckn/track` | `POST` | `{ context, message: { tracking: TrackingRequest } }` |
-| `/beckn/on_track` | `POST` | `{ context, message: { tracking: Tracking } }` |
-| `/beckn/rate` | `POST` | `{ context, message: { ratings: RatingInput[] } }` |
-| `/beckn/on_rate` | `POST` | `{ context, message: { received: bool, aggregate?: object, feedbackForm?: Form } }` |
-| `/beckn/support` | `POST` | `{ context, message: { refId: string, refType: enum, support?: SupportInfo } }` |
-| `/beckn/on_support` | `POST` | `{ context, message: { support: Support } }` |
+| `/discover` | `POST` | `{ context, message: { intent: Intent } }` |
+| `/on_discover` | `POST` | `{ context, message: { catalogs: Catalog[] } }` |
+| `/select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/on_select` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/on_init` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/on_confirm` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/status` | `POST` | `{ context, message: oneOf[ { order: { id } }, { contract: { id } } ] }` |
+| `/on_status` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/on_update` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/cancel` | `POST` | `{ context, message: oneOf[ { order: { id, reason } }, { contract: { id, reason } } ] }` |
+| `/on_cancel` | `POST` | `{ context, message: oneOf[ { order: Order }, { contract: Contract } ] }` |
+| `/track` | `POST` | `{ context, message: { tracking: TrackingRequest } }` |
+| `/on_track` | `POST` | `{ context, message: { tracking: Tracking } }` |
+| `/rate` | `POST` | `{ context, message: { ratings: RatingInput[] } }` |
+| `/on_rate` | `POST` | `{ context, message: { received: bool, aggregate?: object, feedbackForm?: Form } }` |
+| `/support` | `POST` | `{ context, message: { refId: string, refType: enum, support?: SupportInfo } }` |
+| `/on_support` | `POST` | `{ context, message: { support: Support } }` |
 | `/beckn/catalog/publish` | `POST` | `{ context, message: { catalogs: Catalog[] } }` |
 | `/beckn/catalog/on_publish` | `POST` | `{ context, message: { results: CatalogProcessingResult[] } }` |
 

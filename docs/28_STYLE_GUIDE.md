@@ -117,9 +117,9 @@ Then Beckn adds protocol-specific rules for endpoints, JSON-LD compact IRIs, enu
 
 * All protocol endpoints MUST be rooted under: `/<root>/beckn/...` (exact server root varies by deployment; path after it is normative).  
 * Endpoint path segments MUST be **lowercase**.  
-* Multi-word tokens MUST use **snake\_case** (`browser_search`), not hyphenation (`browser-search`).
+* Multi-word tokens MUST use **snake\_case** (`browser_search`), not hyphenation (`browser-discover`).
 
-**Example (fixed):** `browser-search` → `browser_search` ([GitHub](https://github.com/beckn/protocol-specifications-v2/pull/67))
+**Example (fixed):** `browser-discover` → `browser_search` ([GitHub](https://github.com/beckn/protocol-specifications-v2/pull/67))
 
 ## 6.2 Action vs callback pairing
 
@@ -135,10 +135,10 @@ This explicitly resolves the drift described in the context doc (path tokenizati
 
 Examples:
 
-* `/beckn/select` → `select`  
-* `/beckn/on_select` → `on_select`  
-* `/beckn/discover/offer` → `discover_offer`  
-* `/beckn/on_discover/offer` → `on_discover_offer`
+* `/select` → `select`  
+* `/on_select` → `on_select`  
+* `/discover/offer` → `discover_offer`  
+* `/on_discover/offer` → `on_discover_offer`
 
 ## 6.3 Versioning MUST NOT live in endpoint path
 
@@ -156,7 +156,7 @@ Namespaces like `/discover/...` are allowed when:
 
 ## 6.5 Legacy exceptions
 
-Some legacy shapes exist (e.g., noun-form `rating`), and MUST be explicitly documented as exceptions so they don’t become precedents.
+Some legacy shapes exist (e.g., noun-form `rate`), and MUST be explicitly documented as exceptions so they don’t become precedents.
 
 ---
 
@@ -271,7 +271,7 @@ Be consistent across packs.
 
 ## 8.7 Legacy exceptions (document; don’t copy)
 
-PR \#68 explicitly kept certain **context object** fields in snake\_case as legacy from v1.x:
+PR \#68 explicitly kept certain **context object** fields in snake\_case as legacy from legacy pre-v2:
 
 * `message_id`, `bap_id`, `bap_uri`, `bpp_id`, `bpp_uri` ([GitHub](https://github.com/beckn/protocol-specifications-v2/pull/68))
 

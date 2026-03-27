@@ -1,4 +1,85 @@
 # Signing Beckn APIs in HTTP
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./05_Signing_Beckn_APIs_in_HTTP.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. Algorithms](#2-algorithms)
+    - [2.1 Signing Algorithm: Ed25519](#21-signing-algorithm-ed25519)
+    - [2.2 Hashing Algorithm: BLAKE2b-512](#22-hashing-algorithm-blake2b-512)
+  - [3. Authorization Header Format](#3-authorization-header-format)
+    - [Field Definitions](#field-definitions)
+  - [4. Signing Steps (Sender)](#4-signing-steps-sender)
+    - [Step 1 — Compute body digest](#step-1-compute-body-digest)
+    - [Step 2 — Construct signing string](#step-2-construct-signing-string)
+    - [Step 3 — Sign](#step-3-sign)
+    - [Step 4 — Compose Authorization header](#step-4-compose-authorization-header)
+  - [5. Verification Steps (Receiver)](#5-verification-steps-receiver)
+  - [6. Worked Example](#6-worked-example)
+    - [Request Body](#request-body)
+    - [BAP Key Pair (example — do not use in production)](#bap-key-pair-example-do-not-use-in-production)
+    - [Step 1 — Digest](#step-1-digest)
+    - [Step 2 — Signing String](#step-2-signing-string)
+    - [Step 3 — Signature](#step-3-signature)
+    - [Step 4 — Authorization Header](#step-4-authorization-header)
+  - [7. Changes from legacy pre-v2 (BECKN-006)](#7-changes-from-legacy-pre-v2-beckn-006)
+  - [8. Conformance Requirements](#8-conformance-requirements)
+  - [9. Security Considerations](#9-security-considerations)
+  - [10. References](#10-references)
+  - [11. Changelog](#11-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):** Ravi Prakash (Beckn Foundation)  
@@ -6,7 +87,7 @@
 **Updated:** 2026-02-01  
 **Conformance impact:** Minor (v2 update of existing signing specification)  
 **Security/privacy implications:** Defines the cryptographic authentication and message integrity mechanism for all Beckn network communication.  
-**Replaces / Relates to:** Adapted and updated from BECKN-006 (v1.x). Removes BG-specific steps; adds DeDi key resolution and v2.0.1 non-repudiation schemas.
+**Replaces / Relates to:** Adapted and updated from BECKN-006 (legacy pre-v2). Removes legacy gateway-specific steps; adds DeDi key resolution and v2.0.0 non-repudiation schemas.
 
 ---
 
@@ -118,7 +199,7 @@ Assemble as shown in Section 3.
 ### Request Body
 
 ```json
-{"context":{"domain":"beckn:retail","action":"search","version":"2.0.1","bapId":"bap.example.com","bapUri":"https://bap.example.com","transactionId":"e6d9f908-1d26-4ff3-a6d1-3af3d3721054","messageId":"a2fe6d52-9fe4-4d1a-9d0b-dccb8b48522d","timestamp":"2026-01-04T09:17:55.971Z","ttl":"PT30S"},"message":{"@type":"SearchAction","intent":{"@type":"Intent","item":{"name":"coffee"}}}}
+{"context":{"domain":"beckn:retail","action":"discover","version":"2.0.1","bapId":"bap.example.com","bapUri":"https://bap.example.com","transactionId":"e6d9f908-1d26-4ff3-a6d1-3af3d3721054","messageId":"a2fe6d52-9fe4-4d1a-9d0b-dccb8b48522d","timestamp":"2026-01-04T09:17:55.971Z","ttl":"PT30S"},"message":{"@type":"SearchAction","intent":{"@type":"Intent","item":{"name":"coffee"}}}}
 ```
 
 ### BAP Key Pair (example — do not use in production)
@@ -156,11 +237,11 @@ Signature keyId="bap.example.com|ae3ea24b-cfec-495e-81f8-044aaef164ac|ed25519",a
 
 ---
 
-## 7. Changes from v1.x (BECKN-006)
+## 7. Changes from legacy pre-v2 (BECKN-006)
 
-| Aspect | v1.x | v2.0.x |
+| Aspect | legacy pre-v2 | v2.0.x |
 |---|---|---|
-| BG signature header | `X-Gateway-Authorization` | Removed (no BG in v2) |
+| legacy gateway signature header | `legacy-gateway-signature header` | Removed (no legacy gateway in v2) |
 | Key resolution | Bespoke Beckn registry `lookup` | DeDi-compliant registry lookup |
 | CounterSignature | Not defined | MUST be returned in `Ack` |
 | `inReplyTo` | Not defined | MUST be in `CallbackContainer` |
@@ -197,8 +278,8 @@ Signature keyId="bap.example.com|ae3ea24b-cfec-495e-81f8-044aaef164ac|ed25519",a
 - [RFC 8032 — Ed25519 signature scheme](https://datatracker.ietf.org/doc/html/rfc8032)
 - [RFC 7693 — BLAKE2b hashing](https://datatracker.ietf.org/doc/html/rfc7693)
 - [draft-cavage-http-signatures-12 — HTTP Signatures](https://datatracker.ietf.org/doc/html/draft-cavage-http-signatures-12)
-- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md)
-- [12_Registry_and_Identity.md](./12_Registry_and_Identity.md)
+- [04_Authentication_and_Security.md](./04_Authentication_and_Security.md)
+- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md)
 
 ---
 
@@ -206,5 +287,5 @@ Signature keyId="bap.example.com|ae3ea24b-cfec-495e-81f8-044aaef164ac|ed25519",a
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| Draft-01 | 2021-12-10 | Ravi Prakash | Initial draft (BECKN-006 v1.x) |
-| Draft-02 | 2026-02-01 | — | v2 update: removed BG steps, added DeDi key resolution, added v2.0.1 non-repudiation requirements |
+| Draft-01 | 2021-12-10 | Ravi Prakash | Initial draft (BECKN-006 legacy pre-v2) |
+| Draft-02 | 2026-02-01 | — | v2 update: removed legacy gateway steps, added DeDi key resolution, added v2.0.0 non-repudiation requirements |

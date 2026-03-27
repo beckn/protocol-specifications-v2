@@ -86,7 +86,7 @@ No domain owner is forced to migrate their schemas into `beckn/schemas`. Migrati
 │  Tier 1: protocol-specifications-v2  (transport — long half-life) │
 │                                                                   │
 │  beckn.yaml                                                       │
-│  ├── HTTP endpoint: /beckn/{becknEndpoint} (GET + POST)          │
+│  ├── HTTP endpoint: /discover, /on_discover, /select, /on_select, and related action endpoints (GET + POST)          │
 │  ├── Authentication: Signature / CounterSignature                 │
 │  ├── Responses: Ack, AckNoCallback, Nack, ServerError            │
 │  ├── Transport binding: InReplyTo, LineageEntry                  │

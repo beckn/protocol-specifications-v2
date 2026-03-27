@@ -1,4 +1,77 @@
 # Network Policy Profiles and Overlays
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./20_Network_Policy_Profiles.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. Network Policy Layering](#2-network-policy-layering)
+  - [3. Network Profile Document](#3-network-profile-document)
+    - [3.1 Required Schema Packs](#31-required-schema-packs)
+    - [3.2 Supported Actions](#32-supported-actions)
+    - [3.3 Context Constraints](#33-context-constraints)
+    - [3.4 Fulfillment Types](#34-fulfillment-types)
+    - [3.5 Geographic Coverage](#35-geographic-coverage)
+    - [3.6 PS and DS Endpoints](#36-ps-and-ds-endpoints)
+  - [4. Policy Categories](#4-policy-categories)
+  - [5. Policy Publication and Discovery](#5-policy-publication-and-discovery)
+  - [6. Policy Enforcement](#6-policy-enforcement)
+  - [7. Constraint Rule](#7-constraint-rule)
+  - [8. Conformance Requirements](#8-conformance-requirements)
+  - [9. References](#9-references)
+  - [10. Changelog](#10-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):**  
@@ -6,19 +79,19 @@
 **Updated:**  
 **Conformance impact:** Informative for core; Normative for network implementors  
 **Security/privacy implications:** Network policies govern data transmission rules. Policies MUST not introduce security vulnerabilities or override core authentication requirements.  
-**Replaces / Relates to:** Adapted from BECKN-001 (v1.x: Layering Network Policy) and BECKN-004 (v1.x: Policy Administration). Replaces OpenAPI `allOf` overlay mechanism with JSON-LD profiles and DeDi-publishable policy records.
+**Replaces / Relates to:** Adapted from BECKN-001 (legacy pre-v2: Layering Network Policy) and BECKN-004 (legacy pre-v2: Policy Administration). Replaces OpenAPI `allOf` overlay mechanism with JSON-LD profiles and DeDi-publishable policy records.
 
 ---
 
 ## Abstract
 
-This RFC defines how Beckn v2 networks publish and enforce network-specific policies on top of the core protocol. Networks publish a **Network Profile** document that specifies required schema packs, allowed action subsets, constraint rules, and CDS/CPS configuration. Participants discover and adopt these policies at onboarding and at runtime. This RFC does not modify the core protocol — it defines the layer above it.
+This RFC defines how Beckn v2 networks publish and enforce network-specific policies on top of the core protocol. Networks publish a **Network Profile** document that specifies required schema packs, allowed action subsets, constraint rules, and DS/PS configuration. Participants discover and adopt these policies at onboarding and at runtime. This RFC does not modify the core protocol — it defines the layer above it.
 
 ---
 
 ## 1. Context
 
-Beckn Protocol is domain-agnostic. Networks built on Beckn must add specificity — which sectors they serve, which schema packs are required, what fulfillment types are allowed, what geographic coverage applies. In v1.x, this was done via OpenAPI `allOf` overlays. In v2, it is done via JSON-LD profiles, network policy documents, and DeDi directory records.
+Beckn Protocol is domain-agnostic. Networks built on Beckn must add specificity — which sectors they serve, which schema packs are required, what fulfillment types are allowed, what geographic coverage applies. In legacy pre-v2, this was done via OpenAPI `allOf` overlays. In v2, it is done via JSON-LD profiles, network policy documents, and DeDi directory records.
 
 ---
 
@@ -68,7 +141,7 @@ Networks MAY restrict which Beckn actions are required or allowed:
 {
   "actions": {
     "required": ["discover", "select", "init", "confirm"],
-    "optional": ["status", "cancel", "update", "rating"],
+    "optional": ["status", "cancel", "update", "rate"],
     "prohibited": []
   }
 }
@@ -110,7 +183,7 @@ Networks MAY add constraints to `Context` fields:
 }
 ```
 
-### 3.6 CPS and CDS Endpoints
+### 3.6 PS and DS Endpoints
 
 ```json
 {
@@ -133,7 +206,7 @@ Networks MAY add constraints to `Context` fields:
 
 ## 4. Policy Categories
 
-Networks SHOULD categorize policies using these standard categories (adapted from v1.x BECKN-004):
+Networks SHOULD categorize policies using these standard categories (adapted from legacy pre-v2 BECKN-004):
 
 | Category | Description |
 |---|---|
@@ -193,8 +266,8 @@ Networks MAY be stricter than the core and domain specifications. Networks MUST 
 
 ## 9. References
 
-- [4_Network_Architecture.md](./4_Network_Architecture.md)
-- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
+- [09_Network_Architecture.md](./09_Network_Architecture.md)
+- [15_Schema_Distribution_Model.md](./15_Schema_Distribution_Model.md)
 - [GOVERNANCE.md](../GOVERNANCE.md) — Section 11: Core–Domain–Network interaction rules
 
 ---
@@ -203,4 +276,4 @@ Networks MAY be stricter than the core and domain specifications. Networks MUST 
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| Draft-01 | | | Initial draft — adapted from BECKN-001 and BECKN-004 (v1.x) |
+| Draft-01 | | | Initial draft — adapted from BECKN-001 and BECKN-004 (legacy pre-v2) |

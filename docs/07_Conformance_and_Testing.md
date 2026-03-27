@@ -1,19 +1,19 @@
 # Conformance and Testing
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
 ## 1. Overview
 
-This document defines what it means for a Beckn Network Participant to be **conformant** with Beckn Protocol v2.0.1, and provides guidance on testing and validating conformance.
+This document defines what it means for a Beckn Network Participant to be **conformant** with Beckn Protocol v2.0.0, and provides guidance on testing and validating conformance.
 
 ---
 
 ## 2. Conformance Levels
 
-The key words MUST, SHOULD, and MAY in this document are to be interpreted as defined in [2_Keyword_Definitions.md](./2_Keyword_Definitions.md).
+The key words MUST, SHOULD, and MAY in this document are to be interpreted as defined in [29_Keyword_Definitions.md](./29_Keyword_Definitions.md).
 
 A conformant implementation:
 - **MUST** implement all normative requirements marked MUST.
@@ -30,23 +30,23 @@ The following requirements apply to every Beckn Network Participant regardless o
 
 ### 3.1 Endpoint
 
-- MUST expose the universal endpoint `/beckn/{becknEndpoint}`.
+- MUST expose the action-specific endpoints required for the participant role as defined in `api/v2.0.0/beckn.yaml`.
 - MUST support the HTTP methods defined for the actions relevant to their role.
 - MUST support HTTPS (TLS 1.2 or later).
 
 ### 3.2 Request and Response Schemas
 
-- MUST send and accept `RequestContainer` and `CallbackContainer` as defined in `api/v2.0.1/beckn.yaml`.
+- MUST send and accept `RequestContainer` and `CallbackContainer` as defined in `api/v2.0.0/beckn.yaml`.
 - MUST include a valid `Context` object on every request and callback.
 - MUST respond with the correct transport response schema (`Ack`, `AckNoCallback`, `NackBadRequest`, `NackUnauthorized`, `ServerError`) for each defined scenario.
 
 ### 3.3 Authentication
 
-- MUST sign every request and callback with a valid Beckn Signature in the `Authorization` header (except GET Query Mode, where it is a query parameter).
+- MUST sign every request and callback with a valid Beckn Signature in the `Authorization` header (except legacy GET Query mode, where it is a query parameter).
 - MUST verify the Beckn Signature on every incoming request by resolving the sender's public key from the DeDi registry.
 - MUST reject requests with invalid or expired signatures with `401 NackUnauthorized`.
 
-### 3.4 Non-Repudiation (v2.0.1+)
+### 3.4 Non-Repudiation (v2.0.0+)
 
 - MUST return a `CounterSignature` in the `Ack` response body upon successful receipt of a signed request.
 - MUST include `inReplyTo` in every `CallbackContainer`.
@@ -58,8 +58,8 @@ The following requirements apply to every Beckn Network Participant regardless o
 In addition to transport conformance:
 
 - MUST send `RequestContainer` messages for all actions it initiates.
-- MUST implement a callback endpoint to receive `CallbackContainer` responses from BPPs and CDS.
-- MUST send discovery queries to CDS (not directly to BPPs).
+- MUST implement a callback endpoint to receive `CallbackContainer` responses from BPPs and DS.
+- MUST send discovery queries to DS (not directly to BPPs).
 - MUST NOT attempt to contact a BPP directly for discovery.
 
 ---
@@ -69,28 +69,28 @@ In addition to transport conformance:
 In addition to transport conformance:
 
 - MUST implement the callback endpoint for all transaction actions it supports.
-- MUST publish catalog updates to at least one CPS instance.
+- MUST publish catalog updates to at least one PS instance.
 - MUST register in the DeDi-compliant Registry with a valid signing key.
 - MUST return `AckNoCallback` (409) when a request is received but no callback will follow.
 
 ---
 
-## 6. CPS Conformance Requirements
+## 6. PS Conformance Requirements
 
 In addition to transport conformance:
 
 - MUST accept `publish` action requests from BPPs.
 - MUST validate published payloads against `core_schema` and relevant domain schema packs.
-- MUST forward normalized catalog graphs to CDS.
+- MUST forward normalized catalog graphs to DS.
 - MUST acknowledge publication with `Ack` (200) on successful receipt.
 
 ---
 
-## 7. CDS Conformance Requirements
+## 7. DS Conformance Requirements
 
 In addition to transport conformance:
 
-- MUST maintain a continuously updated index from CPS feeds.
+- MUST maintain a continuously updated index from PS feeds.
 - MUST accept `discover` action requests from BAPs.
 - MUST return results as `CallbackContainer` responses (async) or synchronous JSON responses per network policy.
 - MUST NOT forward discovery requests to individual BPPs.
@@ -110,7 +110,7 @@ In addition to transport conformance:
 
 ### 9.1 Schema Validation
 
-All `RequestContainer` and `CallbackContainer` messages SHOULD be validated against the OpenAPI schema in `api/v2.0.1/beckn.yaml` before sending and after receiving.
+All `RequestContainer` and `CallbackContainer` messages SHOULD be validated against the OpenAPI schema in `api/v2.0.0/beckn.yaml` before sending and after receiving.
 
 ### 9.2 Signature Verification
 
@@ -123,9 +123,9 @@ A conformance test suite SHOULD:
 ### 9.3 Lifecycle Testing
 
 End-to-end conformance tests SHOULD exercise complete transaction lifecycles:
-- Discovery: BAP → CDS → `on_discover`
+- Discovery: BAP → DS → `on_discover`
 - Transaction: BAP → BPP (`select` → `on_select` → `init` → `on_init` → `confirm` → `on_confirm`)
-- Catalog publication: BPP → CPS → CDS index
+- Catalog publication: BPP → PS → DS index
 
 ### 9.4 Negative Testing
 
@@ -137,6 +137,6 @@ End-to-end conformance tests SHOULD exercise complete transaction lifecycles:
 
 ## 10. Further Reading
 
-- [2_Keyword_Definitions.md](./2_Keyword_Definitions.md) — MUST / SHOULD / MAY definitions
-- [25_Conformance_and_Certification.md](./25_Conformance_and_Certification.md) — normative conformance RFC
-- `api/v2.0.1/beckn.yaml` — authoritative transport schemas
+- [29_Keyword_Definitions.md](./29_Keyword_Definitions.md) — MUST / SHOULD / MAY definitions
+- [08_Conformance_and_Certification.md](./08_Conformance_and_Certification.md) — normative conformance RFC
+- `api/v2.0.0/beckn.yaml` — authoritative transport schemas

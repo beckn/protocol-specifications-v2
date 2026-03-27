@@ -1,4 +1,77 @@
 # Payments on Beckn-Enabled Networks
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./21_Payments_on_Beckn_Networks.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. Design Principles](#2-design-principles)
+  - [3. Payment Roles](#3-payment-roles)
+  - [4. Payment Contract Agreement](#4-payment-contract-agreement)
+  - [5. Payment Object](#5-payment-object)
+  - [6. Payment Flows](#6-payment-flows)
+    - [Flow 1: BAP Collects Payment](#flow-1-bap-collects-payment)
+    - [Flow 2: BPP Collects Payment](#flow-2-bpp-collects-payment)
+  - [7. Payment Object Examples](#7-payment-object-examples)
+    - [Example 1 — BAP Collects, Settles POST-FULFILLMENT via Bank Transfer](#example-1-bap-collects-settles-post-fulfillment-via-bank-transfer)
+    - [Example 2 — BPP Collects via UPI, ON-ORDER](#example-2-bpp-collects-via-upi-on-order)
+    - [Example 3 — BPP Collects via Payment Gateway](#example-3-bpp-collects-via-payment-gateway)
+  - [8. Changes from legacy pre-v2 (BECKN-002)](#8-changes-from-legacy-pre-v2-beckn-002)
+  - [9. Conformance Requirements](#9-conformance-requirements)
+  - [10. References](#10-references)
+  - [11. Changelog](#11-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):** Ravi Prakash (Beckn Foundation)  
@@ -6,7 +79,7 @@
 **Updated:** 2026-02-01  
 **Conformance impact:** Informative for core; normative for network payment policy  
 **Security/privacy implications:** Payment endpoints and terms are transmitted in cleartext within signed messages. Sensitive payment credentials MUST NOT be included in Beckn protocol messages.  
-**Replaces / Relates to:** Adapted and updated from BECKN-002 (v1.x). Updated for v2 endpoint model and `core_schema` references.
+**Replaces / Relates to:** Adapted and updated from BECKN-002 (legacy pre-v2). Updated for v2 endpoint model and `core_schema` references.
 
 ---
 
@@ -137,14 +210,14 @@ The `Payment` object is defined in `core_schema`. Key fields:
 
 ---
 
-## 8. Changes from v1.x (BECKN-002)
+## 8. Changes from legacy pre-v2 (BECKN-002)
 
-| Aspect | v1.x | v2.0.x |
+| Aspect | legacy pre-v2 | v2.0.x |
 |---|---|---|
 | `Payment` schema location | Inline in `beckn.yaml` | Defined in `core_schema` |
 | Payment terms exchange | During `init`/`on_init` | Same (unchanged) |
 | Supported URI schemes | `https://`, `payto://` | Same (unchanged) |
-| Endpoint model | `/init` | `POST /beckn/init` |
+| Endpoint model | `/init` | `POST /init` |
 | Signature | BAP signs `init` | Same (unchanged) |
 
 ---
@@ -165,7 +238,7 @@ The `Payment` object is defined in `core_schema`. Key fields:
 
 - [RFC 8905 — The `payto` URI Scheme](https://datatracker.ietf.org/doc/html/rfc8905)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema) — `Payment` schema definition
-- [22_Network_Policy_Profiles.md](./22_Network_Policy_Profiles.md)
+- [20_Network_Policy_Profiles.md](./20_Network_Policy_Profiles.md)
 
 ---
 
@@ -173,5 +246,5 @@ The `Payment` object is defined in `core_schema`. Key fields:
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| Draft-01 | 2021-12-10 | Ravi Prakash | Initial draft (BECKN-002 v1.x) |
+| Draft-01 | 2021-12-10 | Ravi Prakash | Initial draft (BECKN-002 legacy pre-v2) |
 | Draft-02 | 2026-02-01 | — | Updated for v2 endpoint model; moved Payment schema reference to core_schema |

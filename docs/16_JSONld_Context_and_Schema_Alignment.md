@@ -1,4 +1,79 @@
 # JSON-LD Context Design and schema.org Alignment
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./16_JSONld_Context_and_Schema_Alignment.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. JSON-LD Basics in Beckn](#2-json-ld-basics-in-beckn)
+  - [3. Beckn Namespace](#3-beckn-namespace)
+  - [4. schema.org Alignment Rules](#4-schemaorg-alignment-rules)
+    - [4.1 Mandatory Mapping](#41-mandatory-mapping)
+    - [4.2 Property Mapping](#42-property-mapping)
+    - [4.3 Beckn-Specific Terms](#43-beckn-specific-terms)
+  - [5. Context URI Governance](#5-context-uri-governance)
+    - [5.1 Core Context](#51-core-context)
+    - [5.2 Domain Contexts](#52-domain-contexts)
+    - [5.3 Controlled Document Loaders](#53-controlled-document-loaders)
+  - [6. Extension Patterns](#6-extension-patterns)
+    - [6.1 Domain Schema Pack Extension](#61-domain-schema-pack-extension)
+    - [6.2 Network-Specific Terms](#62-network-specific-terms)
+  - [7. Conformance Requirements](#7-conformance-requirements)
+  - [8. Security Considerations](#8-security-considerations)
+  - [9. References](#9-references)
+  - [10. Changelog](#10-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):**  
@@ -208,8 +283,8 @@ Networks MAY define network-specific terms using their own namespace:
 - [JSON-LD 1.1 Specification](https://www.w3.org/TR/json-ld11/)
 - [schema.org](https://schema.org)
 - [schema.beckn.io](https://schema.beckn.io)
-- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
-- [21_Schema_Pack_Contract.md](./21_Schema_Pack_Contract.md)
+- [15_Schema_Distribution_Model.md](./15_Schema_Distribution_Model.md)
+- [17_Schema_Pack_Contract.md](./17_Schema_Pack_Contract.md)
 
 ---
 

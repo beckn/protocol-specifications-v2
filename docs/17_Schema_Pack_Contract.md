@@ -1,4 +1,72 @@
 # Domain Schema Pack Contract
+## CWG Working Draft - 2026-03-27
+
+# 1. Document Details
+## 1.1 Version History
+| Version | Date | Summary |
+|---|---|---|
+| Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
+
+## 1.2 Latest editor's draft
+- ./17_Schema_Pack_Contract.md
+
+## 1.3 Implementation report
+- To be published by implementation working group.
+
+## 1.4 Stress Test Report
+- To be published by testing and certification working group.
+
+## 1.5 Editors
+- Beckn Protocol Core Working Group editors.
+
+## 1.6 Authors
+- Beckn Protocol contributors.
+
+## 1.7 Feedback
+### 1.7.1 Issues
+- https://github.com/beckn/protocol-specifications-v2/issues
+
+### 1.7.2 Discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions
+
+### 1.7.3 Pull Requests
+- https://github.com/beckn/protocol-specifications-v2/pulls
+
+## 1.8 Errata
+- To be published.
+
+<!-- TOC START -->
+## Table of Contents
+
+  - [CWG Working Draft - 2026-03-27](#cwg-working-draft-2026-03-27)
+- [1. Document Details](#1-document-details)
+  - [1.1 Version History](#11-version-history)
+  - [1.2 Latest editor's draft](#12-latest-editors-draft)
+  - [1.3 Implementation report](#13-implementation-report)
+  - [1.4 Stress Test Report](#14-stress-test-report)
+  - [1.5 Editors](#15-editors)
+  - [1.6 Authors](#16-authors)
+  - [1.7 Feedback](#17-feedback)
+    - [1.7.1 Issues](#171-issues)
+    - [1.7.2 Discussions](#172-discussions)
+    - [1.7.3 Pull Requests](#173-pull-requests)
+  - [1.8 Errata](#18-errata)
+- [2. Context](#2-context)
+  - [Abstract](#abstract)
+  - [1. Context](#1-context)
+  - [2. What is a Domain Schema Pack?](#2-what-is-a-domain-schema-pack)
+  - [3. Pack Structure](#3-pack-structure)
+  - [4. Context Document Rules](#4-context-document-rules)
+  - [5. Attribute Definitions](#5-attribute-definitions)
+  - [6. Versioning](#6-versioning)
+  - [7. Composition Rules](#7-composition-rules)
+  - [8. Publication Requirements](#8-publication-requirements)
+  - [9. Conformance Requirements](#9-conformance-requirements)
+  - [10. References](#10-references)
+  - [11. Changelog](#11-changelog)
+<!-- TOC END -->
+
+# 2. Context
 
 **Status:** Draft  
 **Author(s):**  
@@ -44,7 +112,7 @@ A domain schema pack is a versioned collection of:
 │   ├── Fulfillment.jsonld   ← Fulfillment attribute extensions
 │   └── ...
 ├── examples/
-│   ├── search.json
+│   ├── discover.json
 │   ├── confirm.json
 │   └── ...
 ├── validation/
@@ -165,8 +233,8 @@ Domain schema pack authors MUST:
 
 ## 10. References
 
-- [6_Schema_Distribution_Model.md](./6_Schema_Distribution_Model.md)
-- [20_JSONld_Context_and_Schema_Alignment.md](./20_JSONld_Context_and_Schema_Alignment.md)
+- [15_Schema_Distribution_Model.md](./15_Schema_Distribution_Model.md)
+- [16_JSONld_Context_and_Schema_Alignment.md](./16_JSONld_Context_and_Schema_Alignment.md)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 - [schema.beckn.io](https://schema.beckn.io)
 

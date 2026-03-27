@@ -1,7 +1,7 @@
 # Registry and Identity
 
 **Status:** Informative  
-**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.1)
+**Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
@@ -9,7 +9,7 @@
 
 The Beckn v2 Network Registry is the identity and trust anchor of a Beckn network. It stores participant records — including signing keys, endpoint URLs, capabilities, and network membership — and exposes them for resolution by all network participants.
 
-In v2, the registry is required to comply with the **[Decentralized Directory (DeDi) protocol](https://dedi.global)**, replacing the bespoke Beckn `lookup`/`subscribe` API of v1.x.
+In v2, the registry is required to comply with the **[Decentralized Directory (DeDi) protocol](https://dedi.global)**, replacing the bespoke Beckn `lookup`/`subscribe` API of legacy pre-v2.
 
 ---
 
@@ -26,13 +26,13 @@ In v2, the registry is required to comply with the **[Decentralized Directory (D
 
 ## 3. Participant Records
 
-Each Beckn Network Participant (BAP, BPP, CPS, CDS) has a record in the DeDi registry containing:
+Each Beckn Network Participant (BAP, BPP, PS, DS) has a record in the DeDi registry containing:
 
 | Field | Description |
 |---|---|
 | `subscriberId` | The participant's unique identifier (typically its FQDN) |
-| `subscriberUrl` | The HTTPS endpoint URL implementing `/beckn/{becknEndpoint}` |
-| `role` | Participant role: `BAP`, `BPP`, `CPS`, `CDS` |
+| `subscriberUrl` | The HTTPS endpoint URL implementing `/discover, /on_discover, /select, /on_select, and related action endpoints` |
+| `role` | Participant role: `BAP`, `BPP`, `PS`, `DS` |
 | `domain` | Supported interaction domain(s) |
 | `signingPublicKey` | Ed25519 public key used to verify Beckn Signatures |
 | `encryptionPublicKey` | (Optional) Public key for message encryption |
@@ -85,13 +85,13 @@ The key resolution step is a mandatory part of the request verification flow:
 5. Accept or reject request
 ```
 
-See [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) for the full verification flow.
+See [04_Authentication_and_Security.md](./04_Authentication_and_Security.md) for the full verification flow.
 
 ---
 
-## 6. Comparison with v1.x Registry
+## 6. Comparison with legacy pre-v2 Registry
 
-| Aspect | v1.x Registry | v2.0.x DeDi Registry |
+| Aspect | legacy pre-v2 Registry | v2.0.x DeDi Registry |
 |---|---|---|
 | API standard | Bespoke Beckn `lookup`/`subscribe` | DeDi-compliant standard APIs |
 | Interoperability | Beckn-only | Cross-ecosystem (any DeDi participant) |
@@ -104,6 +104,6 @@ See [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) for t
 
 ## 7. Further Reading
 
-- [13_DeDi_Registry_Integration.md](./13_DeDi_Registry_Integration.md) — normative DeDi registry spec (RFC)
-- [9_Authentication_and_Security.md](./9_Authentication_and_Security.md) — how keys are used for signing and verification
+- [11_DeDi_Registry_Integration.md](./11_DeDi_Registry_Integration.md) — normative DeDi registry spec (RFC)
+- [04_Authentication_and_Security.md](./04_Authentication_and_Security.md) — how keys are used for signing and verification
 - [DeDi protocol](https://dedi.global)
