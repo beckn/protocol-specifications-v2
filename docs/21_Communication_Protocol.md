@@ -56,6 +56,6 @@ Catalog APIs are also explicit:
 - 500 ServerError
 
 See:
-- ./03_Core_API_Envelope.md
-- ./05_Signing_Beckn_APIs_in_HTTP.md
+- ./12_Core_API_Envelope.md
+- ./14_Signing_Beckn_APIs_in_HTTP.md
 - ../api/v2.0.0/beckn.yaml

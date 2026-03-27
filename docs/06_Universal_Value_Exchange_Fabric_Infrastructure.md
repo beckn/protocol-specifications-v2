@@ -1,17 +1,17 @@
-# Network Architecture
+# Universal Value Exchange Fabric Infrastructure
 
 **Status:** Informative  
 **Applies to:** Beckn Protocol v2.0.x (current LTS: v2.0.0)
 
 ---
 
-## 1. Overview
+## 1. Fabric Overview
 
-A Beckn v2 network is a set of independently operated platforms that communicate with each other using the Beckn Protocol transport envelope. Each platform implements a specific **actor role**. The network has no central broker: all communication is peer-to-peer, mediated only by a shared registry for identity and key resolution.
+A Beckn v2 network is a Universal Value Exchange Fabric: a federated infrastructure where independently operated participants interoperate through a common transport contract, shared identity trust, and composable discovery and transaction layers. Each platform implements a specific actor role; interoperability emerges from protocol conformance rather than centralized brokerage.
 
 ---
 
-## 2. Actor Roles
+## 2. Fabric Actors
 
 ### 2.1 Beckn Application Platform (BAP)
 
@@ -168,7 +168,7 @@ Before sending a request, a participant resolves the recipient's endpoint and pu
 
 ## 7. Further Reading
 
-- [02_Communication_Protocol.md](./02_Communication_Protocol.md) — how messages flow between actors
-- [12_Discovery_Architecture.md](./12_Discovery_Architecture.md) — PS and DS in depth
-- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md) — DeDi registry in depth
-- [RFC-002: Core API Envelope](./03_Core_API_Envelope.md)
+- [21_Communication_Protocol.md](./21_Communication_Protocol.md) — how messages flow between actors
+- [09_Discovery_Architecture.md](./09_Discovery_Architecture.md) — PS and DS in depth
+- [07_Registry_and_Identity.md](./07_Registry_and_Identity.md) — DeDi registry in depth
+- [RFC-002: Core API Envelope](./12_Core_API_Envelope.md)

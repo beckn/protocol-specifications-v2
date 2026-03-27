@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./30_RFC_Template.md
+- ./01_RFC_Template.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-030%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-030%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-030%22
 
 ## 1.8 Errata
 - To be published.
@@ -120,7 +120,7 @@ _List the Beckn constitutional principles (from GOVERNANCE.md) that apply to thi
 
 ## 5. Specification (Normative)
 
-_The normative text of this RFC. Use MUST / SHOULD / MAY as defined in [29_Keyword_Definitions.md](./29_Keyword_Definitions.md). Organize into subsections as needed._
+_The normative text of this RFC. Use MUST / SHOULD / MAY as defined in [00_Keyword_Definitions.md](./00_Keyword_Definitions.md). Organize into subsections as needed._
 
 ### 5.1 ...
 
@@ -175,7 +175,7 @@ _List any unresolved issues or design choices that require further discussion be
 ## 11. References
 
 - [GOVERNANCE.md](../GOVERNANCE.md)
-- [29_Keyword_Definitions.md](./29_Keyword_Definitions.md)
+- [00_Keyword_Definitions.md](./00_Keyword_Definitions.md)
 - _Add any external standards, prior art, or related RFCs here_
 
 ---

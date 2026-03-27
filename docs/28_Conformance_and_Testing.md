@@ -13,7 +13,7 @@ This document defines what it means for a Beckn Network Participant to be **conf
 
 ## 2. Conformance Levels
 
-The key words MUST, SHOULD, and MAY in this document are to be interpreted as defined in [29_Keyword_Definitions.md](./29_Keyword_Definitions.md).
+The key words MUST, SHOULD, and MAY in this document are to be interpreted as defined in [00_Keyword_Definitions.md](./00_Keyword_Definitions.md).
 
 A conformant implementation:
 - **MUST** implement all normative requirements marked MUST.
@@ -137,6 +137,6 @@ End-to-end conformance tests SHOULD exercise complete transaction lifecycles:
 
 ## 10. Further Reading
 
-- [29_Keyword_Definitions.md](./29_Keyword_Definitions.md) — MUST / SHOULD / MAY definitions
-- [08_Conformance_and_Certification.md](./08_Conformance_and_Certification.md) — normative conformance RFC
+- [00_Keyword_Definitions.md](./00_Keyword_Definitions.md) — MUST / SHOULD / MAY definitions
+- [27_Conformance_and_Certification.md](./27_Conformance_and_Certification.md) — normative conformance RFC
 - `api/v2.0.0/beckn.yaml` — authoritative transport schemas

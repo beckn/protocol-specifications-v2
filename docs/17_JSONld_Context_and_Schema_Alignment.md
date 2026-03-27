@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./16_JSONld_Context_and_Schema_Alignment.md
+- ./17_JSONld_Context_and_Schema_Alignment.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-016%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-016%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-016%22
 
 ## 1.8 Errata
 - To be published.
@@ -283,8 +283,8 @@ Networks MAY define network-specific terms using their own namespace:
 - [JSON-LD 1.1 Specification](https://www.w3.org/TR/json-ld11/)
 - [schema.org](https://schema.org)
 - [schema.beckn.io](https://schema.beckn.io)
-- [15_Schema_Distribution_Model.md](./15_Schema_Distribution_Model.md)
-- [17_Schema_Pack_Contract.md](./17_Schema_Pack_Contract.md)
+- [16_Schema_Distribution_Model.md](./16_Schema_Distribution_Model.md)
+- [18_Schema_Pack_Contract.md](./18_Schema_Pack_Contract.md)
 
 ---
 

@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./08_Conformance_and_Certification.md
+- ./27_Conformance_and_Certification.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-008%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-008%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-008%22
 
 ## 1.8 Errata
 - To be published.
@@ -79,7 +79,7 @@
 **Updated:**  
 **Conformance impact:** Informative for protocol; normative for certification programs  
 **Security/privacy implications:** Certification test suites MUST NOT expose or retain production signing keys or sensitive participant data used during testing.  
-**Replaces / Relates to:** New in v2. Provides the normative conformance framework referenced by [07_Conformance_and_Testing.md](./07_Conformance_and_Testing.md).
+**Replaces / Relates to:** New in v2. Provides the normative conformance framework referenced by [28_Conformance_and_Testing.md](./28_Conformance_and_Testing.md).
 
 ---
 
@@ -226,8 +226,8 @@ Certification is voluntary at the protocol level. Networks MAY make certificatio
 
 ## 10. References
 
-- [07_Conformance_and_Testing.md](./07_Conformance_and_Testing.md)
-- [29_Keyword_Definitions.md](./29_Keyword_Definitions.md)
+- [28_Conformance_and_Testing.md](./28_Conformance_and_Testing.md)
+- [00_Keyword_Definitions.md](./00_Keyword_Definitions.md)
 - [GOVERNANCE.md](../GOVERNANCE.md) — Section 9: Specification change lifecycle
 - `api/v2.0.0/beckn.yaml`
 

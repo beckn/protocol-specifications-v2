@@ -1,4 +1,4 @@
-# Publishing Service (PS)
+# Cataloging Service (PS)
 ## CWG Working Draft - 2026-03-27
 
 # 1. Document Details
@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./13_Catalog_Publishing_Service.md
+- ./10_Cataloging_Service.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-013%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-013%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-013%22
 
 ## 1.8 Errata
 - To be published.
@@ -198,8 +198,8 @@ Publication requests MUST be idempotent. Re-publishing the same item with the sa
 
 ## 5. References
 
-- [12_Discovery_Architecture.md](./12_Discovery_Architecture.md)
-- [14_Catalog_Discovery_Service.md](./14_Catalog_Discovery_Service.md)
+- [09_Discovery_Architecture.md](./09_Discovery_Architecture.md)
+- [11_Discovery_Service.md](./11_Discovery_Service.md)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 
 ---

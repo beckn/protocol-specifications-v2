@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./23_Communication_Protocol_RFC.md
+- ./22_Communication_Protocol_RFC.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-023%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-023%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-023%22
 
 ## 1.8 Errata
 - To be published.
@@ -106,7 +106,7 @@ All API calls are asynchronous. The immediate response in a session is an `Ack` 
 
 ### 2.3 Digitally Signed
 
-Every message is digitally signed by the sender. See [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md).
+Every message is digitally signed by the sender. See [14_Signing_Beckn_APIs_in_HTTP.md](./14_Signing_Beckn_APIs_in_HTTP.md).
 
 ---
 
@@ -218,9 +218,9 @@ The callback action name is always the request action name prefixed with `on_`:
 
 ## 7. References
 
-- [02_Communication_Protocol.md](./02_Communication_Protocol.md)
-- [12_Discovery_Architecture.md](./12_Discovery_Architecture.md)
-- [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md)
+- [21_Communication_Protocol.md](./21_Communication_Protocol.md)
+- [09_Discovery_Architecture.md](./09_Discovery_Architecture.md)
+- [14_Signing_Beckn_APIs_in_HTTP.md](./14_Signing_Beckn_APIs_in_HTTP.md)
 
 ---
 

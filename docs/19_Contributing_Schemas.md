@@ -1,6 +1,6 @@
 # 📚 Contributing Domain-specific Schemas
 
-> This document is maintained in `docs/governance/18_Contributing_Schemas.md`. For contributing to the core protocol schemas in `beckn/schemas`, follow the guidelines below.
+> This document is maintained in `docs/governance/19_Contributing_Schemas.md`. For contributing to the core protocol schemas in `beckn/schemas`, follow the guidelines below.
 
 ---
 

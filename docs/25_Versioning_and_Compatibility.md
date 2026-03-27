@@ -135,5 +135,5 @@ The `context.version` field in every `RequestContainer` and `CallbackContainer` 
 ## 9. Further Reading
 
 - [GOVERNANCE.md](../GOVERNANCE.md) — versioning governance rules (SemVer, deprecation, removal)
-- [03_Core_API_Envelope.md](./03_Core_API_Envelope.md) — normative transport contract
-- [07_Conformance_and_Testing.md](./07_Conformance_and_Testing.md) — conformance rules per version
+- [12_Core_API_Envelope.md](./12_Core_API_Envelope.md) — normative transport contract
+- [28_Conformance_and_Testing.md](./28_Conformance_and_Testing.md) — conformance rules per version

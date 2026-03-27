@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./06_Error_Codes.md
+- ./15_Error_Codes.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-006%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-006%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-006%22
 
 ## 1.8 Errata
 - To be published.
@@ -225,7 +225,7 @@ When an error occurs during asynchronous processing and must be communicated via
 ## 7. References
 
 - `api/v2.0.0/beckn.yaml` — `NackBadRequest`, `NackUnauthorized`, `ServerError`, `Error`, `AsyncError` schemas
-- [03_Core_API_Envelope.md](./03_Core_API_Envelope.md)
+- [12_Core_API_Envelope.md](./12_Core_API_Envelope.md)
 
 ---
 

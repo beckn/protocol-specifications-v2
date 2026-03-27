@@ -81,7 +81,7 @@ signature = Base64(Ed25519_sign(signingString, privateKey))
 
 Assemble the header as shown in Section 2.
 
-For a complete worked example with test vectors, see [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md).
+For a complete worked example with test vectors, see [14_Signing_Beckn_APIs_in_HTTP.md](./14_Signing_Beckn_APIs_in_HTTP.md).
 
 ---
 
@@ -132,7 +132,7 @@ The `inReplyTo` field in a `CallbackContainer` cryptographically binds the callb
 
 A `LineageEntry` records cross-transaction causal attribution — for example, when a fulfillment update is causally linked to a prior `confirm` message. This enables auditability of multi-step transaction flows.
 
-For the normative specification of these schemas, see [22_Non_Repudiation_and_Lineage.md](./22_Non_Repudiation_and_Lineage.md).
+For the normative specification of these schemas, see [24_Non_Repudiation_and_Lineage.md](./24_Non_Repudiation_and_Lineage.md).
 
 ---
 
@@ -146,7 +146,7 @@ In legacy GET Query mode, the Beckn Signature cannot be placed in the `Authoriza
 
 Query Mode requests MUST NOT expect callbacks. They are acknowledged with `Ack` (HTTP 200) only.
 
-See [24_Get_Query_Mode.md](./24_Get_Query_Mode.md) for the full encoding rules.
+See []() for the full encoding rules.
 
 ---
 
@@ -172,7 +172,7 @@ See [24_Get_Query_Mode.md](./24_Get_Query_Mode.md) for the full encoding rules.
 
 ## 9. Further Reading
 
-- [05_Signing_Beckn_APIs_in_HTTP.md](./05_Signing_Beckn_APIs_in_HTTP.md) — complete step-by-step signing example with test vectors
-- [22_Non_Repudiation_and_Lineage.md](./22_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry` schemas
-- [10_Registry_and_Identity.md](./10_Registry_and_Identity.md) — DeDi registry key registration and lookup
+- [14_Signing_Beckn_APIs_in_HTTP.md](./14_Signing_Beckn_APIs_in_HTTP.md) — complete step-by-step signing example with test vectors
+- [24_Non_Repudiation_and_Lineage.md](./24_Non_Repudiation_and_Lineage.md) — `CounterSignature`, `InReplyTo`, `LineageEntry` schemas
+- [07_Registry_and_Identity.md](./07_Registry_and_Identity.md) — DeDi registry key registration and lookup
 - `api/v2.0.0/beckn.yaml` — authoritative `Signature`, `CounterSignature`, `InReplyTo`, `LineageEntry` schema definitions

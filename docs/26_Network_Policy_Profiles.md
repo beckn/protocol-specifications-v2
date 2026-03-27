@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./20_Network_Policy_Profiles.md
+- ./26_Network_Policy_Profiles.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-020%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-020%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-020%22
 
 ## 1.8 Errata
 - To be published.
@@ -266,8 +266,8 @@ Networks MAY be stricter than the core and domain specifications. Networks MUST 
 
 ## 9. References
 
-- [09_Network_Architecture.md](./09_Network_Architecture.md)
-- [15_Schema_Distribution_Model.md](./15_Schema_Distribution_Model.md)
+- [06_Universal_Value_Exchange_Fabric_Infrastructure.md](./06_Universal_Value_Exchange_Fabric_Infrastructure.md)
+- [16_Schema_Distribution_Model.md](./16_Schema_Distribution_Model.md)
 - [GOVERNANCE.md](../GOVERNANCE.md) — Section 11: Core–Domain–Network interaction rules
 
 ---

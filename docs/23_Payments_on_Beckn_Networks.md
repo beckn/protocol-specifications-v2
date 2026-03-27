@@ -8,7 +8,7 @@
 | Draft-01 | 2026-03-27 | Migrated to v2 RFC template structure |
 
 ## 1.2 Latest editor's draft
-- ./21_Payments_on_Beckn_Networks.md
+- ./23_Payments_on_Beckn_Networks.md
 
 ## 1.3 Implementation report
 - To be published by implementation working group.
@@ -24,13 +24,13 @@
 
 ## 1.7 Feedback
 ### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues
+- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-021%22
 
 ### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions
+- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-021%22
 
 ### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls
+- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-021%22
 
 ## 1.8 Errata
 - To be published.
@@ -238,7 +238,7 @@ The `Payment` object is defined in `core_schema`. Key fields:
 
 - [RFC 8905 — The `payto` URI Scheme](https://datatracker.ietf.org/doc/html/rfc8905)
 - [`beckn/core_schema`](https://github.com/beckn/core_schema) — `Payment` schema definition
-- [20_Network_Policy_Profiles.md](./20_Network_Policy_Profiles.md)
+- [26_Network_Policy_Profiles.md](./26_Network_Policy_Profiles.md)
 
 ---
 

@@ -166,6 +166,6 @@ A BPP chooses which PS instance(s) to publish to. Network policy governs which P
 
 ## 7. Further Reading
 
-- [13_Catalog_Publishing_Service.md](./13_Catalog_Publishing_Service.md) — normative PS spec (RFC)
-- [14_Catalog_Discovery_Service.md](./14_Catalog_Discovery_Service.md) — normative DS spec (RFC)
-- [09_Network_Architecture.md](./09_Network_Architecture.md) — overall network topology
+- [10_Cataloging_Service.md](./10_Cataloging_Service.md) — normative PS spec (RFC)
+- [11_Discovery_Service.md](./11_Discovery_Service.md) — normative DS spec (RFC)
+- [06_Universal_Value_Exchange_Fabric_Infrastructure.md](./06_Universal_Value_Exchange_Fabric_Infrastructure.md) — overall network topology
