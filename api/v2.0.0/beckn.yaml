@@ -1281,26 +1281,13 @@ components:
           $ref: "#/components/schemas/Contract"
       required:
         - contract
-    ActionTrigger:
-      description: Describes a trigger that initiates an action, like triggering a settlement on fulfillment completion.
-      type: object
-      properties:
-        descriptor:
-          $ref: "#/components/schemas/Descriptor"
+
     AddOn:
-      type: object
       description: Add-on to a catalog resource
-      properties:
-        id:
-          type: string
-        descriptor:
-          $ref: "#/components/schemas/Descriptor"
-        addOnAttributes:
-          description: Domain-specific extension attributes for this add-on.
-          allOf:
-            - $ref: "#/components/schemas/Attributes"
-            - {}
-            - properties: {}
+      oneOf: 
+        -  $ref: '#/components/schemas/Resource'
+        -  $ref: '#/components/schemas/Offer'
+        
     Address:
       description:
         "**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses.
@@ -1353,15 +1340,10 @@ components:
       properties:
         "@context":
           description: Use case specific JSON-LD context URI
-          type: array
-          format: uri
-          items:
-            type: string
+          type: string
         "@type":
           description: JSON-LD type defined within the context
-          type: array
-          items:
-            type: string
+          type: string
       required:
         - "@context"
         - "@type"
@@ -2257,11 +2239,11 @@ components:
           description: References (IDs) to resources covered by this offer.
           items:
             $ref: "#/components/schemas/Resource/properties/id"
-        addOnIds:
+        addOns:
           type: array
           description: IDs of optional extra Offers or Resources that can be attached.
           items:
-            $ref: "#/components/schemas/AddOn/properties/id"
+            $ref: "#/components/schemas/AddOn"
         considerationIds:
           type: array
           items:
@@ -2298,36 +2280,8 @@ components:
                 description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: "#/components/schemas/Attributes"
-    PriceSpecification:
-      description: TODO-get from schema.org
-      type: object
-      properties:
-        priceUnit:
-          type: string
-        consideredValue:
-          type: number
-        components:
-          type: array
-          items:
-            type: object
-            required:
-              - lineId
-              - lineSummary
-              - value
-              - currency
-            properties:
-              lineId:
-                type: string
-              lineSummary:
-                type: string
-              value:
-                type: number
-              currency:
-                type: string
-              commitmentId:
-                $ref: "#/components/schemas/Commitment/properties/id"
-              quantity:
-                $ref: "#/components/schemas/Quantity"
+
+
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2350,6 +2304,7 @@ components:
         - id
         - descriptor
       additionalProperties: false
+
     Quantity:
       description: Schema definition for Quantity in the Beckn Protocol v2.0.1
       title: Quantity
