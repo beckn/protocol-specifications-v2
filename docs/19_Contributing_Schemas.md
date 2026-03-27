@@ -95,6 +95,44 @@ Create a new schema bundle when:
 
 ---
 
+
+## 🌐 Interoperability Evolution Policy
+
+Schema authoring in Beckn has evolved from **structural interoperability** to **semantic interoperability**.
+
+This means schema authors must optimize for shared machine meaning, not only structural compatibility.
+
+### Required author workflow
+
+Before creating a new use-case schema:
+1. Search [schema.beckn.io](https://schema.beckn.io) for existing use-case-specific schemas.
+2. Prefer extending existing use-case schemas.
+3. If extension is not sufficient, contribute improvements to existing use-case schemas first.
+
+PWG periodically analyzes recurring patterns from these contributions and abstracts them into domain-agnostic schemas where appropriate.
+
+### Non-negotiable semantic rule
+
+Extensions MUST NOT change the meaning of inherited schema terms.
+
+### Required files
+
+Every schema contribution MUST include both:
+- `context.jsonld`
+- `vocab.jsonld`
+
+Both MUST conform to [04_STYLE_GUIDE.md](./04_STYLE_GUIDE.md).
+
+### Version evolution requirements
+
+For every new schema version:
+- carry forward previous version vocabulary and context,
+- enrich vocabulary over the previous version,
+- deprecate old vocabulary where needed without semantic loss,
+- include at least one ontological relationship linking new terms with older terms.
+
+---
+
 ## 🔗 Schema Extension Guidelines
 
 ### 🎯 When to Extend

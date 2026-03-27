@@ -288,6 +288,21 @@ Networks MAY define network-specific terms using their own namespace:
 
 ---
 
+
+## 10. Semantic Evolution Requirements
+
+Schema evolution in Beckn now prioritizes semantic interoperability over purely structural interoperability.
+
+Normative requirements for schema authors:
+- Authors MUST check [schema.beckn.io](https://schema.beckn.io) before introducing new use-case terms.
+- Authors SHOULD extend existing use-case vocabularies first.
+- Extensions MUST NOT redefine inherited meaning.
+- Every schema release MUST ship `context.jsonld` and `vocab.jsonld` conforming to [04_STYLE_GUIDE.md](./04_STYLE_GUIDE.md).
+- New schema versions MUST carry forward previous-version context/vocabulary terms unless deprecated.
+- New vocabulary SHOULD be richer and MUST include at least one ontological relationship to earlier-version vocabulary.
+
+PWG periodically reviews emerging semantic patterns and may abstract stable constructs into domain-agnostic schema layers.
+
 ## 10. Changelog
 
 | Version | Date | Author | Summary |

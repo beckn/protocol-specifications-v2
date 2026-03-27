@@ -188,6 +188,8 @@ When working at the explanatory or architectural level, start with [`docs/README
 - [`api/v2.0.0/README.md`](api/v2.0.0/README.md)
 - [`docs/README.md`](docs/README.md)
 - [`GOVERNANCE.md`](GOVERNANCE.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
 
 ---
 

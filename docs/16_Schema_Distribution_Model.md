@@ -129,3 +129,45 @@ This repository intentionally contains **no `schema/` directory**. All transacti
 - [18_Schema_Pack_Contract.md](./18_Schema_Pack_Contract.md) — how domain schema packs are authored and versioned
 - [`beckn/core_schema`](https://github.com/beckn/core_schema)
 - [schema.beckn.io](https://schema.beckn.io)
+---
+
+## 8. Evolution Direction: Structural → Semantic Interoperability
+
+Beckn schema evolution has moved from a **structural interoperability** focus (shape-level compatibility only) to a **semantic interoperability** focus (shared meaning across contexts, vocabularies, and ontological relations).
+
+Implications:
+- Compatibility is not just field-level shape matching.
+- Vocabulary continuity and meaning preservation are first-class requirements.
+- Schema evolution decisions should optimize cross-network machine interpretability.
+
+### 8.1 Contributor-first pattern before proposing new schema
+
+Before creating a new schema or schema version, schema authors MUST:
+1. Search [schema.beckn.io](https://schema.beckn.io) for existing use-case-specific schemas.
+2. Prefer extending an existing use-case schema where feasible.
+3. Contribute improvements back to the existing use-case schema when appropriate.
+
+PWG periodically reviews emerging patterns from use-case schemas and abstracts stable patterns into domain-agnostic/core constructs.
+
+### 8.2 Meaning preservation in extensions
+
+Extensions MUST be additive and MUST NOT change the semantic meaning of inherited terms.
+
+A schema extension may refine, specialize, or add constraints, but must not redefine what an existing class/property means.
+
+### 8.3 Mandatory semantic artifacts
+
+All schema packs MUST include both:
+- `context.jsonld`
+- `vocab.jsonld`
+
+Both artifacts MUST conform to the rules in [04_STYLE_GUIDE.md](./04_STYLE_GUIDE.md).
+
+### 8.4 Version-to-version vocabulary continuity
+
+For any schema version `vN+1` relative to `vN`:
+- `vN+1` MUST carry forward `vN` vocabulary and context terms unless deprecated.
+- `vN+1` SHOULD be semantically richer than `vN`.
+- Deprecated terms MUST remain mapped with explicit deprecation semantics.
+- New vocabulary in `vN+1` MUST include at least one ontological relationship to prior-version vocabulary (e.g., subclass, equivalentClass, subPropertyOf, or explicit replacement linkage).
+

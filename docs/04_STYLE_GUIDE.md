@@ -86,6 +86,23 @@ PRs \#67 and \#68 explicitly call out that name changes must be applied across *
 
 ## 4.3 Canonical naming authority (when conflicts exist)
 
+
+## 4.4 Semantic evolution baseline
+
+Beckn schema evolution is now driven by semantic interoperability.
+
+Therefore:
+
+- Schema authors MUST first search [schema.beckn.io](https://schema.beckn.io) for existing use-case schemas.
+- Extension MUST be preferred over duplication.
+- Extension MUST NOT alter inherited meaning.
+- Every schema MUST include both `context.jsonld` and `vocab.jsonld`.
+- Every new schema version MUST carry forward prior context and vocabulary terms (with deprecation markers when needed).
+- Every new schema version MUST introduce at least one ontological relationship linking new vocabulary to prior vocabulary.
+
+PWG may periodically abstract recurring use-case semantics into domain-agnostic schema constructs.
+
+
 When artifacts disagree, the priority order is:
 
 1. **`attributes.yaml`** schema names and property names (machine contracts).  
