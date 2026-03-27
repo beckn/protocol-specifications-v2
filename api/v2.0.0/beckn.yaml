@@ -1550,19 +1550,9 @@ components:
           type: string
           description: Version of transaction protocol being used by the sender.
           const: 2.0.0
-        bap_id:
-          description: Subscriber ID of the BAP as registered on dedi.global
-          type: string
         bapId:
           description: Subscriber ID of the BAP as registered on dedi.global
           type: string
-        bap_uri:
-          description: |-
-            The callback URL of the BAP.
-
-            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-          type: string
-          format: uri
         bapUri:
           description: |-
             The callback URL of the BAP.
@@ -1570,19 +1560,9 @@ components:
             REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
           format: uri
-        bpp_id:
-          description: Subscriber ID of the BPP as registered on dedi.global
-          type: string
         bppId:
           description: Subscriber ID of the BPP as registered on dedi.global
           type: string
-        bpp_uri:
-          description: |-
-            The request URL of the BPP.
-
-            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
-          type: string
-          format: uri
         bppUri:
           description: |-
             The request URL of the BPP.
@@ -1590,29 +1570,12 @@ components:
             REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
           format: uri
-        transaction_id:
-          description:
-            This is a unique value which persists across all API calls from `search` through `confirm`.
-            This is done to indicate an active user session across multiple requests. The BPPs can use this value
-            to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite
-            being unaware of the user active on the BAP.
-          type: string
-          format: uuid
         transactionId:
           description:
             This is a unique value which persists across all API calls from `search` through `confirm`.
             This is done to indicate an active user session across multiple requests. The BPPs can use this value
             to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite
             being unaware of the user active on the BAP.
-          type: string
-          format: uuid
-        message_id:
-          description:
-            This is a unique value which persists during a request / callback cycle. Since beckn protocol
-            APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier
-            call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended
-            to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must
-            generate a new message_id.
           type: string
           format: uuid
         messageId:
@@ -1642,14 +1605,6 @@ components:
         ttl:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
-        schema_context:
-          description:
-            Array of JSON-LD context urls representing the schemas relevant to the request in which this
-            context object is transported.
-          type: array
-          items:
-            type: string
-            format: uri
         schemaContext:
           description:
             Array of JSON-LD context urls representing the schemas relevant to the request in which this
@@ -1658,6 +1613,8 @@ components:
           items:
             type: string
             format: uri
+        requestDigest:
+          $ref: '#/components/schemas/RequestDigest'
     Contract:
       type: object
       description: |-
@@ -2053,15 +2010,14 @@ components:
             Domain-specific extension attributes for this fulfillment. Use beckn:HyperlocalDelivery (aligned
             with schema:ParcelDelivery) for hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
-          allOf:
-            - $ref: "#/components/schemas/Attributes"
-            - properties: {}
+          $ref: "#/components/schemas/Attributes"
+
       additionalProperties: false
 
-    InReplyTo:
-      title: In-Reply-To Reference
+    RequestDigest:
+      title: Request Payload Digest
       description: |-
-        A cryptographic binding that ties an asynchronous `on_<action>` callback to the
+        A cryptographic binding that explicitly ties a callback to the
         specific inbound request that triggered it. Establishes bilateral non-repudiation
         for the asynchronous leg of a Beckn interaction.
 
@@ -2072,13 +2028,8 @@ components:
         2. Confirm `messageId` matches the `messageId` from the original request `Context`.
       type: object
       required:
-        - messageId
         - digest
       properties:
-        messageId:
-          type: string
-          format: uuid
-          description: The `messageId` of the parent request from its `Context`.
         digest:
           type: string
           pattern: ^BLAKE-512=[A-Za-z0-9+/]+=*$
@@ -2303,32 +2254,6 @@ components:
       required:
         - id
         - descriptor
-      additionalProperties: false
-
-    Quantity:
-      description: Schema definition for Quantity in the Beckn Protocol v2.0.1
-      title: Quantity
-      type: object
-      properties:
-        maxQuantity:
-          description: Maximum value
-          type: number
-          example: 100
-        minQuantity:
-          description: Minimum quantity for this price
-          type: number
-          example: 1
-        unitCode:
-          description: Unit code for the quoted price (e.g., KWH, MIN, H, MON)
-          type: string
-          example: KWH
-        unitQuantity:
-          description: Quantity of the unit
-          type: number
-          example: 1
-        unitText:
-          description: Unit for the quoted price (e.g., kWh, minute, hour, month)
-          type: string
       additionalProperties: false
 
     RatingInput:
