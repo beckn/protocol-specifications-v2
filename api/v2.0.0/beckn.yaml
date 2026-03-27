@@ -1,0 +1,3233 @@
+openapi: 3.1.1
+info:
+  title: Beckn Protocol API
+  description: "The Beckn Protocol API Specification v2.0 — a concrete, developer-friendly OpenAPI 3.1.1\nspecification with one named path per Beckn protocol action.\n\n## Design Philosophy\n- **Minimalism**: Transport-layer schemas are inline. All data-model schemas\n (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.\n\n## Typical Transaction Lifecycle\n```\ndiscover → on_discover\nselect → on_select → init → on_init → confirm → on_confirm\n→ [status / on_status]* → [update / on_update]* → [cancel / on_cancel]?\n→ [track / on_track]* → rate / on_rate → support / on_support\n```\n\n## `context.try` — Sandbox Mode\nThe `try` flag on the `Context` object (defined in `#/components/schemas/Context`)\nindicates sandbox mode on the network participant:\n- `context.try: true` — test consequences without changing state.\n- `context.try: false` (default) — commit the action.\nThis pattern is applicable to `update`, `cancel`, `rate`, and `support` actions.\n\n## Authentication\n\
+    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.\nThe `Ack` response body MUST carry a `CounterSignature` proving receipt.\nSee `docs/10_Signing_Beckn_APIs_in_HTTP.md` for the signing specification.\n\n## Scope\nThis specification is designed for interoperability across value-exchange use cases:\nretail, mobility, logistics, energy, healthcare, skilling, financial services,\ncarbon trading, hiring, data licensing, and other domains built on Beckn."
+  version: 2.0.0
+  contact:
+    name: Beckn Protocol
+    url: https://beckn.io
+  license:
+    name: CC-BY-NC-SA 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+tags:
+- name: Discovery
+  description: Discover catalogs across a Beckn network
+- name: Transaction
+  description: Select, negotiate, confirm and manage contracts
+- name: Fulfillment
+  description: Track, update and cancel active contracts
+- name: Post-Fulfillment
+  description: Rate and support completed contracts
+- name: Catalog Publishing
+  description: Publish catalogs to a Catalog Discovery Service (CDS)
+- name: Subscription
+  description: 'Beckn v2.0 catalog subscription management.
+
+    Subscriptions determine which networks and schema types a BAP receives
+
+    `on_discover` callbacks for. Only `ACTIVE` subscriptions are matched
+
+    during evaluation.
+
+    '
+- name: Catalog Pull
+  description: 'Async catalog pull API hosted on the Catalog Indexer Job.
+
+    The BAP POSTs a pull request and receives an immediate ACK with a `requestId`.
+
+    The actual catalog data is delivered asynchronously via HTTP callback to
+
+    `{bapUri}/on_catalog_pull`.
+
+
+    Two delivery modes:
+
+    - **FULL** — latest version of each matching catalog
+
+    - **INCREMENTAL** — all versions within a date range (`fromDate`/`toDate`)
+
+
+    Large payloads exceeding the configured inline threshold are written to disk
+
+    and served via `GET /catalog/pull/result/{requestId}/catalogs.json`; the
+
+    callback''s `objectUrl` field carries the download URL and `sha256` checksum.
+
+    '
+- name: Master Resource Search
+  description: 'Query APIs for master catalog items stored in the Catalog Indexer git
+
+    repository. All endpoints return a Beckn v2.0 response envelope with
+
+    `action: "on_catalog_master_search"`.
+
+    '
+security: []
+servers:
+- url: https://{subscriberUrl}
+  description: Base URL of the Beckn network participant endpoint. Implementations MUST substitute `{subscriberUrl}` with the actual registered subscriber URL obtained from the Beckn Registry.
+  variables:
+    subscriberUrl:
+      default: example.beckn.io
+      description: Registered subscriber URL of the Beckn network participant (BAP or BPP) as published in the Beckn Registry.
+paths:
+  /discover:
+    post:
+      summary: Discover catalogs on a network
+      description: 'Search and discover catalogs on an open network. Supports text search (textSearch),
+
+        JSONPath-based filtering (RFC 9535), spatial (geo) constraints, and media search.
+
+        Returns an **ACK** confirming receipt; actual catalogs arrive via `/beckn/on_discover`.
+
+        Can be implemented by Catalog Discovery Services (CDS) and BPPs.'
+      operationId: discover
+      tags:
+      - Discovery
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - discover
+                message:
+                  $ref: '#/components/schemas/DiscoverAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_discover:
+    post:
+      summary: Callback — return catalogs to the BAP
+      description: 'Callback from a BPP or CDS containing catalogs matching the discovery request.
+
+        Returns an **ACK** confirming receipt of the catalog payload.'
+      operationId: onDiscover
+      tags:
+      - Discovery
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_discover
+                message:
+                  $ref: '#/components/schemas/OnDiscoverAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /select:
+    post:
+      summary: BAP selects items/resources and requests a quote
+      description: 'The BAP selects catalog items, item quantities, associated offers, and requests
+
+        the BPP to provide a priced quote. No PII is shared at this stage.
+
+        Uses the contract model.'
+      operationId: select
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: select
+                message:
+                  $ref: '#/components/schemas/SelectAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_select:
+    post:
+      summary: BPP returns a priced quote
+      description: 'The BPP calculates the total cost, evaluates offers, and returns a priced quote.
+
+        Uses the contract model.'
+      operationId: onSelect
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_select
+                message:
+                  $ref: '#/components/schemas/OnSelectAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /init:
+    post:
+      summary: BAP initiates final contract — submits billing, fulfillment and payment intent
+      description: 'BAP provides billing, fulfillment, and payment information for the BPP to generate
+
+        final contract terms. The BPP responds via `on_init` with the final draft including
+
+        payment terms. Uses the contract model.'
+      operationId: init
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: init
+                message:
+                  $ref: '#/components/schemas/InitAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_init:
+    post:
+      summary: BPP returns final draft contract with payment terms
+      description: 'BPP returns the final draft contract with personalized payment terms.
+
+        The BPP MUST NOT request payment before this stage.'
+      operationId: onInit
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_init
+                message:
+                  $ref: '#/components/schemas/OnInitAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /confirm:
+    post:
+      summary: BAP confirms the contract
+      description: 'BAP accepts all terms and provides payment proof/reference, then requests the BPP
+
+        to confirm the contract into a binding commitment.'
+      operationId: confirm
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: confirm
+                message:
+                  $ref: '#/components/schemas/ConfirmAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_confirm:
+    post:
+      summary: BPP returns the confirmed contract
+      description: 'BPP validates all terms, payment, and returns a confirmed contract with
+
+        its assigned ID and the initial fulfillment/performance state.'
+      operationId: onConfirm
+      tags:
+      - Transaction
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_confirm
+                message:
+                  $ref: '#/components/schemas/OnConfirmAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /status:
+    post:
+      summary: BAP requests the current state of an contract
+      description: 'BAP requests the latest state of an active contract by providing its ID.
+
+        The BPP responds via `on_status`. BAPs SHOULD NOT long-poll with `status` —
+
+        use `on_status` push notifications for significant state changes.'
+      operationId: status
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: status
+                message:
+                  $ref: '#/components/schemas/StatusAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_status:
+    post:
+      summary: BPP returns the current state of the contract
+      description: 'BPP returns the latest state of the contract including fulfillment/performance
+
+        updates. The BPP MAY call this endpoint proactively without the BAP requesting it,
+
+        but MUST have received at least one `status` request first to initiate the push stream.
+
+        This endpoint is for significant state changes worth a notification — NOT for
+
+        real-time location tracking (use `track`/`on_track` for that).'
+      operationId: onStatus
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_status
+                message:
+                  $ref: '#/components/schemas/OnStatusAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /track:
+    post:
+      summary: BAP requests a real-time tracking handle for an active contract
+      description: 'BAP requests a tracking handle (URL, WebSocket endpoint, or webhook) for real-time
+
+        tracking of an active fulfillment or performance stage. This is for real-time
+
+        position/progress updates — NOT for contract state change notifications (use `status`).'
+      operationId: track
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: track
+                message:
+                  $ref: '#/components/schemas/TrackAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_track:
+    post:
+      summary: BPP returns real-time tracking handle and status
+      operationId: onTrack
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_track
+                message:
+                  $ref: '#/components/schemas/OnTrackAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /update:
+    post:
+      summary: BAP requests a mutation to an active contract
+      description: "BAP requests the BPP to update an active contract. Updates may involve\nchange of items, quantities, billing, fulfillment/performance, or payment.\n\nUses the `context.try` two-phase pattern (defined in `Context` schema):\n- `context.try: true` — BAP requests updated terms before committing (preview mode).\n BPP responds with recalculated quote and terms via `on_update` without changing state.\n- `context.try: false` (default) — BAP commits the update.\n BPP responds with the confirmed updated contract."
+      operationId: update
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: update
+                message:
+                  $ref: '#/components/schemas/UpdateAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_update:
+    post:
+      summary: BPP returns the updated contract
+      description: 'BPP returns the updated contract with recalculated terms. Can be called
+
+        proactively by the BPP without the BAP requesting it.
+
+        - If `context.try: true` — returns updated terms (preview; state not changed).
+
+        - If `context.try: false` — returns committed updated contract.'
+      operationId: onUpdate
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_update
+                message:
+                  $ref: '#/components/schemas/OnUpdateAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /cancel:
+    post:
+      summary: BAP requests cancellation of an contract
+      description: "BAP requests full or partial cancellation. Uses the `context.try` two-phase pattern:\n- `context.try: true` — BAP requests cancellation terms (e.g., refund policy, penalty)\n without committing to cancellation. BPP responds with applicable policy via `on_cancel`.\n- `context.try: false` (default) — BAP commits the cancellation.\n BPP confirms cancellation and returns cancelled contract."
+      operationId: cancel
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: cancel
+                message:
+                  $ref: '#/components/schemas/CancelAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_cancel:
+    post:
+      summary: BPP returns cancellation terms or confirms cancellation
+      description: "- If `context.try: true` — returns applicable cancellation policy, fees, refund timeline\n (state not changed).\n- If `context.try: false` — returns confirmed cancelled contract with refund/payment update."
+      operationId: onCancel
+      tags:
+      - Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_cancel
+                message:
+                  $ref: '#/components/schemas/OnCancelAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /rate:
+    post:
+      summary: BAP submits ratings for one or more entities
+      description: 'BAP submits ratings for any ratable entity (contract, contract, fulfillment,
+
+        item, provider, agent, support interaction). Supports the `context.try` pattern:
+
+        - `context.try: true` — Preview: BPP returns the rating form/criteria without recording.
+
+        - `context.try: false` (default) — Submit: BPP records the rating and returns confirmation.
+
+        The BPP acknowledges via `on_rate` with an optional aggregate snapshot.'
+      operationId: rate
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: rate
+                message:
+                  $ref: '#/components/schemas/RateAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_rate:
+    post:
+      summary: BPP acknowledges rating and optionally returns aggregate
+      description: '- If `context.try: true` — returns rating form/criteria (preview mode).
+
+        - If `context.try: false` — confirms rating was recorded; optionally returns aggregate.'
+      operationId: onRate
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_rate
+                message:
+                  $ref: '#/components/schemas/OnRateAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /support:
+    post:
+      summary: BAP requests support information for an entity
+      description: 'BAP requests support channels and/or raises a support ticket for any entity.
+
+        Uses the `context.try` pattern:
+
+        - `context.try: true` — Preview: BPP returns available support channels without creating a ticket.
+
+        - `context.try: false` (default) — BAP submits a support request; BPP creates/links a ticket.
+
+        The `refType` field abstracts over domain-specific entity types (works for contracts,
+
+        resources, providers, agents — not just contracts).'
+      operationId: support
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: support
+                message:
+                  $ref: '#/components/schemas/SupportAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /on_support:
+    post:
+      summary: BPP returns support details
+      description: '- If `context.try: true` — returns available support channels (preview mode).
+
+        - If `context.try: false` — returns support details with ticket(s).'
+      operationId: onSupport
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_support
+                message:
+                  $ref: '#/components/schemas/OnSupportAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/publish:
+    post:
+      summary: BPP publishes catalogs for indexing by a CDS
+      description: 'BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
+
+        Returns an **ACK** immediately if accepted for processing. The per-catalog processing
+
+        result arrives asynchronously via `/beckn/catalog/on_publish`.'
+      operationId: catalogPublish
+      tags:
+      - Catalog Publishing
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - catalog/publish
+                        - catalog_publish
+                message:
+                  $ref: '#/components/schemas/CatalogPublishAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/on_publish:
+    post:
+      summary: CDS returns per-catalog processing results to the BPP
+      operationId: catalogOnPublish
+      tags:
+      - Catalog Publishing
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - on_catalog_publish
+                        - catalog/on_publish
+                message:
+                  $ref: '#/components/schemas/CatalogOnPublishAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/subscription:
+    post:
+      summary: Subscribe to catalog distribution events
+      operationId: catalogSubscribe
+      tags:
+      - Subscription
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      description: 'Creates a new catalog subscription using the Beckn v2.0 envelope
+
+        (`action: "catalog/subscription"`). The subscriber identity is derived
+
+        from `context.bapId` / `context.bapUri`; the callback URL defaults
+
+        to `bapUri`.
+
+
+        At least one of `networkIds` or `schemaTypes` must be non-empty.
+
+        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
+
+        matching all schema types for the specified networks.
+
+        '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: catalog/subscription
+                message:
+                  $ref: '#/components/schemas/CatalogSubscribeAction'
+            example:
+              context:
+                version: 2.0.0
+                action: catalog/subscription
+                messageId: 550e8400-e29b-41d4-a716-446655440000
+                transactionId: 550e8400-e29b-41d4-a716-446655440001
+                timestamp: '2026-03-23T10:00:00.000Z'
+                bapId: bap.example.com
+                bapUri: https://bap.example.com
+              message:
+                subscription:
+                  networkIds:
+                  - retail
+                  schemaTypes:
+                  - https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType
+                  deliveryPolicy:
+                    retryPolicy:
+                      maxRetries: 3
+                      backoffMultiplier: 2.0
+      responses:
+        '200':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/on_subscription
+                  message:
+                    type: object
+                    required:
+                    - subscriptions
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/subscriptions:
+    get:
+      summary: List subscriptions for a subscriber
+      operationId: catalogSubscribeList
+      tags:
+      - Subscription
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriberId
+        in: query
+        required: true
+        description: BAP URI, BAP ID, or internal subscriber UUID
+        schema:
+          type: string
+        example: https://bap.example.com
+      responses:
+        '200':
+          description: List of matching subscriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/on_subscription
+                  message:
+                    type: object
+                    required:
+                    - subscriptions
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/subscription/{subscriptionId}:
+    get:
+      summary: Get subscription by ID
+      operationId: catalogSubscribeGet
+      tags:
+      - Subscription
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriptionId
+        in: path
+        required: true
+        description: Subscription UUID
+        schema:
+          type: string
+          format: uuid
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/on_subscription
+                  message:
+                    type: object
+                    required:
+                    - subscriptions
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      summary: Delete (deactivate) subscription
+      operationId: catalogSubscribeDelete
+      tags:
+      - Subscription
+      description: 'Soft-deletes a subscription by setting its status to `DELETED`.
+
+        The subscription record is retained in the database; it will no longer
+
+        receive catalog delivery callbacks.
+
+        '
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriptionId
+        in: path
+        required: true
+        description: Subscription UUID
+        schema:
+          type: string
+          format: uuid
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      responses:
+        '200':
+          description: Subscription deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: catalog/on_subscription
+                  message:
+                    type: object
+                    required:
+                    - subscriptions
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CatalogSubscription'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/pull:
+    post:
+      operationId: catalogPull
+      tags:
+      - Catalog Pull
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      summary: Submit async catalog pull request
+      description: "Accepts a pull request and returns an immediate HTTP 200 ACK with a\ngenerated `requestId`. Processing runs asynchronously on the\n`pullExecutor` thread pool.\n\nWhen processing completes, the Catalog Indexer Job POSTs to\n`{context.bapUri}/on_catalog_pull` with a `PullCallbackPayload`.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the filters.\n\n**INCREMENTAL mode:** returns all catalog versions indexed between\n`message.fromDate` and `message.toDate` (ISO-8601, inclusive).\n\n**Payload size:**\n- Small (< inline threshold): catalogs returned inline in the callback body.\n- Large (≥ inline threshold): callback contains an `objectUrl` pointing to\n  `GET /catalog/pull/result/{requestId}/catalogs.json`.\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: catalog/pull
+                message:
+                  $ref: '#/components/schemas/CatalogPullAction'
+      responses:
+        '200':
+          description: ACK — pull request accepted; result will be delivered asynchronously via callback
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                - requestId
+                properties:
+                  status:
+                    type: string
+                    const: ACK
+                  requestId:
+                    type: string
+                    format: uuid
+                    description: UUID v4 generated for this pull request; echoed in callback and result download path
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/pull/result/{requestId}/{filename}:
+    get:
+      operationId: getPullResult
+      tags:
+      - Catalog Pull
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: requestId
+        in: path
+        required: true
+        description: UUID v4 returned in the pull ACK response
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      - name: filename
+        in: path
+        required: true
+        description: Result filename — must be `catalogs.json`
+        schema:
+          type: string
+          enum:
+          - catalogs.json
+        example: catalogs.json
+      summary: Download large pull result file
+      description: "Serves the result file written to disk when the pull payload exceeds the\nconfigured inline threshold. Called by the BAP after receiving a callback\nwith a non-null `message.objectUrl`.\n\n**Path traversal protection:**\n- `requestId` must match the UUID v4 pattern\n  (`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).\n- `filename` is validated against an allowlist; only `catalogs.json` is permitted.\n\nRequests failing either check return HTTP 400 without a body.\n"
+      responses:
+        '200':
+          description: Pull result as JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullResultFile'
+        '400':
+          description: Invalid requestId format or disallowed filename
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          description: Result file not found (processing may still be in progress)
+  /catalog/master/search:
+    post:
+      summary: Search master catalog items
+      operationId: masterSearch
+      tags:
+      - Master Resource Search
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: catalog/master_search
+                message:
+                  $ref: '#/components/schemas/MasterSearchAction'
+      responses:
+        '200':
+          description: Master search results
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_catalog_master_search
+                  message:
+                    type: object
+                    required:
+                    - catalogs
+                    - pagination
+                    properties:
+                      catalogs:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: true
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/master/schemaTypes:
+    get:
+      summary: List distinct schema types
+      operationId: listMasterSchemaTypes
+      tags:
+      - Master Resource Search
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: List of schema type URIs
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_catalog_master_search
+                  message:
+                    type: object
+                    required:
+                    - schemaTypes
+                    properties:
+                      schemaTypes:
+                        type: array
+                        items:
+                          type: string
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /catalog/master/{masterItemId}:
+    get:
+      summary: Get single master item
+      operationId: getMasterItem
+      tags:
+      - Master Resource Search
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: masterItemId
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_\-:.]+$
+      responses:
+        '200':
+          description: Master item wrapped in catalog envelope
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - context
+                - message
+                properties:
+                  context:
+                    allOf:
+                    - $ref: '#/components/schemas/Context'
+                    - type: object
+                      properties:
+                        action:
+                          type: string
+                          const: on_catalog_master_search
+                  message:
+                    type: object
+                    required:
+                    - catalogs
+                    properties:
+                      catalogs:
+                        type: array
+                        minItems: 1
+                        maxItems: 1
+                        items:
+                          type: object
+                          additionalProperties: true
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '404':
+          $ref: '#/components/responses/NackBadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  parameters:
+    AuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      description: 'Beckn HTTP Signature authentication header.
+
+        See `#/components/schemas/Signature` for the expected format.'
+      schema:
+        $ref: '#/components/schemas/Signature'
+  schemas:
+    CancelAction:
+      title: Cancel Action
+      description: 'Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request
+
+        cancellation of an active contract. Set context.try to true to first
+
+        retrieve cancellation terms and fees before committing.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      properties:
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/Contract'
+          - required:
+            - id
+      required:
+      - contract
+    CatalogPublishAction:
+      description: Catalog publish request payload.
+      required:
+      - catalogs
+      type: object
+      properties:
+        catalogs:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Catalog'
+    ConfirmAction:
+      title: Confirm Action
+      description: 'Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
+
+        a contract, finalising the transaction terms agreed during the
+
+        select-init negotiation cycle.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    DiscoverAction:
+      title: Discover Action (External)
+      description: 'Beckn /beckn/discover message payload as published at schema.beckn.io.
+
+        Requires all discover qualifiers to be nested inside an `intent`
+
+        container object.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      type: object
+      properties:
+        intent:
+          $ref: '#/components/schemas/Intent'
+        text_search:
+          type: string
+          description: Legacy flat free-text discover query
+        textSearch:
+          type: string
+          description: Flat free-text discover query
+      additionalProperties: false
+      required:
+      - intent
+    InitAction:
+      title: Init Action
+      description: 'Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
+
+        a contract with consumer details (billing address, fulfillment preferences, etc.).
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnCancelAction:
+      title: On Cancel Action
+      description: 'Beckn /beckn/on_cancel message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/cancel call, returning the contract with status
+
+        set to CANCELLED and any applicable cancellation outcome.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnConfirmAction:
+      title: OnConfirmAction
+      description: 'Beckn /beckn/on_confirm message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/confirm call, returning the confirmed contract
+
+        with status set to CONFIRMED.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnDiscoverAction:
+      description: The on_discover response payload containing matching catalogs.
+      type: object
+      required:
+      - catalogs
+      properties:
+        catalogs:
+          type: array
+          description: 'Array of catalogs matching the discovery request.
+
+            Array of catalogs matching the discovery request.'
+          items:
+            $ref: '#/components/schemas/Catalog'
+      additionalProperties: false
+    OnInitAction:
+      title: On Init Action
+      description: 'Beckn /beckn/on_init message payload. Sent by a BPP to a BAP in response
+
+        to a /beckn/init call, with the updated contract including payment terms
+
+        and billing confirmation.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnRateAction:
+      title: On Rate Action
+      description: 'Beckn /beckn/on_rate message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/rate call, optionally returning rating forms
+
+        to collect structured feedback from the consumer.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      type: object
+      additionalProperties: false
+      properties:
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingInput'
+      required:
+      - ratings
+    OnSelectAction:
+      title: On Select Action
+      description: 'Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/select call, with updated contract terms.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnStatusAction:
+      title: On Status Action
+      description: 'Beckn /beckn/on_status message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/status call (or as an unsolicited status push),
+
+        returning the current state of the contract.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    OnSupportAction:
+      title: On Support Action
+      description: 'Beckn /beckn/on_support message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/support call, returning support contact details
+
+        and available channels.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        support:
+          $ref: '#/components/schemas/Support'
+      required:
+      - support
+    OnTrackAction:
+      title: On Track Action
+      description: 'Beckn /beckn/on_track message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/track call, returning a Tracking handle with
+
+        the URL and/or WebSocket endpoint for real-time fulfillment tracking.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      type: object
+      additionalProperties: false
+      properties:
+        tracking:
+          $ref: '#/components/schemas/Tracking'
+      required:
+      - tracking
+    OnUpdateAction:
+      title: On Update Action
+      description: 'Beckn /beckn/on_update message payload. Sent by a BPP to a BAP in
+
+        response to a /beckn/update call (or as an unsolicited update push),
+
+        returning the updated contract state.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    RateAction:
+      title: RateAction
+      description: 'Beckn /beckn/rate message payload. Sent by a BAP to a BPP to submit
+
+        one or more rating inputs for entities in a completed contract
+
+        (order, fulfillment, item, provider, agent, support).
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      type: object
+      additionalProperties: false
+      properties:
+        ratingInputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingInput'
+      required:
+      - ratingInputs
+    SelectAction:
+      title: Select Action
+      description: 'Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
+
+        items and offers from a catalog, initiating the negotiation cycle.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    StatusAction:
+      title: Status Action
+      description: 'Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
+
+        the current state of a contract/order by its identifier.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      properties:
+        contract:
+          allOf:
+          - $ref: '#/components/schemas/Contract'
+          - required:
+            - id
+      required:
+      - contract
+    SupportAction:
+      title: Support Action
+      description: 'Beckn /beckn/support message payload. Sent by a BAP to a BPP to request
+
+        support contact information or to open a support ticket for an existing
+
+        order/contract.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      type: object
+      additionalProperties: false
+      properties:
+        support:
+          $ref: '#/components/schemas/Support'
+      required:
+      - support
+    TrackAction:
+      additionalProperties: false
+    UpdateAction:
+      title: Update Action
+      description: 'Beckn /beckn/update message payload. Sent by a BAP to a BPP to request
+
+        changes to an active contract (e.g., update fulfillment address, add items,
+
+        change quantities). The context.try flag must be true during negotiation.
+
+        (Context wrapper stripped; only the message-content portion is inlined.)'
+      additionalProperties: false
+      properties:
+        contract:
+          $ref: '#/components/schemas/Contract'
+      required:
+      - contract
+    AddOn:
+      description: Add-on to a catalog resource
+      oneOf:
+      - $ref: '#/components/schemas/Resource'
+      - $ref: '#/components/schemas/Offer'
+    Address:
+      description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses. Geometry lives in `Location.geo` as GeoJSON.'
+      title: Address
+      type: object
+      properties:
+        addressCountry:
+          description: Country name or ISO-3166-1 alpha-2 code.
+          type: string
+          example: IN
+        addressLocality:
+          description: City/locality.
+          type: string
+          example: Bengaluru
+        addressRegion:
+          description: State/region/province.
+          type: string
+          example: Karnataka
+        extendedAddress:
+          description: Address extension (apt/suite/floor, C/O).
+          type: string
+          example: Apt 4B
+        postalCode:
+          description: Postal/ZIP code.
+          type: string
+          example: '560001'
+        streetAddress:
+          description: Street address (building name/number and street).
+          type: string
+          example: 123 Tech Street
+      additionalProperties: false
+    AsyncError:
+      title: Asynchronous Error
+      description: Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type annotations to allow linked-data processing.
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - type: object
+        properties: {}
+        additionalProperties: true
+    Attributes:
+      description: JSON-LD aware container for domain-specific attributes of an Item. MUST include @context (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the provided JSON-LD context.
+      title: Attributes
+      type: object
+      properties:
+        '@context':
+          description: Use case specific JSON-LD context URI
+          type: string
+        '@type':
+          description: JSON-LD type defined within the context
+          type: string
+      required:
+      - '@context'
+      - '@type'
+      additionalProperties: true
+    Catalog:
+      description: Catalog schema for Beckn Protocol v2.0.0
+      title: Catalog
+      type: object
+      properties:
+        bppId:
+          description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
+          type: string
+          example: bpp.example.com
+        bppUri:
+          description: Beckn Protocol API base URL of the BPP
+          type: string
+          format: uri
+        publishDirectives:
+          deprecated: true
+          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
+          type: object
+          additionalProperties: false
+          required:
+          - catalogType
+          properties:
+            catalogType:
+              type: string
+              enum:
+              - master
+              - regular
+              description: master = canonical source catalog; regular = seller/provider extension catalog
+            updateMode:
+              type: string
+              enum:
+              - FULL
+              - MERGE
+              default: FULL
+              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+            resourceDirectives:
+              description: Optional per-resource extension mapping for regular catalogs
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                - resourceId
+                - extends
+                properties:
+                  resourceId:
+                    type: string
+                    description: Seller/provider resource identifier in this catalog
+                  extends:
+                    type: object
+                    additionalProperties: false
+                    required:
+                    - masterResourceId
+                    properties:
+                      masterResourceId:
+                        type: string
+                        description: Canonical master resource identifier being extended
+        descriptor:
+          description: Human / Agent-readable description of this catalog
+          allOf:
+          - $ref: '#/components/schemas/Descriptor'
+        id:
+          description: Unique identifier for the catalog
+          type: string
+          example: catalog-electronics-001
+        isActive:
+          description: Whether the catalog is active
+          type: boolean
+          default: true
+        offers:
+          description: Array of offers optionally linked to resources
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+        resources:
+          description: Array of generalized Resource entities in this catalog (new model)
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+        provider:
+          $ref: '#/components/schemas/Provider'
+        validity:
+          description: The time period during which this catalog is valid
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+      - id
+      - descriptor
+      - provider
+      anyOf:
+      - required:
+        - resources
+      - required:
+        - offers
+      additionalProperties: false
+    CatalogOnPublishAction:
+      description: Catalog publish processing results from CDS to BPP.
+      type: object
+      required:
+      - results
+      properties:
+        results:
+          type: array
+          description: Per-catalog processing results
+          items:
+            $ref: '#/components/schemas/CatalogProcessingResult'
+    CatalogProcessingResult:
+      description: Processing result for a single catalog submission.
+      type: object
+      required:
+      - catalogId
+      - status
+      properties:
+        catalogId:
+          type: string
+          description: Identifier of the submitted catalog
+        status:
+          description: 'Processing outcome. Using oneOf [string, object] to allow domain-specific
+
+            status objects (e.g. beckn:CatalogAccepted) alongside standard string codes.'
+          type: string
+          enum:
+          - ACCEPTED
+          - REJECTED
+          - PARTIAL
+        errors:
+          type: array
+          description: Per-item or per-catalog errors (present when REJECTED or PARTIAL)
+          items:
+            $ref: '#/components/schemas/Error'
+        stats:
+          type: object
+          description: Optional statistics about the processed catalog
+          properties:
+            itemCount:
+              type: integer
+              description: Number of items accepted
+            providerCount:
+              type: integer
+              description: Number of providers in the catalog
+            categoryCount:
+              type: integer
+              description: Number of distinct categories
+    Consideration:
+      type: object
+      description: 'Generalized representation of value exchanged under a Contract.
+
+
+        Consideration is domain-neutral and may represent:
+
+        - Monetary value
+
+        - Credits / tokens
+
+        - Asset transfer
+
+        - Service exchange
+
+        - Compliance artifact'
+      required:
+      - id
+      - status
+      properties:
+        id:
+          description: Identifier of this consideration
+          type: string
+        status:
+          description: The status of this consideration
+          $ref: '#/components/schemas/Descriptor'
+        considerationAttributes:
+          description: 'Domain-specific attributes of this consideration. For monetary considerations,
+
+            use the PriceSpecification schema to capture total value with breakup.
+
+            For other consideration types, use a generic Attributes bag.'
+          $ref: '#/components/schemas/Attributes'
+    Context:
+      description: 'Base context schema for all Beckn API calls. Contains addressing information
+
+        (BAP/BPP identifiers and API URLs), protocol version, the action being called,
+
+        transaction and message IDs, timestamp, TTL, and optional encryption key.
+
+        This schema defines all possible properties but imposes NO required-field
+
+        constraints. Endpoint-specific validation is defined inline in operation request schemas.'
+      type: object
+      title: Context
+      properties:
+        domain:
+          description: Domain code that is relevant to this transaction context
+          type: string
+        location:
+          description: The location where the transaction is intended to be fulfilled.
+          type: object
+          properties:
+            city:
+              description: The city code where this transaction is restricted to
+              type: object
+              properties:
+                code:
+                  type: string
+            country:
+              description: The country code this transaction is restricted to
+              type: object
+              properties:
+                code:
+                  type: string
+        action:
+          description: The Beckn protocol method being called by the sender and executed at the receiver.
+          type: string
+        version:
+          type: string
+          description: Version of transaction protocol being used by the sender.
+          const: 2.0.0
+        bapId:
+          description: Subscriber ID of the BAP as registered on dedi.global
+          type: string
+        bapUri:
+          description: 'The callback URL of the BAP.
+
+
+            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global'
+          type: string
+          format: uri
+        bppId:
+          description: Subscriber ID of the BPP as registered on dedi.global
+          type: string
+        bppUri:
+          description: 'The request URL of the BPP.
+
+
+            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global'
+          type: string
+          format: uri
+        transactionId:
+          description: This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.
+          type: string
+          format: uuid
+        messageId:
+          description: This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.
+          type: string
+          format: uuid
+        networkId:
+          description: 'Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}` suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should be `acmenet.org/charge-net`'
+          type: string
+        timestamp:
+          description: Time of request generation in RFC3339 format
+          type: string
+          format: date-time
+        key:
+          description: The encryption public key of the sender
+          type: string
+        ttl:
+          description: The duration in ISO8601 format after timestamp for which this message holds valid
+          type: string
+        schemaContext:
+          description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
+          type: array
+          items:
+            type: string
+            format: uri
+        requestDigest:
+          $ref: '#/components/schemas/RequestDigest'
+    Contract:
+      type: object
+      description: "This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.\nAlternate description A digitally agreed commitment between two or more participants\ngoverning the exchange of economic or non-economic value.\n\nContract is the canonical contract object in the generalized\nBeckn v2.1 protocol. It replaces the commerce-specific Order construct\nas the canonical transaction object at the API layer.\n\nA Contract binds:\n - Commitments (what is agreed)\n - Consideration (value promised)\n - Performance (how execution occurs)\n - Settlements (how consideration is discharged)\n\
+        \nThe model is domain-neutral and supports commerce, hiring,\nenergy markets, carbon exchanges, data access, mobility,\nsubscriptions, and other use cases."
+      title: Contract
+      properties:
+        id:
+          description: A UUID string generated at the BPP endpoint at any stage before the confirmation of the order i.e before `/on_confirm` callback. This value is intended typically for indexing or filtering. While the chances of a UUID collision are rare, it is recommended to use a combination of `bppId`, `providerId` and `id` to allow for global uniqueness.
+          type: string
+          format: uuid
+        descriptor:
+          description: Describes the nature of the contract in human / agent readable terms
+          $ref: '#/components/schemas/Descriptor'
+        commitments:
+          type: array
+          description: Structured commitments governed by this contract.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Commitment'
+        consideration:
+          type: array
+          description: Value agreed to be exchanged under this contract.
+          items:
+            $ref: '#/components/schemas/Consideration'
+        participants:
+          description: 'The participants involved in the contract. Contracts are not always between two individuals.
+
+
+            Several entities may play a specific role in the creation, fulfillment, and post-fulfillment of
+
+            the contract.'
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        performance:
+          type: array
+          description: "Execution units of the contract.\n\nPerformance is the generalized fulfillment abstraction.\nEach Performance instance represents a structured execution\nplan or delivery mechanism, including:\n\n - Physical delivery\n - Service provisioning\n - API access\n - Subscription activation\n - Carbon credit transfer\n - Capacity allocation\n - Workforce onboarding\n\nTracking and Support interactions may be linked to\nindividual Performance units."
+          items:
+            $ref: '#/components/schemas/Performance'
+        settlements:
+          type: array
+          description: Records representing discharge of agreed consideration.
+          items:
+            $ref: '#/components/schemas/Settlement'
+        status:
+          description: The current state of the contract expressed as a Descriptor whose code MUST be one of the standard contract state values.
+          allOf:
+          - $ref: '#/components/schemas/Descriptor'
+          - type: object
+            properties:
+              code:
+                enum:
+                - DRAFT
+                - ACTIVE
+                - CANCELLED
+                - COMPLETE
+        contractAttributes:
+          description: Domain-specific extension attributes for this contract.
+          allOf:
+          - $ref: '#/components/schemas/Attributes'
+          - {}
+          - properties: {}
+      additionalProperties: false
+      required:
+      - commitments
+    Commitment:
+      type: object
+      required:
+      - status
+      - resources
+      - offer
+      properties:
+        id:
+          type: string
+        status:
+          type: object
+          properties:
+            descriptor:
+              allOf:
+              - $ref: '#/components/schemas/Descriptor'
+              - properties:
+                  code:
+                    enum:
+                    - DRAFT
+                    - ACTIVE
+                    - CLOSED
+        resources:
+          type: array
+          items:
+            required:
+            - id
+            - quantity
+            $ref: '#/components/schemas/Resource'
+        offer:
+          required:
+          - id
+          - resourceIds
+          $ref: '#/components/schemas/Offer'
+        commitmentAttributes:
+          description: Domain-specific extension attributes for this commitment.
+          allOf:
+          - $ref: '#/components/schemas/Attributes'
+          - properties: {}
+    CounterSignature:
+      title: Beckn HTTP Counter-Signature
+      description: 'A signed receipt transmitted in the synchronous `Ack` response body, proving that the
+
+        receiver authenticated, received, and processed the inbound request.
+
+
+        `CounterSignature` shares the same wire format as `Signature` but differs:
+
+        - **Signer**: the response receiver (not the request sender)
+
+        - **Location**: transmitted in the `Ack` response body (not in the `Authorization` header)
+
+        - **`digest`**: covers the Ack response body (not the inbound request body)
+
+        - **`(request-digest)`** and **`(message-id)`** MUST be included in the signing string
+
+
+        Signing string format:
+
+        ```
+
+        (created): {unixTimestamp}
+
+        (expires): {unixTimestamp}
+
+        digest: BLAKE-512={base64DigestOfAckBody}
+
+        (request-digest): BLAKE-512={base64DigestOfInboundRequestBody}
+
+        (message-id): {messageId}
+
+        ```'
+      allOf:
+      - $ref: '#/components/schemas/Signature'
+    Descriptor:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      description: Schema definition for Descriptor in the Beckn Protocol v2.0.1
+      title: Descriptor
+      type: object
+      properties:
+        code:
+          description: A machine-readable code identifying the state or type of the entity being described. The valid values for this field are defined by the context in which the Descriptor is used (e.g. DRAFT, ACTIVE, CANCELLED, COMPLETE for a Contract status).
+          type: string
+        longDesc:
+          description: Detailed description of the item
+          type: string
+          example: Powerful gaming laptop with NVIDIA RTX graphics, fast SSD storage, and high-refresh display
+        shortDesc:
+          description: Short description of the item
+          type: string
+          example: High-performance gaming laptop with RTX graphics
+        name:
+          description: Name of the entity being described
+          type: string
+          example: Premium Gaming Laptop Pro
+        thumbnailImage:
+          description: Name of the entity being described
+          type: string
+          format: uri
+        docs:
+          description: Links to downloadable documents
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        mediaFile:
+          description: Links to multimedia files and images
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaFile'
+      additionalProperties: false
+    Document:
+      description: A document, that can be parsed, printed, download or displayed. This has intentionally been kept separate from MediaFile as they may contain additional attributes like signature, schema etc.
+      title: Document
+      x-tags:
+      - common
+      type: object
+      properties:
+        label:
+          description: The display name of the media file
+          type: string
+        mimeType:
+          description: MIME type if 'data' is provided (application/pdf, image/png, application/json).
+          type: string
+        standard:
+          description: Describes the schema type in case the document follows a standard schema like a verifiableCredential
+          type: string
+        url:
+          description: URL to the document
+          type: string
+          format: uri
+        security:
+          type: object
+          properties:
+            checksum:
+              type: string
+            checksumAlgorithm:
+              type: string
+              enum:
+              - SHA256
+              - SHA512
+              - OTHER
+            signature:
+              type: string
+            signatureAlgorithm:
+              type: string
+              description: e.g., Ed25519, ES256
+            keyId:
+              type: string
+      required:
+      - label
+      - url
+      - mimeType
+      additionalProperties: false
+    Error:
+      title: Error
+      description: 'Base error container returned in NACK responses and async error callbacks.
+
+        Domain-specific error codes SHOULD follow the Beckn error code registry
+
+        (see docs/11_Error_Codes.md). Custom error objects may be expressed as
+
+        `oneOf [string, object]` payloads via the `errorDetails` field.'
+      type: object
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+    FormSubmission:
+      title: FormSubmission
+      x-tags:
+      - common
+      description: A user's submitted response to a Beckn form. Captures the filled-in field values keyed by form field names. Typically attached to a RatingInput to convey feedback form answers alongside a rating.
+      type: object
+      properties:
+        id:
+          description: Identifier of the form that was submitted. Typically the form's URL or the value of the form's url field.
+          type: string
+          format: uri
+        submissionId:
+          description: Unique identifier for this form submission instance.
+          type: string
+          format: uuid
+        data:
+          description: Key-value map of form field names to submitted values. Keys correspond to the field identifiers defined in the form; values are the user's responses as strings.
+          type: object
+          additionalProperties:
+            type: string
+        submittedAt:
+          description: Timestamp at which the form was submitted, in RFC 3339 / ISO 8601 format.
+          type: string
+          format: date-time
+      required:
+      - data
+      additionalProperties: false
+    Participant:
+      type: object
+      properties:
+        id:
+          type: string
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        participantAttributes:
+          description: 'Domain-specific extension attributes for this contract.
+
+            Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
+
+            other fulfillment types where no well-known domain schema exists.'
+          allOf:
+          - $ref: '#/components/schemas/Attributes'
+          - properties: {}
+    GeoJSONGeometry:
+      description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude, latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)\nNotes: - For rectangles, use a Polygon with a single linear ring where the first\n and last positions are identical.\n- Circles are **not native** to GeoJSON. For circular searches, use\n `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,\n or approximate the circle as a Polygon.\n- Optional `bbox` is `[west, south, east, north]` in degrees."
+      title: GeoJSONGeometry
+      type: object
+      properties:
+        bbox:
+          description: Optional bounding box `[west, south, east, north]` in degrees.
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: number
+        coordinates:
+          description: Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon, lat, (alt)]**. For Polygons, this is an array of linear rings; each ring is an array of positions.
+          type: array
+          items: {}
+        geometries:
+          description: Member geometries when `type` is **GeometryCollection**.
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoJSONGeometry'
+        type:
+          type: string
+          enum:
+          - Point
+          - LineString
+          - Polygon
+          - MultiPoint
+          - MultiLineString
+          - MultiPolygon
+          - GeometryCollection
+      required:
+      - type
+      additionalProperties: true
+    Performance:
+      description: 'Generalized execution/performance unit. This is where downstream objects bind:
+
+        - Fulfillment-like details (where/when/how)
+
+        - Tracking handles
+
+        - Support touchpoints
+
+        - Status updates
+
+
+        A minimal envelope that carries identity, status, and a performanceAttributes
+
+        bag that holds the concrete domain-specific delivery schema.
+
+
+        Domain specification authors can attach rich context and types via `performanceAttributes`.
+
+
+        For example, Hyperlocal delivery details (pickup/delivery locations, items shipped, agent, etc.)
+
+        are placed inside performanceAttributes using a well-known domain schema such as
+
+        HyperlocalDelivery. Use the generic Attributes schema when no well-known
+
+        domain schema exists.'
+      title: Fulfillment
+      x-tags:
+      - common
+      - fulfillment
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this fulfillment record.
+        status:
+          $ref: '#/components/schemas/Descriptor'
+          description: Current status of this fulfillment, expressed as a Descriptor. Use Descriptor.code for machine-readable status values.
+        commitmentIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Commitment/properties/id'
+        performanceAttributes:
+          description: Domain-specific extension attributes for this fulfillment. Use beckn:HyperlocalDelivery (aligned with schema:ParcelDelivery) for hyperlocal physical delivery. Use the generic Attributes schema for other fulfillment types where no well-known domain schema exists.
+          $ref: '#/components/schemas/Attributes'
+      additionalProperties: false
+    RequestDigest:
+      title: Request Payload Digest
+      description: 'A cryptographic binding that explicitly ties a callback to the
+
+        specific inbound request that triggered it. Establishes bilateral non-repudiation
+
+        for the asynchronous leg of a Beckn interaction.
+
+
+        Use `lineage` (on `Context`) for cross-transaction causality.
+
+
+        Verification steps:
+
+        1. Recompute BLAKE2b-512 digest of the original request body; compare to `digest`.
+
+        2. Confirm `messageId` matches the `messageId` from the original request `Context`.'
+      type: object
+      required:
+      - digest
+      properties:
+        digest:
+          type: string
+          pattern: ^BLAKE-512=[A-Za-z0-9+/]+=*$
+          description: 'BLAKE2b-512 hash of the parent request body, Base64-encoded with algorithm prefix.
+
+            Format: `BLAKE-512={base64EncodedHash}`'
+    Intent:
+      description: A declaration of an intent to transact
+      title: Intent
+      type: object
+      properties:
+        textSearch:
+          description: Free text search query for items
+          type: string
+          example: gaming laptop premium tech
+        filters:
+          description: Filter criteria for items
+          type: object
+          properties:
+            type:
+              description: Type of filter expression
+              type: string
+              enum:
+              - jsonpath
+              default: jsonpath
+            expression:
+              description: Filter expression based on the specified type
+              type: string
+              example: $[?(@.rating.value >= 4.0 && @.electronic.brand.name == 'Premium Tech')]
+          required:
+          - type
+          - expression
+        spatial:
+          description: Optional array of spatial constraints (CQL2-JSON semantics).
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialConstraint'
+        mediaSearch:
+          $ref: '#/components/schemas/MediaSearch'
+      additionalProperties: false
+    Location:
+      description: 'A place represented by GeoJSON geometry and optional address.
+
+        Source: main/schema/core/v2/attributes.yaml#Location'
+      type: object
+      required:
+      - geo
+      additionalProperties: false
+      properties:
+        geo:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+        address:
+          $ref: '#/components/schemas/Address'
+    MediaFile:
+      description: A image, audio, or video typically intended for display purposes
+      title: MediaFile
+      x-tags:
+      - common
+      type: object
+      properties:
+        label:
+          description: The display name of the media file
+          type: string
+        mimeType:
+          description: MIME type if 'data' is provided (application/pdf, image/png).
+          type: string
+          example: image/png
+        uri:
+          description: URL to the document
+          type: string
+          format: uri
+      additionalProperties: false
+    MediaInput:
+      type: object
+      required:
+      - type
+      - url
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+          - image
+          - audio
+          - video
+        url:
+          type: string
+          format: uri
+        contentType:
+          type: string
+        textHint:
+          type: string
+        language:
+          type: string
+        startMs:
+          type: integer
+        endMs:
+          type: integer
+      additionalProperties: false
+    MediaSearch:
+      type: object
+      properties:
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaInput'
+        options:
+          $ref: '#/components/schemas/MediaSearchOptions'
+      additionalProperties: false
+    MediaSearchOptions:
+      type: object
+      properties:
+        goals:
+          type: array
+          items:
+            type: string
+            enum:
+            - visual-similarity
+            - visual-object-detect
+            - text-from-image
+            - text-from-audio
+            - semantic-audio-match
+            - semantic-video-match
+        augment_text_search:
+          type: boolean
+          default: true
+        restrict_results_to_media_proximity:
+          type: boolean
+          default: false
+      additionalProperties: false
+    Offer:
+      type: object
+      description: "A generalized, cross-domain Offer that captures the terms under which\none or more Resources may be committed.\n\nCore intent:\n- Support multiple terms/eligibility/constraints/price points for the same Resource(s)\n- Support dynamic / on-the-fly offers (e.g., bundling, combinational discounts,\n eligibility changes, capacity-aware pricing)\n\nThis mirrors the role of Offer in current Beckn (and schema.org patterns),\nbut keeps the shape minimal and composable via `beckn:offerAttributes`."
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the offer.
+        descriptor:
+          description: Human / agent-readable description of this offer.
+          $ref: '#/components/schemas/Descriptor'
+        provider:
+          $ref: '#/components/schemas/Provider'
+        resourceIds:
+          type: array
+          description: References (IDs) to resources covered by this offer.
+          items:
+            $ref: '#/components/schemas/Resource/properties/id'
+        addOns:
+          type: array
+          description: IDs of optional extra Offers or Resources that can be attached.
+          items:
+            $ref: '#/components/schemas/AddOn'
+        considerationIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Consideration/properties/id'
+        fulfillmentIds:
+          description: Details regarding the fulfillment of this offer
+          $ref: '#/components/schemas/Consideration'
+        validity:
+          $ref: '#/components/schemas/TimePeriod'
+        availableTo:
+          type: array
+          description: 'Optional visibility constraint indicating which network participants
+
+            (by participantId / networkId / role) are allowed to discover or
+
+            transact on this entity.
+
+
+            If omitted, the entity is assumed to be visible to all participants
+
+            in the addressed network(s).'
+          items:
+            type: object
+            required:
+            - type
+            - id
+            properties:
+              type:
+                type: string
+                enum:
+                - NETWORK
+                - PARTICIPANT
+                - ROLE
+                description: Scope of visibility constraint.
+              id:
+                type: string
+                description: Identifier of the network, participant, or role.
+        offerAttributes:
+          $ref: '#/components/schemas/Attributes'
+    Provider:
+      type: object
+      description: Schema definition for Provider in the Beckn Protocol v2.0.1
+      title: Provider
+      properties:
+        id:
+          description: Unique identifier for the provider
+          type: string
+          example: tech-store-001
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        availableAt:
+          description: Physical locations where the provider operates
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+        providerAttributes:
+          $ref: '#/components/schemas/Attributes'
+      required:
+      - id
+      - descriptor
+      additionalProperties: false
+    RatingInput:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings and feedback of their respective users.
+      title: RatingInput
+      x-tags:
+      - common
+      type: object
+      properties:
+        target:
+          description: The thing being rated. It could be a person, an application, a service, a product, an instrument used in the fulfillment of the contract, or the overall experience.
+          type: object
+          properties:
+            id:
+              description: ID of the entity being rated (order/item/fulfillment/provider/agent).
+              type: string
+            descriptor:
+              $ref: '#/components/schemas/Descriptor'
+            targetAttributes:
+              $ref: '#/components/schemas/Attributes'
+        range:
+          type: object
+        feedbackFormSubmission:
+          description: The submission to the feedback form sent along with a rating request
+          $ref: '#/components/schemas/FormSubmission'
+      required:
+      - target
+      - range
+      additionalProperties: false
+    Resource:
+      type: object
+      description: "A minimal, domain-neutral abstraction representing any discoverable,\nreferenceable, or committable unit of value, capability, service,\nentitlement, or asset within the network.\n\nExamples:\n- A retail product SKU, a mobility ride, a job role, a carbon credit unit,\n a dataset/API entitlement, a training course, a clinic service slot.\n\nDesigned for composability through `resourceAttributes` where\ndomain packs can plug in their specific fields without changing the core."
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Globally unique identifier of the resource.
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        resourceAttributes:
+          description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
+          $ref: '#/components/schemas/Attributes'
+    Settlement:
+      type: object
+      properties:
+        id:
+          type: string
+        considerationId:
+          $ref: '#/components/schemas/Consideration/properties/id'
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - COMMITTED
+          - COMPLETE
+        settlementAttributes:
+          $ref: '#/components/schemas/Attributes'
+    Signature:
+      title: Beckn HTTP Signature
+      description: "A digitally signed authentication credential in the HTTP `Authorization` header.\nFollows draft-cavage-http-signatures-12 as profiled by BECKN-006.\n\nformat:\n```\nSignature keyId=\"{subscriberId}|{uniqueKeyId}|{algorithm}\",\n algorithm=\"{algorithm}\",created=\"{unixTimestamp}\",expires=\"{unixTimestamp}\",\n headers=\"{signedHeaders}\",signature=\"{base64Signature}\"\n```\n\n| Attribute | Description |\n|-----------|-------------|\n| `keyId` | `{subscriberId}|{uniqueKeyId}|{algorithm}` — FQDN, registry UUID, algorithm |\n| `algorithm` | MUST be `ed25519` |\n| `created` | Unix timestamp when the signature was created |\n| `expires` | Unix timestamp when the signature expires |\n| `headers` | Space-separated signed headers. MUST include `(created)`, `(expires)`, `digest` |\n| `signature` | Base64-encoded Ed25519 signature over the signing string |\n\nSigning string:\n`(created): {value}\\n(expires): {value}\\ndigest: BLAKE-512={digest}`\nwhere `digest` is a BLAKE2b-512\
+        \ hash of the request body, Base64-encoded."
+      type: string
+      pattern: ^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$
+    Support:
+      description: Describes a support session info
+      title: Support
+      type: object
+      properties:
+        orderId:
+          description: The order against which support is required
+          type: string
+        descriptor:
+          description: A description of the nature of support needed
+          $ref: '#/components/schemas/Descriptor'
+        channels:
+          description: Available support channels described in individual linked data JSON objects
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Attributes'
+      additionalProperties: false
+    SpatialConstraint:
+      description: "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
+      title: SpatialConstraint
+      type: object
+      properties:
+        op:
+          description: OGC CQL2 spatial operator.
+          type: string
+          enum:
+          - S_WITHIN
+          - S_CONTAINS
+          - S_INTERSECTS
+          - S_DISJOINT
+          - S_OVERLAPS
+          - S_CROSSES
+          - S_TOUCHES
+          - S_EQUALS
+          - S_DWITHIN
+        targets:
+          description: '''One or more JSONPath-like pointers to geometry fields within the item.  Example pointers:  - `$[''''availableAt''''][*][''''geo'''']` (array of site Points)  - `$[''''itemAttributes''''][''''ride:dropOff''''][''''geo'''']` (drop zone Polygon)''
+
+            '
+          oneOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+        geometry:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+        distanceMeters:
+          description: 'For `S_DWITHIN`: maximum distance in meters from the target geometry to `geometry` (e.g., "within 5000 m of this Point"). Ignored for other ops.'
+          type: number
+          minimum: 0
+        quantifier:
+          description: '''How to evaluate when `targets` resolves to an array - - **any**: at least one element matches (default) - **all**: every element must match  - **none**: no element may match''
+
+            '
+          type: string
+          enum:
+          - ANY
+          - ALL
+          - NONE
+          default: any
+        srid:
+          description: Coordinate Reference System identifier for `geometry`. Default is `"EPSG:4326"`. If provided, servers MAY reproject to EPSG:4326 internally.
+          type: string
+          example: EPSG:4326
+      required:
+      - op
+      - targets
+      additionalProperties: false
+      x-tags:
+      - common
+    TimePeriod:
+      description: Time window with date-time precision for availability/validity
+      title: TimePeriod
+      x-tags:
+      - common
+      type: object
+      properties:
+        startDate:
+          description: Start instant (inclusive)
+          type: string
+          format: date-time
+          example: '2025-01-27T09:00:00Z'
+        endDate:
+          description: End instant (exclusive or inclusive per domain semantics)
+          type: string
+          format: date-time
+          example: '2025-12-31T23:59:59Z'
+        startTime:
+          description: Start time of the time period
+          type: string
+          format: time
+          example: 09:00:00
+        endTime:
+          description: End time of the time period
+          type: string
+          format: time
+          example: '22:00:00'
+      anyOf:
+      - required:
+        - startDate
+      - required:
+        - endDate
+      - required:
+        - startTime
+        - endTime
+      additionalProperties: false
+    Tracking:
+      description: Information regarding live tracking of the fufillment of a contract
+      title: Tracking
+      type: object
+      properties:
+        refId:
+          description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - NOT-SUPPORTED
+        url:
+          description: Link/handle to off-network tracking UI or endpoint.
+          type: string
+          format: uri
+      required:
+      - url
+      - status
+    Ack:
+      description: New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver authenticated, received, and processed the inbound request.
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ACK
+          - NACK
+          description: ACK if the request was accepted; NACK if rejected.
+        signature:
+          $ref: '#/components/schemas/CounterSignature'
+          description: Counter-signature proving the receiver authenticated and processed the inbound request.
+      required:
+      - status
+      - signature
+    AckNoCallback:
+      description: Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider closed, context.try preview complete).
+      allOf:
+      - $ref: '#/components/schemas/Ack'
+      - type: object
+        properties:
+          error:
+            $ref: '#/components/schemas/Error'
+      - required:
+        - status
+        - signature
+        - error
+    NackBadRequest:
+      description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
+      allOf:
+      - $ref: '#/components/schemas/Ack'
+      - type: object
+        properties:
+          status:
+            type: string
+            const: NACK
+          error:
+            $ref: '#/components/schemas/Error'
+    NackUnauthorized:
+      description: Invalid or missing authentication credentials; signature could not be verified.
+      allOf:
+      - $ref: '#/components/schemas/Ack'
+      - type: object
+        properties:
+          status:
+            type: string
+            const: NACK
+          error:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+    CatalogSubscribeAction:
+      type: object
+      description: 'Message payload for catalog/subscription.
+
+        At least one of `networkIds` or `schemaTypes` must be non-empty.
+
+        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
+
+        matching all schema types for the specified networks.
+
+        '
+      required:
+      - subscription
+      properties:
+        subscription:
+          type: object
+          required:
+          - networkIds
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Network IDs to subscribe to
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Schema type URIs to filter on (empty = wildcard)
+            callbackUrl:
+              type: string
+              format: uri
+              description: Override callback URL (defaults to context.bapUri)
+            deliveryPolicy:
+              $ref: '#/components/schemas/DeliveryPolicy'
+    CatalogSubscription:
+      type: object
+      description: Full subscription record
+      required:
+      - id
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Subscription UUID
+        networkIds:
+          type: array
+          items:
+            type: string
+          description: Network IDs covered by this subscription
+        schemaTypes:
+          type: array
+          items:
+            type: string
+          description: Schema type URIs filtered by this subscription (empty = wildcard "*")
+        callbackUrl:
+          type: string
+          format: uri
+          description: Delivery callback URL
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - DELETED
+          description: Lifecycle status of the subscription
+        deliveryPolicy:
+          $ref: '#/components/schemas/DeliveryPolicy'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DeliveryPolicy:
+      type: object
+      description: Callback delivery retry configuration
+      properties:
+        timeoutSeconds:
+          type: integer
+          default: 30
+          description: Per-request HTTP timeout in seconds
+        maxPayloadBytes:
+          type: integer
+          description: Maximum callback payload size in bytes
+        retryPolicy:
+          type: object
+          properties:
+            maxRetries:
+              type: integer
+              default: 5
+              description: Maximum retry attempts before sending to DLT
+            initialDelaySeconds:
+              type: integer
+              default: 5
+              description: Base delay before first retry
+            maxDelaySeconds:
+              type: integer
+              default: 300
+              description: Maximum delay cap for exponential backoff
+            backoffMultiplier:
+              type: number
+              default: 2.0
+              description: Delay multiplied by this after each retry
+    Pagination:
+      type: object
+      description: Pagination metadata returned with list responses
+      properties:
+        count:
+          type: integer
+          description: Number of items in this page
+        limit:
+          type: integer
+          description: Page size used in this response
+        offset:
+          type: integer
+          description: Zero-based offset used in this response
+    MasterSearchAction:
+      type: object
+      description: Message payload for catalog/master_search
+      properties:
+        filters:
+          type: object
+          description: Search filters (empty lists match all)
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Filter by network IDs (empty = all networks)
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Filter by schema type URIs (empty = all types)
+        pagination:
+          type: object
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              maximum: 100
+              default: 20
+              description: Maximum items per page (clamped to [1, 100])
+            offset:
+              type: integer
+              minimum: 0
+              default: 0
+              description: Zero-based result offset
+    CatalogPullAction:
+      type: object
+      description: Message payload for catalog/pull
+      required:
+      - mode
+      properties:
+        mode:
+          type: string
+          enum:
+          - FULL
+          - INCREMENTAL
+          description: "- `FULL` — returns the latest version of each matching catalog.\n- `INCREMENTAL` — returns all catalog versions indexed between\n  `fromDate` and `toDate` (inclusive).\n"
+        filters:
+          type: object
+          description: Optional filters narrowing which catalogs are returned
+          properties:
+            networkIds:
+              type: array
+              items:
+                type: string
+              description: Filter by network IDs (empty = all networks)
+              default: []
+            schemaTypes:
+              type: array
+              items:
+                type: string
+              description: Filter by schema type URIs (empty = all types)
+              default: []
+        catalogIds:
+          type: array
+          items:
+            type: string
+          description: Explicit catalog IDs to pull (alternative to filters)
+        limit:
+          type: integer
+          minimum: 1
+          description: Maximum number of catalogs to return (server may apply its own cap)
+        fromDate:
+          type: string
+          format: date-time
+          description: Inclusive lower bound for INCREMENTAL mode
+        toDate:
+          type: string
+          format: date-time
+          description: Inclusive upper bound for INCREMENTAL mode
+    PullResultFile:
+      type: object
+      description: 'JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
+
+        Same structure as the inline `catalog` array in the callback payload —
+
+        a list of distribution-envelope catalog objects.
+
+        '
+      properties:
+        catalogs:
+          type: array
+          items:
+            type: object
+            description: Full catalog distribution envelope (context + message + meta)
+            additionalProperties: true
+  responses:
+    Ack:
+      description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Ack'
+    AckNoCallback:
+      description: Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider closed, context.try preview complete).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AckNoCallback'
+    NackBadRequest:
+      description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NackBadRequest'
+    NackUnauthorized:
+      description: Invalid or missing authentication credentials; signature could not be verified.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NackUnauthorized'
+    ServerError:
+      description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServerError'
