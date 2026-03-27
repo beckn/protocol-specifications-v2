@@ -1357,6 +1357,10 @@ components:
           description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
           type: string
           example: bpp.example.com
+        bppUri:
+          description: Beckn Protocol API base URL of the BPP
+          type: string
+          format: uri
         publishDirectives:
           deprecated: true
           description:
