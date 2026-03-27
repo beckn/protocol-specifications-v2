@@ -2,7 +2,7 @@
 
 This release has been shaped through collaborative design, review, and implementation efforts across protocol architecture, API specification hardening, schema alignment, and ecosystem interoperability.
 
-We gratefully recognize and acknowledge the following contributors and maintainers:
+The following contributors and maintainers are duly acknowledged, recognized, and greatly appreciated for their unique insights, perspectives, and technical prowess in the production of this release. 
 
 - Ravi Prakash — [@ravi-prakash-v](https://github.com/ravi-prakash-v)
 - Pramod Varma — [@pramodkvarma](https://github.com/pramodkvarma)
