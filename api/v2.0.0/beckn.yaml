@@ -1,17 +1,13 @@
 openapi: 3.1.1
 info:
   title: Beckn Protocol API
-  description: |
+  description: |-
     The Beckn Protocol API Specification v2.0 — a concrete, developer-friendly OpenAPI 3.1.1
     specification with one named path per Beckn protocol action.
 
     ## Design Philosophy
     - **Minimalism**: Transport-layer schemas are inline. All data-model schemas
-      (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.
-    - **Pragmatism**: Every transaction endpoint carries both `order` (legacy, backward-compatible)
-      and `contract` (new, generalized) in its message envelope via `oneOf`.
-    - **Backward compatibility**: Implementations conformant with previous versions interoperate
-      seamlessly with new implementations using the `contract` model.
+     (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.
 
     ## Typical Transaction Lifecycle
     ```
@@ -21,12 +17,11 @@ info:
     → [track / on_track]* → rate / on_rate → support / on_support
     ```
 
-    ## (NEW) `context.try` — Sandbox Mode
+    ## `context.try` — Sandbox Mode
     The `try` flag on the `Context` object (defined in `#/components/schemas/Context`)
-    indicates a sandbox mode being enabled on the network participant:
-    - `context.try: true` — Request to test an endpoint without liabilities
-      **before** committing. The receiver responds with expected consequences without changing state.
-    - `context.try: false` (default) — Commit the action.
+    indicates sandbox mode on the network participant:
+    - `context.try: true` — test consequences without changing state.
+    - `context.try: false` (default) — commit the action.
     This pattern is applicable to `update`, `cancel`, `rate`, and `support` actions.
 
     ## Authentication
@@ -34,10 +29,10 @@ info:
     The `Ack` response body MUST carry a `CounterSignature` proving receipt.
     See `docs/10_Signing_Beckn_APIs_in_HTTP.md` for the signing specification.
 
-    ## Compatibility Scope
-    This specification is designed for interoperability across ALL value-exchange use cases:
+    ## Scope
+    This specification is designed for interoperability across value-exchange use cases:
     retail, mobility, logistics, energy, healthcare, skilling, financial services,
-    carbon trading, hiring, data licensing, and any other domain built on Beckn.
+    carbon trading, hiring, data licensing, and other domains built on Beckn.
   version: 2.0.0
   contact:
     name: Beckn Protocol
@@ -45,49 +40,41 @@ info:
   license:
     name: CC-BY-NC-SA 4.0 International
     url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
-
 tags:
   - name: Discovery
     description: Discover catalogs across a Beckn network
   - name: Transaction
-    description: Select, negotiate, confirm and manage contracts/orders
+    description: Select, negotiate, confirm and manage contracts
   - name: Fulfillment
-    description: Track, update and cancel active contracts/orders
+    description: Track, update and cancel active contracts
   - name: Post-Fulfillment
-    description: Rate and support completed contracts/orders
+    description: Rate and support completed contracts
   - name: Catalog Publishing
     description: Publish catalogs to a Catalog Discovery Service (CDS)
-
-# All requests MUST carry a valid Beckn HTTP Signature in the Authorization header.
-# The securityScheme is informational; actual enforcement is done at the network layer.
 security: []
 servers:
   - url: https://{subscriberUrl}
-    description: >
-      Base URL of the Beckn network participant endpoint. Implementations MUST
-      substitute `{subscriberUrl}` with the actual registered subscriber URL
-      obtained from the Beckn Registry.
+    description:
+      Base URL of the Beckn network participant endpoint. Implementations MUST substitute `{subscriberUrl}`
+      with the actual registered subscriber URL obtained from the Beckn Registry.
     variables:
       subscriberUrl:
         default: example.beckn.io
-        description: >
-          Registered subscriber URL of the Beckn network participant
-          (BAP or BPP) as published in the Beckn Registry.
+        description:
+          Registered subscriber URL of the Beckn network participant (BAP or BPP) as published in the Beckn
+          Registry.
 paths:
-  # ─────────────────────────────────────────────────────────────────────
-  # DISCOVERY
-  # ─────────────────────────────────────────────────────────────────────
-
   /discover:
     post:
       summary: Discover catalogs on a network
-      description: |
+      description: |-
         Search and discover catalogs on an open network. Supports text search (textSearch),
         JSONPath-based filtering (RFC 9535), spatial (geo) constraints, and media search.
         Returns an **ACK** confirming receipt; actual catalogs arrive via `/beckn/on_discover`.
         Can be implemented by Catalog Discovery Services (CDS) and BPPs.
       operationId: discover
-      tags: [Discovery]
+      tags:
+        - Discovery
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -96,11 +83,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoveryContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -120,15 +109,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_discover:
     post:
       summary: Callback — return catalogs to the BAP
-      description: |
+      description: |-
         Callback from a BPP or CDS containing catalogs matching the discovery request.
         Returns an **ACK** confirming receipt of the catalog payload.
       operationId: onDiscover
-      tags: [Discovery]
+      tags:
+        - Discovery
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -137,11 +126,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoveryContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -158,20 +149,16 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  # ─────────────────────────────────────────────────────────────────────
-  # TRANSACTION — ORDERING
-  # ─────────────────────────────────────────────────────────────────────
-
   /select:
     post:
       summary: BAP selects items/resources and requests a quote
-      description: |
+      description: |-
         The BAP selects catalog items, item quantities, associated offers, and requests
         the BPP to provide a priced quote. No PII is shared at this stage.
-        Supports both the legacy `order` and the new `contract` model.
+        Uses the contract model.
       operationId: select
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -180,11 +167,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -203,15 +192,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_select:
     post:
       summary: BPP returns a priced quote
-      description: |
+      description: |-
         The BPP calculates the total cost, evaluates offers, and returns a priced quote.
-        Supports both the legacy `order` model and the new `contract` model.
+        Uses the contract model.
       operationId: onSelect
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -220,11 +209,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -241,16 +232,16 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /init:
     post:
-      summary: BAP initiates final order — submits billing, fulfillment and payment intent
-      description: |
+      summary: BAP initiates final contract — submits billing, fulfillment and payment intent
+      description: |-
         BAP provides billing, fulfillment, and payment information for the BPP to generate
-        final order terms. The BPP responds via `on_init` with the final draft including
-        payment terms. Supports both `order` (legacy) and `contract` (new) models.
+        final contract terms. The BPP responds via `on_init` with the final draft including
+        payment terms. Uses the contract model.
       operationId: init
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -259,11 +250,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -282,15 +275,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_init:
     post:
-      summary: BPP returns final draft order/contract with payment terms
-      description: |
-        BPP returns the final draft order or contract with personalized payment terms.
+      summary: BPP returns final draft contract with payment terms
+      description: |-
+        BPP returns the final draft contract with personalized payment terms.
         The BPP MUST NOT request payment before this stage.
       operationId: onInit
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -299,11 +292,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -320,15 +315,15 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /confirm:
     post:
-      summary: BAP confirms the order/contract
-      description: |
+      summary: BAP confirms the contract
+      description: |-
         BAP accepts all terms and provides payment proof/reference, then requests the BPP
-        to confirm the order or contract into a binding commitment.
+        to confirm the contract into a binding commitment.
       operationId: confirm
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -337,11 +332,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -360,15 +357,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_confirm:
     post:
-      summary: BPP returns the confirmed order/contract
-      description: |
-        BPP validates all terms, payment, and returns a confirmed order or contract with
+      summary: BPP returns the confirmed contract
+      description: |-
+        BPP validates all terms, payment, and returns a confirmed contract with
         its assigned ID and the initial fulfillment/performance state.
       operationId: onConfirm
-      tags: [Transaction]
+      tags:
+        - Transaction
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -377,11 +374,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -398,20 +397,16 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  # ─────────────────────────────────────────────────────────────────────
-  # FULFILLMENT
-  # ─────────────────────────────────────────────────────────────────────
-
   /status:
     post:
-      summary: BAP requests the current state of an order/contract
-      description: |
-        BAP requests the latest state of an active order or contract by providing its ID.
+      summary: BAP requests the current state of an contract
+      description: |-
+        BAP requests the latest state of an active contract by providing its ID.
         The BPP responds via `on_status`. BAPs SHOULD NOT long-poll with `status` —
         use `on_status` push notifications for significant state changes.
       operationId: status
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -420,11 +415,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -443,18 +440,18 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_status:
     post:
-      summary: BPP returns the current state of the order/contract
-      description: |
-        BPP returns the latest state of the order or contract including fulfillment/performance
+      summary: BPP returns the current state of the contract
+      description: |-
+        BPP returns the latest state of the contract including fulfillment/performance
         updates. The BPP MAY call this endpoint proactively without the BAP requesting it,
         but MUST have received at least one `status` request first to initiate the push stream.
         This endpoint is for significant state changes worth a notification — NOT for
         real-time location tracking (use `track`/`on_track` for that).
       operationId: onStatus
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -463,11 +460,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -484,16 +483,16 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /track:
     post:
-      summary: BAP requests a real-time tracking handle for an active order/contract
-      description: |
+      summary: BAP requests a real-time tracking handle for an active contract
+      description: |-
         BAP requests a tracking handle (URL, WebSocket endpoint, or webhook) for real-time
         tracking of an active fulfillment or performance stage. This is for real-time
-        position/progress updates — NOT for order state change notifications (use `status`).
+        position/progress updates — NOT for contract state change notifications (use `status`).
       operationId: track
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -502,11 +501,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -525,12 +526,12 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_track:
     post:
       summary: BPP returns real-time tracking handle and status
       operationId: onTrack
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -539,11 +540,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -560,21 +563,21 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /update:
     post:
-      summary: BAP requests a mutation to an active order/contract
-      description: |
-        BAP requests the BPP to update an active order or contract. Updates may involve
+      summary: BAP requests a mutation to an active contract
+      description: |-
+        BAP requests the BPP to update an active contract. Updates may involve
         change of items, quantities, billing, fulfillment/performance, or payment.
 
         Uses the `context.try` two-phase pattern (defined in `Context` schema):
         - `context.try: true` — BAP requests updated terms before committing (preview mode).
-          BPP responds with recalculated quote and terms via `on_update` without changing state.
+         BPP responds with recalculated quote and terms via `on_update` without changing state.
         - `context.try: false` (default) — BAP commits the update.
-          BPP responds with the confirmed updated order/contract.
+         BPP responds with the confirmed updated contract.
       operationId: update
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -583,11 +586,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -595,7 +600,6 @@ paths:
                           const: update
                 message:
                   $ref: "#/components/schemas/UpdateAction"
-
       responses:
         "200":
           $ref: "#/components/responses/Ack"
@@ -607,17 +611,17 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_update:
     post:
-      summary: BPP returns the updated order/contract
-      description: |
-        BPP returns the updated order or contract with recalculated terms. Can be called
+      summary: BPP returns the updated contract
+      description: |-
+        BPP returns the updated contract with recalculated terms. Can be called
         proactively by the BPP without the BAP requesting it.
         - If `context.try: true` — returns updated terms (preview; state not changed).
-        - If `context.try: false` — returns committed updated order/contract.
+        - If `context.try: false` — returns committed updated contract.
       operationId: onUpdate
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -626,11 +630,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -638,7 +644,6 @@ paths:
                           const: on_update
                 message:
                   $ref: "#/components/schemas/OnUpdateAction"
-
       responses:
         "200":
           $ref: "#/components/responses/Ack"
@@ -648,18 +653,18 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /cancel:
     post:
-      summary: BAP requests cancellation of an order/contract
-      description: |
+      summary: BAP requests cancellation of an contract
+      description: |-
         BAP requests full or partial cancellation. Uses the `context.try` two-phase pattern:
         - `context.try: true` — BAP requests cancellation terms (e.g., refund policy, penalty)
-          without committing to cancellation. BPP responds with applicable policy via `on_cancel`.
+         without committing to cancellation. BPP responds with applicable policy via `on_cancel`.
         - `context.try: false` (default) — BAP commits the cancellation.
-          BPP confirms cancellation and returns cancelled order/contract.
+         BPP confirms cancellation and returns cancelled contract.
       operationId: cancel
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -668,11 +673,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -691,16 +698,16 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_cancel:
     post:
       summary: BPP returns cancellation terms or confirms cancellation
-      description: |
+      description: |-
         - If `context.try: true` — returns applicable cancellation policy, fees, refund timeline
-          (state not changed).
-        - If `context.try: false` — returns confirmed cancelled order/contract with refund/payment update.
+         (state not changed).
+        - If `context.try: false` — returns confirmed cancelled contract with refund/payment update.
       operationId: onCancel
-      tags: [Fulfillment]
+      tags:
+        - Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -709,11 +716,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -730,22 +739,18 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  # ─────────────────────────────────────────────────────────────────────
-  # POST-FULFILLMENT
-  # ─────────────────────────────────────────────────────────────────────
-
   /rate:
     post:
       summary: BAP submits ratings for one or more entities
-      description: |
-        BAP submits ratings for any ratable entity (order, contract, fulfillment,
+      description: |-
+        BAP submits ratings for any ratable entity (contract, contract, fulfillment,
         item, provider, agent, support interaction). Supports the `context.try` pattern:
         - `context.try: true` — Preview: BPP returns the rating form/criteria without recording.
         - `context.try: false` (default) — Submit: BPP records the rating and returns confirmation.
         The BPP acknowledges via `on_rate` with an optional aggregate snapshot.
       operationId: rate
-      tags: [Post-Fulfillment]
+      tags:
+        - Post-Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -754,11 +759,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -777,15 +784,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_rate:
     post:
       summary: BPP acknowledges rating and optionally returns aggregate
-      description: |
+      description: |-
         - If `context.try: true` — returns rating form/criteria (preview mode).
         - If `context.try: false` — confirms rating was recorded; optionally returns aggregate.
       operationId: onRate
-      tags: [Post-Fulfillment]
+      tags:
+        - Post-Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -794,11 +801,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -815,19 +824,19 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /support:
     post:
       summary: BAP requests support information for an entity
-      description: |
+      description: |-
         BAP requests support channels and/or raises a support ticket for any entity.
         Uses the `context.try` pattern:
         - `context.try: true` — Preview: BPP returns available support channels without creating a ticket.
         - `context.try: false` (default) — BAP submits a support request; BPP creates/links a ticket.
         The `refType` field abstracts over domain-specific entity types (works for contracts,
-        resources, providers, agents — not just orders).
+        resources, providers, agents — not just contracts).
       operationId: support
-      tags: [Post-Fulfillment]
+      tags:
+        - Post-Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -836,11 +845,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -859,15 +870,15 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /on_support:
     post:
       summary: BPP returns support details
-      description: |
+      description: |-
         - If `context.try: true` — returns available support channels (preview mode).
         - If `context.try: false` — returns support details with ticket(s).
       operationId: onSupport
-      tags: [Post-Fulfillment]
+      tags:
+        - Post-Fulfillment
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -876,11 +887,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/TransactionContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -897,20 +910,16 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  # ─────────────────────────────────────────────────────────────────────
-  # CATALOG PUBLISHING SERVICE
-  # ─────────────────────────────────────────────────────────────────────
-
   /catalog/publish:
     post:
       summary: BPP publishes catalogs for indexing by a CDS
-      description: |
+      description: |-
         BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
         Returns an **ACK** immediately if accepted for processing. The per-catalog processing
         result arrives asynchronously via `/beckn/catalog/on_publish`.
       operationId: catalogPublish
-      tags: [Catalog Publishing]
+      tags:
+        - Catalog Publishing
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -919,11 +928,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoveryContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -944,12 +955,12 @@ paths:
           $ref: "#/components/responses/AckNoCallback"
         "500":
           $ref: "#/components/responses/ServerError"
-
   /catalog/on_publish:
     post:
       summary: CDS returns per-catalog processing results to the BPP
       operationId: catalogOnPublish
-      tags: [Catalog Publishing]
+      tags:
+        - Catalog Publishing
       parameters:
         - $ref: "#/components/parameters/AuthorizationHeader"
       requestBody:
@@ -958,11 +969,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [context, message]
+              required:
+                - context
+                - message
               properties:
                 context:
                   allOf:
-                    - $ref: "#/components/schemas/DiscoveryContext"
+                    - $ref: "#/components/schemas/Context"
                     - type: object
                       properties:
                         action:
@@ -981,97 +994,59 @@ paths:
           $ref: "#/components/responses/NackUnauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
-
-# ─────────────────────────────────────────────────────────────────────
-# COMPONENTS
-# ─────────────────────────────────────────────────────────────────────
 components:
-  # ─── Parameters ──────────────────────────────────────────────────
   parameters:
     AuthorizationHeader:
       name: Authorization
       in: header
       required: true
-      description: |
+      description: |-
         Beckn HTTP Signature authentication header.
         See `#/components/schemas/Signature` for the expected format.
       schema:
         $ref: "#/components/schemas/Signature"
-
-  # ─── Message Schemas ──────────────────────────────────────────────
-
   schemas:
-    # ─────────────────────────────────────────────────────────────────────
-    # ACTION SCHEMAS — xAction and On-xAction message payloads
-    # ─────────────────────────────────────────────────────────────────────
     CancelAction:
-      $id: https://schema.beckn.io/CancelAction/v2.0
       title: Cancel Action
-      description: |
+      description: |-
         Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request
         cancellation of an active contract. Set context.try to true to first
         retrieve cancellation terms and fees before committing.
         (Context wrapper stripped; only the message-content portion is inlined.)
       properties:
-        order:
-          allOf:
-            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
-            - required:
-                - "beckn:id"
         contract:
           allOf:
             - $ref: "#/components/schemas/Contract"
             - required:
-                - "id"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+                - id
+      required:
+        - contract
     CatalogPublishAction:
-      $id: https://schema.beckn.io/CatalogPublishAction/v2.0
       description: Catalog publish request payload.
       required:
         - catalogs
-      oneOf:
-        - type: object
-          properties:
-            catalogs:
-              type: array
-              items:
-                $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog"
-        - type: object
-          properties:
-            catalogs:
-              type: array
-              minItems: 1
-              description: One or more catalogs to be indexed by the CDS
-              items:
-                $ref: "#/components/schemas/Catalog"
-
+      type: object
+      properties:
+        catalogs:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Catalog"
     ConfirmAction:
-      $id: https://schema.beckn.io/ConfirmAction/v2.0
       title: Confirm Action
-      description: |
+      description: |-
         Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
         a contract, finalising the transaction terms agreed during the
         select-init negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     DiscoverAction:
       title: Discover Action (External)
-      description: |
+      description: |-
         Beckn /beckn/discover message payload as published at schema.beckn.io.
         Requires all discover qualifiers to be nested inside an `intent`
         container object.
@@ -1086,120 +1061,77 @@ components:
         textSearch:
           type: string
           description: Flat free-text discover query
-      oneOf:
-        - required:
-            - intent
-        - required:
-            - text_search
-        - required:
-            - textSearch
       additionalProperties: false
-
+      required:
+        - intent
     InitAction:
-      $id: https://schema.beckn.io/InitAction/v2.0
       title: Init Action
-      description: |
+      description: |-
         Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
         a contract with consumer details (billing address, fulfillment preferences, etc.).
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnCancelAction:
-      $id: https://schema.beckn.io/OnCancelAction/v2.0
       title: On Cancel Action
-      description: |
+      description: |-
         Beckn /beckn/on_cancel message payload. Sent by a BPP to a BAP in
         response to a /beckn/cancel call, returning the contract with status
         set to CANCELLED and any applicable cancellation outcome.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnConfirmAction:
-      $id: https://schema.beckn.io/OnConfirmAction/v2.0
       title: OnConfirmAction
-      description: |
+      description: |-
         Beckn /beckn/on_confirm message payload. Sent by a BPP to a BAP in
         response to a /beckn/confirm call, returning the confirmed contract
         with status set to CONFIRMED.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnDiscoverAction:
-      $id: https://schema.beckn.io/OnDiscoverAction/v2.0
       description: The on_discover response payload containing matching catalogs.
       type: object
       required:
-        - "catalogs"
+        - catalogs
       properties:
         catalogs:
           type: array
-          description: |
+          description: |-
             Array of catalogs matching the discovery request.
-            Note: Each catalog's `items` array carries `oneOf [Item, Resource]` entries:
-            - `Item` — legacy 2.0-rc1 catalog item (backward compatible)
-            - `Resource` — new cross-domain resource abstraction (generalized)
-            Both types share the common `id` + `descriptor` surface for display rendering.
-            See `#/components/schemas/Catalog/v2.0` for the full Catalog schema.
+            Array of catalogs matching the discovery request.
           items:
-            oneOf:
-              - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Catalog"
-              - $ref: "#/components/schemas/Catalog"
+            $ref: "#/components/schemas/Catalog"
       additionalProperties: false
-
     OnInitAction:
-      $id: https://schema.beckn.io/OnInitAction/v2.0
       title: On Init Action
-      description: |
+      description: |-
         Beckn /beckn/on_init message payload. Sent by a BPP to a BAP in response
         to a /beckn/init call, with the updated contract including payment terms
         and billing confirmation.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnRateAction:
-      $id: https://schema.beckn.io/OnRateAction/v2.0
       title: On Rate Action
-      description: |
+      description: |-
         Beckn /beckn/on_rate message payload. Sent by a BPP to a BAP in
         response to a /beckn/rate call, optionally returning rating forms
         to collect structured feedback from the consumer.
@@ -1213,52 +1145,34 @@ components:
             $ref: "#/components/schemas/RatingInput"
       required:
         - ratings
-
-    # ── Support Messages ────────────────────────────────────────────
-
     OnSelectAction:
-      $id: https://schema.beckn.io/OnSelectAction/v2.0
       title: On Select Action
-      description: |
+      description: |-
         Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
         response to a /beckn/select call, with updated contract terms.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnStatusAction:
-      $id: https://schema.beckn.io/OnStatusAction/v2.0
       title: On Status Action
-      description: |
+      description: |-
         Beckn /beckn/on_status message payload. Sent by a BPP to a BAP in
         response to a /beckn/status call (or as an unsolicited status push),
         returning the current state of the contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     OnSupportAction:
-      $id: https://schema.beckn.io/OnSupportAction/v2.0
       title: On Support Action
-      description: |
+      description: |-
         Beckn /beckn/on_support message payload. Sent by a BPP to a BAP in
         response to a /beckn/support call, returning support contact details
         and available channels.
@@ -1266,18 +1180,12 @@ components:
       additionalProperties: false
       properties:
         support:
-          oneOf:
-            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo"
-            - $ref: "#/components/schemas/Support"
+          $ref: "#/components/schemas/Support"
       required:
         - support
-
-    # ── Catalog Publishing Messages ─────────────────────────────────
-
     OnTrackAction:
-      $id: https://schema.beckn.io/OnTrackAction/v2.0
       title: On Track Action
-      description: |
+      description: |-
         Beckn /beckn/on_track message payload. Sent by a BPP to a BAP in
         response to a /beckn/track call, returning a Tracking handle with
         the URL and/or WebSocket endpoint for real-time fulfillment tracking.
@@ -1289,206 +1197,96 @@ components:
           $ref: "#/components/schemas/Tracking"
       required:
         - tracking
-
     OnUpdateAction:
-      $id: https://schema.beckn.io/OnUpdateAction/v2.0
       title: On Update Action
-      description: |
+      description: |-
         Beckn /beckn/on_update message payload. Sent by a BPP to a BAP in
         response to a /beckn/update call (or as an unsolicited update push),
         returning the updated contract state.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     RateAction:
-      $id: https://schema.beckn.io/RateAction/v2.0
       title: RateAction
-      description: |
+      description: |-
         Beckn /beckn/rate message payload. Sent by a BAP to a BPP to submit
         one or more rating inputs for entities in a completed contract
         (order, fulfillment, item, provider, agent, support).
         (Context wrapper stripped; only the message-content portion is inlined.)
-      oneOf:
-        - type: object
-          additionalProperties: false
-          properties:
-            ratings:
-              type: array
-              items:
-                $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/RatingInput"
-        - type: object
-          additionalProperties: false
-          properties:
-            ratingInputs:
-              type: array
-              items:
-                $ref: "#/components/schemas/RatingInput"
-
+      type: object
+      additionalProperties: false
+      properties:
+        ratingInputs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RatingInput"
+      required:
+        - ratingInputs
     SelectAction:
-      $id: "https://schema.beckn.io/SelectAction/v2.0"
       title: Select Action
-      description: |
+      description: |-
         Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
         items and offers from a catalog, initiating the negotiation cycle.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+      required:
+        - contract
     StatusAction:
-      $id: https://schema.beckn.io/StatusAction/v2.0
       title: Status Action
-      description: |
+      description: |-
         Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
         the current state of a contract/order by its identifier.
         (Context wrapper stripped; only the message-content portion is inlined.)
       properties:
-        order:
-          allOf:
-            - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
-            - required:
-                - "beckn:id"
         contract:
           allOf:
             - $ref: "#/components/schemas/Contract"
             - required:
-                - "id"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
+                - id
+      required:
+        - contract
     SupportAction:
-      $id: https://schema.beckn.io/SupportAction/v2.0
       title: Support Action
-      description: |
+      description: |-
         Beckn /beckn/support message payload. Sent by a BAP to a BPP to request
         support contact information or to open a support ticket for an existing
         order/contract.
         (Context wrapper stripped; only the message-content portion is inlined.)
-      oneOf:
-        - type: object
-          properties:
-            refId:
-              type: string
-              description: ID of the entity for which support is requested (order/item/fulfillment/provider/agent).
-            refType:
-              type: string
-              description: Entity type for which support is requested.
-              enum: [ORDER, FULFILLMENT, ITEM, PROVIDER, AGENT, OTHER]
-            support:
-              $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/SupportInfo"
-        - type: object
-          additionalProperties: false
-          properties:
-            support:
-              $ref: "#/components/schemas/Support"
-          required:
-            - support
-
-    TrackAction:
-      oneOf:
-        - $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/TrackAction"
-        - type: object
-          properties:
-            tracking:
-              type: object
-              properties:
-                contract:
-                  allOf:
-                    - $ref: "#/components/schemas/Contract"
-                    - required:
-                        - id
-                trackingData:
-                  $ref: "#/components/schemas/Attributes"
-                trackingAttributes:
-                  description: Domain-specific extension attributes for this Tracking.
-                  allOf:
-                    - $ref: "#/components/schemas/Attributes"
-                    - required:
-                        - "@context"
-                        - "@type"
-                    - properties:
-                        "@context":
-                          description: Domain-specific context in which this contract is being created
-                          type: string
-                          format: uri
-                          examples:
-                            - "https://schema.beckn.io/LongPolling/v2.0/context.jsonld"
-                            - "https://schema.beckn.io/WebhookPush/v2.0/context.jsonld"
-                            - "https://schema.beckn.io/Streaming/v2.0/context.jsonld"
-                            - "https://schema.beckn.io/WebPage/v2.0/context.jsonld"
-                        "@type":
-                          description: JSON-LD type corresponding to the context
-                          type: string
-                          examples:
-                            - LongPolling
-                            - WebhookPush
-                            - Streaming
-                            - WebPage
-                      additionalProperties: true
-              required:
-                - contract
+      type: object
       additionalProperties: false
-
-    # ── Status Message ──────────────────────────────────────────────
-
+      properties:
+        support:
+          $ref: "#/components/schemas/Support"
+      required:
+        - support
+    TrackAction:
+      additionalProperties: false
     UpdateAction:
-      $id: https://schema.beckn.io/UpdateAction/v2.0
       title: Update Action
-      description: |
+      description: |-
         Beckn /beckn/update message payload. Sent by a BAP to a BPP to request
         changes to an active contract (e.g., update fulfillment address, add items,
         change quantities). The context.try flag must be true during negotiation.
         (Context wrapper stripped; only the message-content portion is inlined.)
       additionalProperties: false
       properties:
-        order:
-          $ref: "https://schema.beckn.io/api/v2.0.0-rc/attributes.yaml#/components/schemas/Order"
         contract:
           $ref: "#/components/schemas/Contract"
-      oneOf:
-        - required:
-            - "order"
-        - required:
-            - "contract"
-
-    # ─── Responses ────────────────────────────────────────────────────
-
-    # ─────────────────────────────────────────────────────────────────────
-    # CORE DATA SCHEMAS — Reusable types, domain objects, and infrastructure
-    # ─────────────────────────────────────────────────────────────────────
+      required:
+        - contract
     ActionTrigger:
       description: Describes a trigger that initiates an action, like triggering a settlement on fulfillment completion.
       type: object
       properties:
-        "@context":
-          type: string
-          format: uri
-        "@type":
-          type: string
         descriptor:
           $ref: "#/components/schemas/Descriptor"
-
     AddOn:
       type: object
       description: Add-on to a catalog resource
@@ -1498,31 +1296,12 @@ components:
         descriptor:
           $ref: "#/components/schemas/Descriptor"
         addOnAttributes:
-          description: |
-            Domain-specific extension attributes for this add-on.
+          description: Domain-specific extension attributes for this add-on.
           allOf:
             - $ref: "#/components/schemas/Attributes"
-            - required:
-                - "@context"
-                - "@type"
-            - properties:
-                "@context":
-                  description: Domain-specific context in which this add-on exists
-                  type: string
-                  format: uri
-                  examples:
-                    - "https://schema.beckn.io/FnbAddOn/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/GroceryAddOn/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/RideAddOn/v2.0/context.jsonld"
-                "@type":
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - FnbAddOn
-                    - GroceryAddOn
-                    - RideAddOn
+            - {}
+            - properties: {}
     Address:
-      $id: https://schema.beckn.io/Address/v2.0
       description:
         "**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses.
         Geometry lives in `Location.geo` as GeoJSON."
@@ -1554,48 +1333,42 @@ components:
           type: string
           example: 123 Tech Street
       additionalProperties: false
-
     AsyncError:
       title: Asynchronous Error
-      description: |
-        Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type annotations to allow linked-data processing.
+      description:
+        Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type
+        annotations to allow linked-data processing.
       allOf:
         - $ref: "#/components/schemas/Error"
         - type: object
-          properties:
-            "@context":
-              type: string
-              format: uri
-            "@type":
-              type: string
-              default: AsyncError
+          properties: {}
           additionalProperties: true
-
     Attributes:
-      $id: "https://schema.beckn.io/Attributes/v2.0"
       description:
-        JSON-LD aware container for domain-specific attributes of an Item. MUST include @context
-        (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the
-        provided JSON-LD context.
+        JSON-LD aware container for domain-specific attributes of an Item. MUST include @context (URI)
+        and @type (compact or full IRI). Any additional properties are allowed and interpreted per the provided
+        JSON-LD context.
       title: Attributes
       type: object
       properties:
         "@context":
           description: Use case specific JSON-LD context URI
-          type: string
+          type: array
           format: uri
+          items:
+            type: string
         "@type":
           description: JSON-LD type defined within the context
-          type: string
+          type: array
+          items:
+            type: string
       required:
         - "@context"
         - "@type"
       additionalProperties: true
-
     Catalog:
-      $id: https://schema.beckn.io/Catalog/v2.1
-      $schema: "https://json-schema.org/draft/2020-12/schema"
-      description: Catalog schema for Beckn Protocol v2.0.1 — oneOf legacy (v2.0) or new (v2.1) catalog format
+      $schema: https://json-schema.org/draft/2020-12/schema
+      description: Catalog schema for Beckn Protocol v2.0.0
       title: Catalog
       type: object
       properties:
@@ -1605,7 +1378,9 @@ components:
           example: bpp.example.com
         publishDirectives:
           deprecated: true
-          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
+          description:
+            Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned
+            for removal in a future release.
           type: object
           additionalProperties: false
           required:
@@ -1613,11 +1388,15 @@ components:
           properties:
             catalogType:
               type: string
-              enum: [master, regular]
+              enum:
+                - master
+                - regular
               description: master = canonical source catalog; regular = seller/provider extension catalog
             updateMode:
               type: string
-              enum: [FULL, MERGE]
+              enum:
+                - FULL
+                - MERGE
               default: FULL
               description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
             resourceDirectives:
@@ -1664,15 +1443,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Resource"
-        #        addOns: addOns is available insode offers - not needed here.
-        #          description: Array of offers optionally linked to resources
-        #          type: array
-        #          items:
-        #            $ref: "#/components/schemas/AddOn"
         provider:
           $ref: "#/components/schemas/Provider"
         visibleTo:
-          description: |
+          description: |-
             Optional visibility constraint indicating which network participants
             (by participantId / networkId / role) are allowed to discover or
             transact on this catalog.
@@ -1682,11 +1456,16 @@ components:
           type: array
           items:
             type: object
-            required: [type, id]
+            required:
+              - type
+              - id
             properties:
               type:
                 type: string
-                enum: [NETWORK, PARTICIPANT, ROLE]
+                enum:
+                  - NETWORK
+                  - PARTICIPANT
+                  - ROLE
                 description: Scope of visibility constraint.
               id:
                 type: string
@@ -1699,53 +1478,41 @@ components:
         - descriptor
         - provider
       anyOf:
-        - required: [resources]
-        - required: [offers]
+        - required:
+            - resources
+        - required:
+            - offers
       additionalProperties: false
-
     CatalogOnPublishAction:
-      $id: "https:schema.beckn.io/CatalogOnPublishMessage/v2.0"
       description: Catalog publish processing results from CDS to BPP.
       type: object
-      required: [results]
+      required:
+        - results
       properties:
         results:
           type: array
           description: Per-catalog processing results
           items:
             $ref: "#/components/schemas/CatalogProcessingResult"
-
     CatalogProcessingResult:
-      $id: "https://schema.beckn.io/CatalogProcessingResult/v2.0"
       description: Processing result for a single catalog submission.
       type: object
-      required: [catalogId, status]
+      required:
+        - catalogId
+        - status
       properties:
         catalogId:
           type: string
           description: Identifier of the submitted catalog
         status:
-          description: |
+          description: |-
             Processing outcome. Using oneOf [string, object] to allow domain-specific
             status objects (e.g. beckn:CatalogAccepted) alongside standard string codes.
-          oneOf:
-            - type: string
-              enum: [ACCEPTED, REJECTED, PARTIAL]
-              description: |
-                Standard processing status:
-                - ACCEPTED — catalog indexed successfully
-                - REJECTED — catalog rejected entirely (see errors)
-                - PARTIAL — some items accepted, some rejected (see errors)
-            - type: object
-              properties:
-                "@context":
-                  type: string
-                  format: uri
-                  const: "#/components/schemas/"
-                "@type":
-                  type: string
-                  pattern: "^beckn:[A-Za-z0-9._~-]+$"
-              additionalProperties: true
+          type: string
+          enum:
+            - ACCEPTED
+            - REJECTED
+            - PARTIAL
         errors:
           type: array
           description: Per-item or per-catalog errors (present when REJECTED or PARTIAL)
@@ -1764,11 +1531,9 @@ components:
             categoryCount:
               type: integer
               description: Number of distinct categories
-
     Consideration:
-      $id: https://schema.beckn.io/Consideration/v2.0
       type: object
-      description: |
+      description: |-
         Generalized representation of value exchanged under a Contract.
 
         Consideration is domain-neutral and may represent:
@@ -1777,25 +1542,10 @@ components:
         - Asset transfer
         - Service exchange
         - Compliance artifact
-      required: ["id", "status"]
+      required:
+        - id
+        - status
       properties:
-        "@context":
-          type: string
-          format: uri
-          description: JSON-LD URL describing the context of this consideration
-        "@type":
-          type: string
-          description: Type of the consideration
-          examples:
-            [
-              "beckn:Consideration",
-              "beckn:MonetaryConsideration",
-              "beckn:TokenConsideration",
-              "beckn:CreditConsideration",
-              "beckn:AssetConsideration",
-              "beckn:ServiceConsideration",
-            ]
-
         id:
           description: Identifier of this consideration
           type: string
@@ -1803,51 +1553,18 @@ components:
           description: The status of this consideration
           $ref: "#/components/schemas/Descriptor"
         considerationAttributes:
-          description: |
+          description: |-
             Domain-specific attributes of this consideration. For monetary considerations,
             use the PriceSpecification schema to capture total value with breakup.
             For other consideration types, use a generic Attributes bag.
           $ref: "#/components/schemas/Attributes"
-
-    TransactionContext:
-      description: |
-        Context for transaction endpoints (select, init, confirm, status, etc.).
-        Requires both BAP and BPP identifiers. Supports both snake_case (v1) and
-        camelCase (v2) naming conventions via oneOf.
-      oneOf:
-        - allOf:
-            - $ref: "#/components/schemas/Context"
-            - required:
-                - action
-                - bap_id
-                - bap_uri
-                - bpp_id
-                - bpp_uri
-                - message_id
-                - timestamp
-                - transaction_id
-                - version
-        - allOf:
-            - $ref: "#/components/schemas/Context"
-            - required:
-                - action
-                - bapId
-                - bapUri
-                - bppId
-                - bppUri
-                - messageId
-                - timestamp
-                - transactionId
-                - version
-
     Context:
-      description: |
+      description: |-
         Base context schema for all Beckn API calls. Contains addressing information
         (BAP/BPP identifiers and API URLs), protocol version, the action being called,
         transaction and message IDs, timestamp, TTL, and optional encryption key.
         This schema defines all possible properties but imposes NO required-field
-        constraints. Use DiscoveryContext or TransactionContext for endpoint-specific
-        required-field validation.
+        constraints. Endpoint-specific validation is defined inline in operation request schemas.
       type: object
       title: Context
       properties:
@@ -1859,13 +1576,13 @@ components:
           type: object
           properties:
             city:
-              description: "The city code where this transaction is restricted to"
+              description: The city code where this transaction is restricted to
               type: object
               properties:
                 code:
                   type: string
             country:
-              description: "The country code this transaction is restricted to"
+              description: The country code this transaction is restricted to
               type: object
               properties:
                 code:
@@ -1884,15 +1601,15 @@ components:
           description: Subscriber ID of the BAP as registered on dedi.global
           type: string
         bap_uri:
-          description: |
-            The callback URL of the BAP. 
+          description: |-
+            The callback URL of the BAP.
 
             REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
           format: uri
         bapUri:
-          description: |
-            The callback URL of the BAP. 
+          description: |-
+            The callback URL of the BAP.
 
             REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
@@ -1904,37 +1621,60 @@ components:
           description: Subscriber ID of the BPP as registered on dedi.global
           type: string
         bpp_uri:
-          description: |
-            The request URL of the BPP. 
+          description: |-
+            The request URL of the BPP.
 
             REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
           format: uri
         bppUri:
-          description: |
-            The request URL of the BPP. 
+          description: |-
+            The request URL of the BPP.
 
             REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global
           type: string
           format: uri
         transaction_id:
-          description: "This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP."
+          description:
+            This is a unique value which persists across all API calls from `search` through `confirm`.
+            This is done to indicate an active user session across multiple requests. The BPPs can use this value
+            to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite
+            being unaware of the user active on the BAP.
           type: string
           format: uuid
         transactionId:
-          description: "This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP."
+          description:
+            This is a unique value which persists across all API calls from `search` through `confirm`.
+            This is done to indicate an active user session across multiple requests. The BPPs can use this value
+            to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite
+            being unaware of the user active on the BAP.
           type: string
           format: uuid
         message_id:
-          description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
+          description:
+            This is a unique value which persists during a request / callback cycle. Since beckn protocol
+            APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier
+            call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended
+            to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must
+            generate a new message_id.
           type: string
           format: uuid
         messageId:
-          description: "This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id."
+          description:
+            This is a unique value which persists during a request / callback cycle. Since beckn protocol
+            APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier
+            call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended
+            to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must
+            generate a new message_id.
           type: string
           format: uuid
         networkId:
-          description: "Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}` suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique  Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should be `acmenet.org/charge-net`"
+          description:
+            "Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry
+            in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}`
+            suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique
+            Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should
+            be `acmenet.org/charge-net`"
           type: string
         timestamp:
           description: Time of request generation in RFC3339 format
@@ -1947,94 +1687,49 @@ components:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
         schema_context:
-          description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
+          description:
+            Array of JSON-LD context urls representing the schemas relevant to the request in which this
+            context object is transported.
           type: array
           items:
             type: string
             format: uri
         schemaContext:
-          description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
+          description:
+            Array of JSON-LD context urls representing the schemas relevant to the request in which this
+            context object is transported.
           type: array
           items:
             type: string
             format: uri
-
-    DiscoveryContext:
-      description: |
-        Context for discovery endpoints (discover, on_discover).
-        Requires only BAP identifiers — BPP identifiers are NOT required since
-        the BPP is not yet known at discovery time. Supports either snake_case
-        or camelCase naming conventions via oneOf.
-      oneOf:
-        - allOf:
-            - $ref: "#/components/schemas/Context"
-            - required:
-                - action
-                - bap_id
-                - bap_uri
-                - network_id
-                - message_id
-                - schema_context
-                - timestamp
-                - transaction_id
-                - version
-            - not:
-                required:
-                  - bapId
-                  - bapUri
-                  - messageId
-                  - transactionId
-        - allOf:
-            - $ref: "#/components/schemas/Context"
-            - required:
-                - action
-                - bapId
-                - bapUri
-                - networkId
-                - messageId
-                - schemaContext
-                - timestamp
-                - transactionId
-                - version
-            - not:
-                required:
-                  - bap_id
-                  - bap_uri
-                  - message_id
-                  - transaction_id
-
     Contract:
-      $id: https://schema.beckn.io/Contract/v2.0
       type: object
-      description: |
-        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract. 
+      description: |-
+        This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.
         Alternate description A digitally agreed commitment between two or more participants
         governing the exchange of economic or non-economic value.
 
         Contract is the canonical contract object in the generalized
         Beckn v2.1 protocol. It replaces the commerce-specific Order construct
-        while preserving backward compatibility at the API layer.
+        as the canonical transaction object at the API layer.
 
         A Contract binds:
-          - Commitments (what is agreed)
-          - Consideration (value promised)
-          - Performance (how execution occurs)
-          - Settlements (how consideration is discharged)
+         - Commitments (what is agreed)
+         - Consideration (value promised)
+         - Performance (how execution occurs)
+         - Settlements (how consideration is discharged)
 
         The model is domain-neutral and supports commerce, hiring,
         energy markets, carbon exchanges, data access, mobility,
         subscriptions, and other use cases.
       title: Contract
       properties:
-        "@context":
-          description: A URL to the reference vocabulary where this schema has been defined. If missing, this field defaults to `https://schema.beckn.io/`. It allows applications to fetch the mapping between the simple JSON keys of this class and absolute Beckn IRIs (Internationalized Resource Identifiers), allowing conversion of standard Beckn JSON payload into linked data.
-          type: string
-          format: uri
-        "@type":
-          description: A Beckn IRI on the vocabulary defined in the @context. Must start with "beckn:" followed by URL-safe identifier characters.
-          type: string
         id:
-          description: A UUID string generated at the BPP endpoint at any stage before the confirmation of the order i.e before `/on_confirm` callback. This value is intended typically for indexing or filtering. While the chances of a UUID collision are rare, it is recommended to use a combination of `bppId`, `providerId` and `id` to allow for global uniqueness.
+          description:
+            A UUID string generated at the BPP endpoint at any stage before the confirmation of the order
+            i.e before `/on_confirm` callback. This value is intended typically for indexing or filtering. While
+            the chances of a UUID collision are rare, it is recommended to use a combination of `bppId`, `providerId`
+            and `id` to allow for global uniqueness.
           type: string
           format: uuid
         descriptor:
@@ -2042,8 +1737,7 @@ components:
           $ref: "#/components/schemas/Descriptor"
         commitments:
           type: array
-          description: |
-            Structured commitments governed by this contract.
+          description: Structured commitments governed by this contract.
           minItems: 1
           items:
             $ref: "#/components/schemas/Commitment"
@@ -2053,7 +1747,7 @@ components:
           items:
             $ref: "#/components/schemas/Consideration"
         participants:
-          description: |
+          description: |-
             The participants involved in the contract. Contracts are not always between two individuals.
 
             Several entities may play a specific role in the creation, fulfillment, and post-fulfillment of
@@ -2063,76 +1757,53 @@ components:
             $ref: "#/components/schemas/Participant"
         performance:
           type: array
-          description: |
+          description: |-
             Execution units of the contract.
 
-            Previously defined as `fulfillments`, performance is the generalized the legacy Fulfillment abstraction.
+            Performance is the generalized fulfillment abstraction.
             Each Performance instance represents a structured execution
             plan or delivery mechanism, including:
 
-              - Physical delivery
-              - Service provisioning
-              - API access
-              - Subscription activation
-              - Carbon credit transfer
-              - Capacity allocation
-              - Workforce onboarding
+             - Physical delivery
+             - Service provisioning
+             - API access
+             - Subscription activation
+             - Carbon credit transfer
+             - Capacity allocation
+             - Workforce onboarding
 
             Tracking and Support interactions may be linked to
             individual Performance units.
           items:
             $ref: "#/components/schemas/Performance"
-        #removed entitlements as the data is beign captrued across different atributes
         settlements:
           type: array
-          description: |
-            Records representing discharge of agreed consideration.
+          description: Records representing discharge of agreed consideration.
           items:
             $ref: "#/components/schemas/Settlement"
-        #removed terms as it can be decared in the contractAttributes by the needed use cases.
         status:
-          description: The current state of the contract expressed as a Descriptor whose code MUST be one of the standard contract state values.
+          description:
+            The current state of the contract expressed as a Descriptor whose code MUST be one of the
+            standard contract state values.
           allOf:
             - $ref: "#/components/schemas/Descriptor"
             - type: object
               properties:
                 code:
-                  enum: [DRAFT, ACTIVE, CANCELLED, COMPLETE]
-        #removed forms as it can be decared in the contractAttributes by the needed use cases.
+                  enum:
+                    - DRAFT
+                    - ACTIVE
+                    - CANCELLED
+                    - COMPLETE
         contractAttributes:
           description: Domain-specific extension attributes for this contract.
           allOf:
             - $ref: "#/components/schemas/Attributes"
-            - required:
-                - "@context"
-                - "@type"
-            - properties:
-                "@context":
-                  description: Domain-specific context in which this contract is being created
-                  type: string
-                  format: uri
-                  examples:
-                    - "https://schema.beckn.io/GroceryOrder/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/FnBOrder/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/ShippingOrder/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/MobilityBooking/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/BusTicketBooking/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/P2PEnergyTrade/v1.1/context.jsonld"
-                "@type":
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - GroceryOrder
-                    - FnBOrder
-                    - ShippingOrder
-                    - MobilityBooking
-                    - BusTicketBooking
-                    - P2PEnergyTrade
-
+            - {}
+            - properties: {}
       additionalProperties: false
       required:
         - commitments
-
     Commitment:
       type: object
       required:
@@ -2140,14 +1811,6 @@ components:
         - resources
         - offer
       properties:
-        "@context":
-          type: string
-          format: uri
-          description: JSON-LD context URI for the core Resource schema
-        "@type":
-          type: string
-          description: Type of the core Resource
-          enum: ["beckn:Commitment"]
         id:
           type: string
         status:
@@ -2178,35 +1841,10 @@ components:
           description: Domain-specific extension attributes for this commitment.
           allOf:
             - $ref: "#/components/schemas/Attributes"
-            - required:
-                - "@context"
-                - "@type"
-              properties:
-                "@context":
-                  description: Domain-specific attributes for this commitment
-                  type: string
-                  format: uri
-                  examples:
-                    - "https://schema.beckn.io/ShoppingCart/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/ShippingManifest/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/TravelItinerary/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/BillOfMaterials/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/DiagnosticTests/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/TodoList/v2.0/context.jsonld"
-                "@type":
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - ShoppingCart
-                    - ShippingManifest
-                    - TravelItinerary
-                    - BillOfMaterials
-                    - DiagnosticTests
-                    - TodoList
-
+            - properties: {}
     CounterSignature:
       title: Beckn HTTP Counter-Signature
-      description: |
+      description: |-
         A signed receipt transmitted in the synchronous `Ack` response body, proving that the
         receiver authenticated, received, and processed the inbound request.
 
@@ -2226,23 +1864,17 @@ components:
         ```
       allOf:
         - $ref: "#/components/schemas/Signature"
-
     Descriptor:
-      $id: "#/components/schemas/Descriptor"
-      $schema: "https://json-schema.org/draft/2020-12/schema"
+      $schema: https://json-schema.org/draft/2020-12/schema
       description: Schema definition for Descriptor in the Beckn Protocol v2.0.1
       title: Descriptor
       type: object
       properties:
-        "@context":
-          description: Use case specific JSON-LD context. This can change from use case to use case, even within a domain.
-          type: string
-          format: uri
-        "@type":
-          description: Type of the descriptor. The type can be overriden with a context-specific type
-          type: string
         code:
-          description: A machine-readable code identifying the state or type of the entity being described. The valid values for this field are defined by the context in which the Descriptor is used (e.g. DRAFT, ACTIVE, CANCELLED, COMPLETE for a Contract status).
+          description:
+            A machine-readable code identifying the state or type of the entity being described. The
+            valid values for this field are defined by the context in which the Descriptor is used (e.g. DRAFT,
+            ACTIVE, CANCELLED, COMPLETE for a Contract status).
           type: string
         longDesc:
           description: Detailed description of the item
@@ -2264,54 +1896,107 @@ components:
           description: Links to downloadable documents
           type: array
           items:
-            $ref: "https://schema.beckn.io/Document/v2.0"
+            $ref: "#/components/schemas/Document"
         mediaFile:
           description: Links to multimedia files and images
           type: array
           items:
-            $ref: "https://schema.beckn.io/MediaFile/v2.0"
+            $ref: "#/components/schemas/MediaFile"
+      additionalProperties: false
+
+    Document:
+      description:
+        A document, that can be parsed, printed, download or displayed. This has intentionally been kept separate from
+        MediaFile as they may contain additional attributes like signature, schema etc.
+      title: Document
+      x-tags: [common]
+      type: object
+      properties:
+        label:
+          description: The display name of the media file
+          type: string
+        mimeType:
+          description: MIME type if 'data' is provided (application/pdf, image/png, application/json).
+          type: string
+        standard:
+          description: Describes the schema type in case the document follows a standard schema like a verifiableCredential
+          type: string
+        url:
+          description: URL to the document
+          type: string
+          format: uri
+        security:
+          type: object
+          properties:
+            checksum:
+              type: string
+            checksumAlgorithm:
+              type: string
+              enum:
+                - SHA256
+                - SHA512
+                - OTHER
+            signature:
+              type: string
+            signatureAlgorithm:
+              type: string
+              description: e.g., Ed25519, ES256
+            keyId:
+              type: string
       required:
-        - "@type"
+        - label
+        - url
+        - mimeType
       additionalProperties: false
 
     Error:
-      $id: "#/components/schemas/Error/v2.0"
       title: Error
-      description: |
+      description: |-
         Base error container returned in NACK responses and async error callbacks.
         Domain-specific error codes SHOULD follow the Beckn error code registry
         (see docs/11_Error_Codes.md). Custom error objects may be expressed as
         `oneOf [string, object]` payloads via the `errorDetails` field.
-      oneOf:
-        - description: Newest version of the error object properties.
-          type: object
-          properties:
-            errorCode:
-              type: string
-              description: Machine-readable error code per the Beckn error registry.
-            errorMessage:
-              type: string
-              description: Human-readable error description for display or logging.
-            errorDetails:
-              description: |
-                Optional domain-specific error details. Using oneOf to allow both simple
-                string details and structured JSON-LD error objects from domain packs.
-              oneOf:
-                - type: string
-                - type: object
-                  additionalProperties: true
-        - description: Error response object from the previous version
-          type: object
-          required: [code, message]
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-            details:
-              type: object
+      type: object
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
 
-    #removed Forms - should move to common schemas in schema repo
+    FormSubmission:
+      title: FormSubmission
+      x-tags: [common]
+      description: >-
+        A user's submitted response to a Beckn form. Captures the filled-in field
+        values keyed by form field names. Typically attached to a RatingInput to
+        convey feedback form answers alongside a rating.
+      type: object
+      properties:
+        id:
+          description: >-
+            Identifier of the form that was submitted. Typically the form's URL or
+            the value of the form's url field.
+          type: string
+          format: uri
+        submissionId:
+          description: Unique identifier for this form submission instance.
+          type: string
+          format: uuid
+        data:
+          description: >-
+            Key-value map of form field names to submitted values. Keys correspond
+            to the field identifiers defined in the form; values are the user's
+            responses as strings.
+          type: object
+          additionalProperties:
+            type: string
+        submittedAt:
+          description: Timestamp at which the form was submitted, in RFC 3339 / ISO 8601 format.
+          type: string
+          format: date-time
+      required:
+        - data
+      additionalProperties: false
 
     Participant:
       type: object
@@ -2321,48 +2006,23 @@ components:
         descriptor:
           $ref: "#/components/schemas/Descriptor"
         participantAttributes:
-          description: |
+          description: |-
             Domain-specific extension attributes for this contract.
             Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
           allOf:
             - $ref: "#/components/schemas/Attributes"
-            - required:
-                - "@context"
-                - "@type"
-              properties:
-                "@context":
-                  description: Domain-specific entity which is is participating in this transaction
-                  type: string
-                  format: uri
-                  examples:
-                    - "https://schema.beckn.io/Consumer/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/Provider/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/FulfillmentAgent/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/NetworkParticipant/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/EscrowAgent/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/Guarantor/v2.0/context.jsonld"
-                "@type":
-                  description: JSON-LD type corresponding to the context
-                  type: string
-                  examples:
-                    - Consumer
-                    - Provider
-                    - FulfillmentAgent
-                    - NetworkParticipant
-                    - EscrowAgent
-                    - Guarantor
-
+            - properties: {}
     GeoJSONGeometry:
-      $id: "https://schema.beckn.io/GeoJSONGeometry/v2.0"
-      description:
-        "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow\
-        \ **[longitude, latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint,\
-        \ MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)\n\
-        Notes: - For rectangles, use a Polygon with a single linear ring where the first\n  and last positions\
-        \ are identical.\n- Circles are **not native** to GeoJSON. For circular searches, use\n  `SpatialConstraint`\
-        \ with `op: s_dwithin` and a Point + `distanceMeters`,\n  or approximate the circle as a Polygon.\n\
-        - Optional `bbox` is `[west, south, east, north]` in degrees.\n"
+      description: |-
+        **GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude, latitude, (altitude?)]** order.
+        Supported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)
+        Notes: - For rectangles, use a Polygon with a single linear ring where the first
+         and last positions are identical.
+        - Circles are **not native** to GeoJSON. For circular searches, use
+         `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,
+         or approximate the circle as a Polygon.
+        - Optional `bbox` is `[west, south, east, north]` in degrees.
       title: GeoJSONGeometry
       type: object
       properties:
@@ -2375,8 +2035,8 @@ components:
             type: number
         coordinates:
           description:
-            Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon,
-            lat, (alt)]**. For Polygons, this is an array of linear rings; each ring is an array of positions.
+            Coordinates per RFC 7946 for all types **except** GeometryCollection. Order is **[lon, lat,
+            (alt)]**. For Polygons, this is an array of linear rings; each ring is an array of positions.
           type: array
           items: {}
         geometries:
@@ -2397,10 +2057,8 @@ components:
       required:
         - type
       additionalProperties: true
-
     Performance:
-      $id: "https://schema.beckn.io/Performance/v2.2"
-      description: |
+      description: |-
         Generalized execution/performance unit. This is where downstream objects bind:
         - Fulfillment-like details (where/when/how)
         - Tracking handles
@@ -2408,7 +2066,7 @@ components:
         - Status updates
 
         A minimal envelope that carries identity, status, and a performanceAttributes
-        bag that holds the concrete domain-specific delivery schema. 
+        bag that holds the concrete domain-specific delivery schema.
 
         Domain specification authors can attach rich context and types via `performanceAttributes`.
 
@@ -2417,63 +2075,36 @@ components:
         HyperlocalDelivery. Use the generic Attributes schema when no well-known
         domain schema exists.
       title: Fulfillment
-      x-tags: [common, fulfillment]
+      x-tags:
+        - common
+        - fulfillment
       type: object
       properties:
-        "@context":
-          description: Domain-specific context in which this fulfillment is taking place
-          type: string
-          format: uri
-        "@type":
-          description: JSON-LD type.
-          type: string
         id:
           type: string
           description: Unique identifier for this fulfillment record.
-          x-jsonld:
-            "@id": "beckn:id"
         status:
           $ref: "#/components/schemas/Descriptor"
-          description: >
-            Current status of this fulfillment, expressed as a Descriptor.
-            Use Descriptor.code for machine-readable status values.
-          x-jsonld:
-            "@id": "beckn:status"
+          description:
+            Current status of this fulfillment, expressed as a Descriptor. Use Descriptor.code for machine-readable
+            status values.
         commitmentIds:
           type: array
           items:
             $ref: "#/components/schemas/Commitment/properties/id"
         performanceAttributes:
-          description: >
-            Domain-specific extension attributes for this fulfillment.
-            Use beckn:HyperlocalDelivery (aligned with schema:ParcelDelivery) for
-            hyperlocal physical delivery. Use the generic Attributes schema for
+          description:
+            Domain-specific extension attributes for this fulfillment. Use beckn:HyperlocalDelivery (aligned
+            with schema:ParcelDelivery) for hyperlocal physical delivery. Use the generic Attributes schema for
             other fulfillment types where no well-known domain schema exists.
           allOf:
             - $ref: "#/components/schemas/Attributes"
-            - properties:
-                "@context":
-                  description: Domain-specific context in which this fulfillment is taking place
-                  type: string
-                  format: uri
-                  examples:
-                    - "https://schema.beckn.io/HyperlocalDelivery/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/OnDemandRide/v2.0/context.jsonld"
-                    - "https://schema.beckn.io/P2PEnergyTransfer/v1.1/context.jsonld"
-                "@type":
-                  description: JSON-LD type.
-                  type: string
-                  examples:
-                    - "HyperlocalDelivery"
-                    - "OnDemandRide"
-                    - "P2PEnergyTransfer"
-                    - "Fulfillment"
+            - properties: {}
       additionalProperties: false
 
     InReplyTo:
-      $id: "https://schema.beckn.io/InReplyTo/v2.0"
       title: In-Reply-To Reference
-      description: |
+      description: |-
         A cryptographic binding that ties an asynchronous `on_<action>` callback to the
         specific inbound request that triggered it. Establishes bilateral non-repudiation
         for the asynchronous leg of a Beckn interaction.
@@ -2484,7 +2115,9 @@ components:
         1. Recompute BLAKE2b-512 digest of the original request body; compare to `digest`.
         2. Confirm `messageId` matches the `messageId` from the original request `Context`.
       type: object
-      required: [messageId, digest]
+      required:
+        - messageId
+        - digest
       properties:
         messageId:
           type: string
@@ -2492,20 +2125,15 @@ components:
           description: The `messageId` of the parent request from its `Context`.
         digest:
           type: string
-          pattern: "^BLAKE-512=[A-Za-z0-9+/]+=*$"
-          description: |
+          pattern: ^BLAKE-512=[A-Za-z0-9+/]+=*$
+          description: |-
             BLAKE2b-512 hash of the parent request body, Base64-encoded with algorithm prefix.
             Format: `BLAKE-512={base64EncodedHash}`
-
     Intent:
       description: A declaration of an intent to transact
       title: Intent
       type: object
       properties:
-        text_search:
-          description: Free text search query for items (legacy snake_case alias)
-          type: string
-          example: gaming laptop premium tech
         textSearch:
           description: Free text search query for items
           type: string
@@ -2531,80 +2159,71 @@ components:
           description: Optional array of spatial constraints (CQL2-JSON semantics).
           type: array
           items:
-            $ref: "https://schema.beckn.io/SpatialConstraint/v2.0"
-        media_search:
-          $ref: "#/components/schemas/MediaSearch"
+            $ref: "#/components/schemas/SpatialConstraint"
         mediaSearch:
           $ref: "#/components/schemas/MediaSearch"
-      allOf:
-        - anyOf:
-            - required:
-                - text_search
-            - required:
-                - textSearch
-            - required:
-                - filters
-            - required:
-                - spatial
-            - required:
-                - filters
-                - spatial
-        - not:
-            required:
-              - text_search
-              - textSearch
-        - not:
-            required:
-              - media_search
-              - mediaSearch
-      oneOf:
-        - required:
-            - text_search
-        - required:
-            - textSearch
-        - not:
-            anyOf:
-              - required:
-                  - text_search
-              - required:
-                  - textSearch
       additionalProperties: false
-
     Location:
-      description: |
+      description: |-
         A place represented by GeoJSON geometry and optional address.
         Source: main/schema/core/v2/attributes.yaml#Location
       type: object
-      required: [geo]
+      required:
+        - geo
       additionalProperties: false
       properties:
-        "@type":
-          type: string
-          enum: ["beckn:Location"]
         geo:
           $ref: "#/components/schemas/GeoJSONGeometry"
         address:
-          oneOf:
-            - type: string
-            - $ref: "#/components/schemas/Address"
+          $ref: "#/components/schemas/Address"
 
-    MediaInput:
-      $id: https://schema.beckn.io/MediaInput/v2.0
+    MediaFile:
+      description: A image, audio, or video typically intended for display purposes
+      title: MediaFile
+      x-tags: [common]
       type: object
-      required: [type, url]
       properties:
-        id: { type: string }
-        type: { type: string, enum: [image, audio, video] }
-        url: { type: string, format: uri }
-        contentType: { type: string }
-        textHint: { type: string }
-        language: { type: string }
-        startMs: { type: integer }
-        endMs: { type: integer }
+        label:
+          description: The display name of the media file
+          type: string
+        mimeType:
+          description: MIME type if 'data' is provided (application/pdf, image/png).
+          type: string
+          example: image/png
+        uri:
+          description: URL to the document
+          type: string
+          format: uri
       additionalProperties: false
-
+    MediaInput:
+      type: object
+      required:
+        - type
+        - url
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - image
+            - audio
+            - video
+        url:
+          type: string
+          format: uri
+        contentType:
+          type: string
+        textHint:
+          type: string
+        language:
+          type: string
+        startMs:
+          type: integer
+        endMs:
+          type: integer
+      additionalProperties: false
     MediaSearch:
-      $id: https://schema.beckn.io/MediaSearch/v2.0
       type: object
       properties:
         media:
@@ -2614,9 +2233,7 @@ components:
         options:
           $ref: "#/components/schemas/MediaSearchOptions"
       additionalProperties: false
-
     MediaSearchOptions:
-      $id: https://schema.beckn.io/MediaSearchOptions/v2.0
       type: object
       properties:
         goals:
@@ -2624,43 +2241,35 @@ components:
           items:
             type: string
             enum:
-              [
-                visual-similarity,
-                visual-object-detect,
-                text-from-image,
-                text-from-audio,
-                semantic-audio-match,
-                semantic-video-match,
-              ]
-        augment_text_search: { type: boolean, default: true }
-        restrict_results_to_media_proximity: { type: boolean, default: false }
+              - visual-similarity
+              - visual-object-detect
+              - text-from-image
+              - text-from-audio
+              - semantic-audio-match
+              - semantic-video-match
+        augment_text_search:
+          type: boolean
+          default: true
+        restrict_results_to_media_proximity:
+          type: boolean
+          default: false
       additionalProperties: false
-
     Offer:
-      $id: "https://schema.beckn.io/Offer/v2.1"
       type: object
-      description: |
+      description: |-
         A generalized, cross-domain Offer that captures the terms under which
         one or more Resources may be committed.
 
         Core intent:
         - Support multiple terms/eligibility/constraints/price points for the same Resource(s)
         - Support dynamic / on-the-fly offers (e.g., bundling, combinational discounts,
-          eligibility changes, capacity-aware pricing)
+         eligibility changes, capacity-aware pricing)
 
         This mirrors the role of Offer in current Beckn (and schema.org patterns),
         but keeps the shape minimal and composable via `beckn:offerAttributes`.
-      required: ["id"]
+      required:
+        - id
       properties:
-        "@context":
-          type: string
-          format: uri
-          description: JSON-LD context URI for the core Offer schema
-          enum: ["https://schema.beckn.io/Offer/v2.1/context.jsonld"]
-        "@type":
-          type: string
-          description: Type of the core Offer
-          enum: ["beckn:Offer"]
         id:
           type: string
           description: Unique identifier of the offer.
@@ -2668,20 +2277,7 @@ components:
           description: Human / agent-readable description of this offer.
           $ref: "#/components/schemas/Descriptor"
         provider:
-          description: |
-            Provider of this offer.
-            - If the offer is published by the same provider as the item it is associated with,
-              use only the provider's `id` (string reference).
-            - If the offer is published by a different provider, include the full Provider object.
-          oneOf:
-            - type: object
-              description: Same provider as the item — identified by id only.
-              required: [id]
-              properties:
-                id:
-                  type: string
-                  description: Identifier of the provider (same as the item's provider).
-            - $ref: "#/components/schemas/Provider"
+          $ref: "#/components/schemas/Provider"
         resourceIds:
           type: array
           description: References (IDs) to resources covered by this offer.
@@ -2703,7 +2299,7 @@ components:
           $ref: "#/components/schemas/TimePeriod"
         availableTo:
           type: array
-          description: |
+          description: |-
             Optional visibility constraint indicating which network participants
             (by participantId / networkId / role) are allowed to discover or
             transact on this entity.
@@ -2712,18 +2308,22 @@ components:
             in the addressed network(s).
           items:
             type: object
-            required: [type, id]
+            required:
+              - type
+              - id
             properties:
               type:
                 type: string
-                enum: [NETWORK, PARTICIPANT, ROLE]
+                enum:
+                  - NETWORK
+                  - PARTICIPANT
+                  - ROLE
                 description: Scope of visibility constraint.
               id:
                 type: string
                 description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: "#/components/schemas/Attributes"
-
     PriceSpecification:
       description: TODO-get from schema.org
       type: object
@@ -2754,8 +2354,6 @@ components:
                 $ref: "#/components/schemas/Commitment/properties/id"
               quantity:
                 $ref: "#/components/schemas/Quantity"
-
-    #removed unused ProcessingNotice
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2778,9 +2376,7 @@ components:
         - id
         - descriptor
       additionalProperties: false
-
     Quantity:
-      $id: https://schema.beckn.io/Quantity/v2.0
       description: Schema definition for Quantity in the Beckn Protocol v2.0.1
       title: Quantity
       type: object
@@ -2804,27 +2400,22 @@ components:
         unitText:
           description: Unit for the quoted price (e.g., kWh, minute, hour, month)
           type: string
-      x-jsonld:
-        "@id": beckn:Quantity
       additionalProperties: false
 
-    #ratingInputDiscraded removed
-
     RatingInput:
-      $id: "https://schema.beckn.io/RatingInput/v2.1"
-      $schema: "https://json-schema.org/draft/2020-12/schema"
-      description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings and feedback of their respective users.
+      $schema: https://json-schema.org/draft/2020-12/schema
+      description:
+        A form designed to capture rating and feedback from a user. This can be used by both BAP and
+        BPP to fetch ratings and feedback of their respective users.
       title: RatingInput
-      x-tags: [common]
+      x-tags:
+        - common
       type: object
       properties:
-        "@context":
-          type: string
-          format: uri
-        "@type":
-          type: string
         target:
-          description: The thing being rated. It could be a person, an application, a service, a product, an instrument used in the fulfillment of the contract, or the overall experience.
+          description:
+            The thing being rated. It could be a person, an application, a service, a product, an instrument
+            used in the fulfillment of the contract, or the overall experience.
           type: object
           properties:
             id:
@@ -2834,93 +2425,47 @@ components:
               $ref: "#/components/schemas/Descriptor"
             targetAttributes:
               $ref: "#/components/schemas/Attributes"
-
         range:
-          oneOf:
-            - type: object
-              properties:
-                bestRating:
-                  description: Maximum of the rating scale (default 5 if omitted).
-                  type: number
-                worstRating:
-                  description: Minimum of the rating scale (default 1 or 0 if omitted).
-                  type: number
-            - type: array
-              description: A custom rating range indexed from 0 to n
-              items:
-                type: object
-                properties:
-                  index:
-                    type: integer
-                    minimum: 0
-                  value:
-                    $ref: "https://schema.beckn.io/Descriptor/v2.1"
+          type: object
         feedbackFormSubmission:
           description: The submission to the feedback form sent along with a rating request
-          $ref: https://schema.beckn.io/FormSubmission/v2.0
+          $ref: "#/components/schemas/FormSubmission"
       required:
         - target
         - range
       additionalProperties: false
 
     Resource:
-      $id: "https://schema.beckn.io/Resource/v2.0"
       type: object
-      description: |
+      description: |-
         A minimal, domain-neutral abstraction representing any discoverable,
         referenceable, or committable unit of value, capability, service,
         entitlement, or asset within the network.
 
         Examples:
         - A retail product SKU, a mobility ride, a job role, a carbon credit unit,
-          a dataset/API entitlement, a training course, a clinic service slot.
+         a dataset/API entitlement, a training course, a clinic service slot.
 
         Designed for composability through `resourceAttributes` where
         domain packs can plug in their specific fields without changing the core.
-      required: ["id"]
+      required:
+        - id
       properties:
-        "@context":
-          type: string
-          format: uri
-          description: JSON-LD context URI for the core Resource schema
-        "@type":
-          type: string
-          description: Type of the core Resource
-          const: "beckn:Resource"
         id:
           type: string
           description: Globally unique identifier of the resource.
         descriptor:
           $ref: "#/components/schemas/Descriptor"
         resourceAttributes:
-          description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
+          description:
+            All the properties of a resource that describe its value, its terms of usage, fulfillment,
+            and consideration
           $ref: "#/components/schemas/Attributes"
-
     Settlement:
-      $id: "https://schema.beckn.io/Settlement/v2.0"
       type: object
       properties:
-        "@context":
-          type: string
-          format: uri
-          description: The domain-specific context in which this settlement is taking place.
-          examples:
-            - https://schema.beckn.io/Settlement/2.0/context.jsonld
-            - https://schema.beckn.io/RetailOrderSettlement/2.0/context.jsonld
-            - https://schema.beckn.io/P2PTradeSettlement/context.jsonld
-        "@type":
-          type: string
-          description: Type of settlement within the context of this settlement
-          examples:
-            - "beckn:Settlement"
-            - "beckn:MonetaryTransfer"
-            - "beckn:TokenTransfer"
-            - "beckn:CreditSettlement"
-            - "beckn:AssetTransfer"
-            - "beckn:ServiceSettlement"
         id:
           type: string
-        #@Ravi Cant a settlement be against multiple considerations?
         considerationId:
           $ref: "#/components/schemas/Consideration/properties/id"
         status:
@@ -2931,22 +2476,17 @@ components:
             - COMPLETE
         settlementAttributes:
           $ref: "#/components/schemas/Attributes"
-
-    # The current model is very powerful, but it introduces orchestration semantics into the protocol. My proposal is to keep Settlement minimal in core and move workflow constructs like terms, actions, triggers into a settlement extension pack via settlementAttributes.
-
-    # Removing Schedule from here as it is not used - please shift it to schema repo as a reuseable scehma.
-
     Signature:
       title: Beckn HTTP Signature
-      description: |
+      description: |-
         A digitally signed authentication credential in the HTTP `Authorization` header.
         Follows draft-cavage-http-signatures-12 as profiled by BECKN-006.
 
         format:
         ```
         Signature keyId="{subscriberId}|{uniqueKeyId}|{algorithm}",
-          algorithm="{algorithm}",created="{unixTimestamp}",expires="{unixTimestamp}",
-          headers="{signedHeaders}",signature="{base64Signature}"
+         algorithm="{algorithm}",created="{unixTimestamp}",expires="{unixTimestamp}",
+         headers="{signedHeaders}",signature="{base64Signature}"
         ```
 
         | Attribute | Description |
@@ -2962,20 +2502,12 @@ components:
         `(created): {value}\n(expires): {value}\ndigest: BLAKE-512={digest}`
         where `digest` is a BLAKE2b-512 hash of the request body, Base64-encoded.
       type: string
-      pattern: '^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$'
-
+      pattern: ^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$
     Support:
-      $id: https://schema.beckn.io/Support
-      description: Describes a support session
-        info
+      description: Describes a support session info
       title: Support
       type: object
       properties:
-        "@context":
-          type: string
-          format: uri
-        "@type":
-          type: string
         orderId:
           description: The order against which support is required
           type: string
@@ -2990,21 +2522,85 @@ components:
             $ref: "#/components/schemas/Attributes"
       additionalProperties: false
 
-    TimePeriod:
-      $id: "https://schema.beckn.io/TimePeriod/v2.1"
-      description: Time window with date-time precision for availability/validity
-      title: TimePeriod
-      x-tags: [common]
+    SpatialConstraint:
+      description:
+        "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry\
+        \ targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or\
+        \ more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g.,\
+        \ `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`\
+        \     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains\
+        \ B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate\
+        \ reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape.\
+        \ - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**,\
+        \ or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates\
+        \ are **EPSG:4326**.\n"
+      title: SpatialConstraint
       type: object
       properties:
-        "@context":
-          description: JSON-LD type for a date-time period
+        op:
+          description: OGC CQL2 spatial operator.
           type: string
-          const: "https://schema.beckn.io/TimePeriod/v2.1"
-        "@type":
-          description: JSON-LD type for a date-time period
+          enum:
+            - S_WITHIN
+            - S_CONTAINS
+            - S_INTERSECTS
+            - S_DISJOINT
+            - S_OVERLAPS
+            - S_CROSSES
+            - S_TOUCHES
+            - S_EQUALS
+            - S_DWITHIN
+        targets:
+          description:
+            "'One or more JSONPath-like pointers to geometry fields within the item.  Example pointers:  -
+            `$[''availableAt''][*][''geo'']` (array of site Points)  - `$[''itemAttributes''][''ride:dropOff''][''geo'']`
+            (drop zone Polygon)'
+
+            "
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        geometry:
+          $ref: "#/components/schemas/GeoJSONGeometry"
+        distanceMeters:
+          description:
+            'For `S_DWITHIN`: maximum distance in meters from the target geometry to `geometry` (e.g.,
+            "within 5000 m of this Point"). Ignored for other ops.'
+          type: number
+          minimum: 0
+        quantifier:
+          description:
+            "'How to evaluate when `targets` resolves to an array - - **any**: at least one element
+            matches (default) - **all**: every element must match  - **none**: no element may match'
+
+            "
           type: string
-          const: TimePeriod
+          enum:
+            - ANY
+            - ALL
+            - NONE
+          default: any
+        srid:
+          description:
+            Coordinate Reference System identifier for `geometry`. Default is `"EPSG:4326"`. If provided,
+            servers MAY reproject to EPSG:4326 internally.
+          type: string
+          example: EPSG:4326
+      required:
+        - op
+        - targets
+      additionalProperties: false
+      x-tags:
+        - common
+    TimePeriod:
+      description: Time window with date-time precision for availability/validity
+      title: TimePeriod
+      x-tags:
+        - common
+      type: object
+      properties:
         startDate:
           description: Start instant (inclusive)
           type: string
@@ -3025,8 +2621,6 @@ components:
           type: string
           format: time
           example: "22:00:00"
-      required:
-        - "@type"
       anyOf:
         - required:
             - startDate
@@ -3036,22 +2630,15 @@ components:
             - startTime
             - endTime
       additionalProperties: false
-
     Tracking:
-      $id: https://schema.beckn.io/Tracking
       description: Information regarding live tracking of the fufillment of a contract
       title: Tracking
       type: object
       properties:
-        "@context":
-          description: TBD
-          type: string
-          format: uri
-        "@type":
-          description: TBD
-          type: string
         refId:
-          description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
+          description:
+            Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment
+            Stage ID, or any other unique tracking identifier
           type: string
         status:
           type: string
@@ -3063,33 +2650,31 @@ components:
           description: Link/handle to off-network tracking UI or endpoint.
           type: string
           format: uri
-
       required:
         - url
         - status
-
     Ack:
       description:
-        New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver
-        authenticated, received, and processed the inbound request.
-      oneOf:
-        - $ref: "https://schema.beckn.io/AckResponse/v2.0"
-        - type: object
-          properties:
-            status:
-              type: string
-              enum: [ACK, NACK]
-              description: ACK if the request was accepted; NACK if rejected.
-            signature:
-              $ref: https://schema.beckn.io/CounterSignature/v2.0
-              description: |
-                Counter-signature proving the receiver authenticated and processed
-                the inbound request.
-          required: [status, signature]
-
+        New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver authenticated, received,
+        and processed the inbound request.
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ACK
+            - NACK
+          description: ACK if the request was accepted; NACK if rejected.
+        signature:
+          $ref: "#/components/schemas/CounterSignature"
+          description: Counter-signature proving the receiver authenticated and processed the inbound request.
+      required:
+        - status
+        - signature
     AckNoCallback:
-      description: Request received but no callback will follow (e.g. agents not found,
-        inventory unavailable, provider closed, context.try preview complete).
+      description:
+        Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider
+        closed, context.try preview complete).
       allOf:
         - $ref: "#/components/schemas/Ack"
         - type: object
@@ -3100,9 +2685,10 @@ components:
             - status
             - signature
             - error
-
     NackBadRequest:
-      description: "NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload."
+      description:
+        "NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the
+        payload."
       allOf:
         - $ref: "#/components/schemas/Ack"
         - type: object
@@ -3112,7 +2698,6 @@ components:
               const: NACK
             error:
               $ref: "#/components/schemas/Error"
-
     NackUnauthorized:
       description: Invalid or missing authentication credentials; signature could not be verified.
       allOf:
@@ -3124,7 +2709,6 @@ components:
               const: NACK
             error:
               $ref: "#/components/schemas/Error"
-
     ServerError:
       description:
         Internal failure on the network participant's application; the request could not be processed.
@@ -3133,44 +2717,40 @@ components:
       properties:
         error:
           $ref: "#/components/schemas/Error"
-
-  # ─── Responses ─────────────────────────────────────────────────────
   responses:
     Ack:
       description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Ack'
-
+            $ref: "#/components/schemas/Ack"
     AckNoCallback:
-      description: >
-        Request received but no callback will follow (e.g. agents not found,
-        inventory unavailable, provider closed, context.try preview complete).
+      description:
+        Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider
+        closed, context.try preview complete).
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AckNoCallback'
-
+            $ref: "#/components/schemas/AckNoCallback"
     NackBadRequest:
-      description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
+      description:
+        "NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the
+        payload."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NackBadRequest'
-
+            $ref: "#/components/schemas/NackBadRequest"
     NackUnauthorized:
       description: Invalid or missing authentication credentials; signature could not be verified.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NackUnauthorized'
-
+            $ref: "#/components/schemas/NackUnauthorized"
     ServerError:
-      description: >
+      description:
         Internal failure on the network participant's application; the request could not be processed.
         The response body MAY contain an `error` object with additional details.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ServerError'
+            $ref: "#/components/schemas/ServerError"
