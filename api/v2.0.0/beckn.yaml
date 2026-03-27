@@ -105,7 +105,8 @@ paths:
                       properties:
                         action:
                           type: string
-                          const: discover
+                          enum:
+                            - discover
                 message:
                   $ref: "#/components/schemas/DiscoverAction"
       responses:
@@ -1072,22 +1073,27 @@ components:
       title: Discover Action (External)
       description: |
         Beckn /beckn/discover message payload as published at schema.beckn.io.
-        Supports two forms: intent properties directly at the top level (flat),
-        or all intent properties nested inside an `intent` container object.
+        Requires all discover qualifiers to be nested inside an `intent`
+        container object.
         (Context wrapper stripped; only the message-content portion is inlined.)
       type: object
-      allOf:
-        - if:
-            required: [intent]
-          then:
-            type: object
-            properties:
-              intent:
-                $ref: "#/components/schemas/Intent"
-            required: [intent]
-            additionalProperties: false
-          else:
-            $ref: "#/components/schemas/Intent"
+      properties:
+        intent:
+          $ref: "#/components/schemas/Intent"
+        text_search:
+          type: string
+          description: Legacy flat free-text discover query
+        textSearch:
+          type: string
+          description: Flat free-text discover query
+      oneOf:
+        - required:
+            - intent
+        - required:
+            - text_search
+        - required:
+            - textSearch
+      additionalProperties: false
 
     InitAction:
       $id: https://schema.beckn.io/InitAction/v2.0
@@ -1957,8 +1963,8 @@ components:
       description: |
         Context for discovery endpoints (discover, on_discover).
         Requires only BAP identifiers — BPP identifiers are NOT required since
-        the BPP is not yet known at discovery time. Supports both snake_case (v1)
-        and camelCase (v2) naming conventions via oneOf.
+        the BPP is not yet known at discovery time. Supports either snake_case
+        or camelCase naming conventions via oneOf.
       oneOf:
         - allOf:
             - $ref: "#/components/schemas/Context"
@@ -1966,10 +1972,18 @@ components:
                 - action
                 - bap_id
                 - bap_uri
+                - network_id
                 - message_id
+                - schema_context
                 - timestamp
                 - transaction_id
                 - version
+            - not:
+                required:
+                  - bapId
+                  - bapUri
+                  - messageId
+                  - transactionId
         - allOf:
             - $ref: "#/components/schemas/Context"
             - required:
@@ -1978,9 +1992,16 @@ components:
                 - bapUri
                 - networkId
                 - messageId
+                - schemaContext
                 - timestamp
                 - transactionId
                 - version
+            - not:
+                required:
+                  - bap_id
+                  - bap_uri
+                  - message_id
+                  - transaction_id
 
     Contract:
       $id: https://schema.beckn.io/Contract/v2.0
