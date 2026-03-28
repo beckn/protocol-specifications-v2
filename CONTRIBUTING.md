@@ -90,7 +90,7 @@ Before requesting review, confirm:
 - [ ] Conformance impact is correctly classified
 - [ ] Security/privacy impact is explicitly stated
 - [ ] Examples/tests are updated
-- [ ] Links/docs are updated
+- [ ] Links/references are updated
 - [ ] Change aligns with design principles in governance
 
 ---

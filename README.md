@@ -1,8 +1,8 @@
 # Beckn Protocol Version 2.0 - Long Term Support (LTS)
 
-This repository contains the reference specification for Beckn Protocol Version 2 — defining the Beckn transport contract, action-specific OpenAPI endpoints, and the supporting documentation needed to implement interoperable Beckn network participants.
+This repository contains the reference specification for Beckn Protocol Version 2 — defining the Beckn transport contract, action-specific OpenAPI endpoints, and governance artifacts needed to implement interoperable Beckn network participants.
 
-The current v2.0.0 line reflects a developer-oriented, action-specific API surface in [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml), supported by a structured documentation set under [`docs/`](docs) and release-level contributor recognition in [`ACKNOWLEDGEMENTS.md`](ACKNOWLEDGEMENTS.md).
+The current v2.0.0 line reflects a developer-oriented, action-specific API surface in [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml), with release-level contributor recognition in [`ACKNOWLEDGEMENTS.md`](ACKNOWLEDGEMENTS.md).
 
 This repository is intentionally kept **minimal and stable by design** — analogous to how HTTP defines a small, stable message envelope that supports a much broader ecosystem. Domain-level transaction schemas and type systems evolve outside this repository; this repository owns the stable protocol transport contract and its release-grade documentation.
 
@@ -15,7 +15,7 @@ This repository is intentionally kept **minimal and stable by design** — analo
 
 | Version | Status | Key Changes |
 |---------|--------|-------------|
-| **v2.0.0** | **LTS (Long Term Support)** | Action-specific named endpoints in [`beckn.yaml`](api/v2.0.0/beckn.yaml), inline transport schemas, discovery/transaction/fulfillment/post-fulfillment coverage, catalog publishing and extension APIs, refreshed developer-first documentation set |
+| **v2.0.0** | **LTS (Long Term Support)** | Action-specific named endpoints in [`beckn.yaml`](api/v2.0.0/beckn.yaml), inline transport schemas, discovery/transaction/fulfillment/post-fulfillment coverage, and catalog publishing/extension APIs |
 | v2.0.0-rc1 | **End of Support (EoS)** | Frozen on [`core-2.0.0-rc1-eos`](https://github.com/beckn/protocol-specifications-v2/tree/core-2.0.0-rc1-eos) branch — no further updates |
 | v1.x | End of Support | Earlier Beckn protocol line with older discovery and registry patterns |
 
@@ -30,12 +30,6 @@ protocol-specifications-v2/
 │   └── v2.0.0/
 │       ├── beckn.yaml
 │       └── README.md
-├── docs/
-│   ├── 03_OVERVIEW.md
-│   ├── 05_Introduction.md
-│   ├── 21_Communication_Protocol.md
-│   ├── ...
-│   └── 01_RFC_Template.md
 ├── GOVERNANCE.md
 ├── LICENSE
 └── README.md
@@ -45,7 +39,6 @@ protocol-specifications-v2/
 
 - [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml) — authoritative OpenAPI 3.1.1 specification for Beckn Protocol v2.0.0.
 - [`api/v2.0.0/README.md`](api/v2.0.0/README.md) — API package overview, endpoint families, and operational notes.
-- [`docs/README.md`](docs/README.md) — entry point into the developer-first documentation set.
 - [`ACKNOWLEDGEMENTS.md`](ACKNOWLEDGEMENTS.md) — contributor recognition for this release line.
 
 ---
@@ -80,9 +73,9 @@ Examples include:
 
 Beckn remains fundamentally asynchronous. Forward actions typically receive an immediate acknowledgment, while business results flow through paired callback endpoints such as `discover → on_discover` and `confirm → on_confirm`.
 
-### Release-quality documentation matters
+### Release-quality specification matters
 
-The repository now treats documentation as part of the release contract. The numbered documents under [`docs/`](docs) are organized for implementers first, and the RFC-oriented documents have been normalized for better readability, review, and long-term maintenance.
+The repository treats the API specification and governance artifacts as part of the release contract. Changes to transport semantics, conformance expectations, and participation rules are documented directly in the versioned API package and top-level governance files.
 
 ---
 
@@ -143,27 +136,7 @@ For a concise package-level summary, see [`api/v2.0.0/README.md`](api/v2.0.0/REA
 - `context.try` supports sandbox-style operation for applicable flows such as update, cancel, rate, and support.
 - Error handling is standardized through response schemas such as `NackBadRequest`, `NackUnauthorized`, and `ServerError`.
 
-For the detailed signing model, see [`docs/14_Signing_Beckn_APIs_in_HTTP.md`](docs/14_Signing_Beckn_APIs_in_HTTP.md).
-
----
-
-## Documentation Set
-
-The repository now includes a reordered, developer-first documentation stack.
-
-Suggested reading path:
-
-1. [`docs/03_OVERVIEW.md`](docs/03_OVERVIEW.md)
-2. [`docs/05_Introduction.md`](docs/05_Introduction.md)
-3. [`docs/21_Communication_Protocol.md`](docs/21_Communication_Protocol.md)
-4. [`docs/12_Core_API_Envelope.md`](docs/12_Core_API_Envelope.md)
-5. [`docs/13_Authentication_and_Security.md`](docs/13_Authentication_and_Security.md)
-6. [`docs/28_Conformance_and_Testing.md`](docs/28_Conformance_and_Testing.md)
-7. [`docs/06_Universal_Value_Exchange_Fabric_Infrastructure.md`](docs/06_Universal_Value_Exchange_Fabric_Infrastructure.md)
-8. [`docs/09_Discovery_Architecture.md`](docs/09_Discovery_Architecture.md)
-9. [`docs/16_Schema_Distribution_Model.md`](docs/16_Schema_Distribution_Model.md)
-
-For the full index, see [`docs/README.md`](docs/README.md).
+For signing details and protocol semantics, see [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml) and [`api/v2.0.0/README.md`](api/v2.0.0/README.md).
 
 ---
 
@@ -175,10 +148,10 @@ Use this repository as the reference baseline for:
 - understanding the current action-specific Beckn API contract,
 - reviewing callback semantics, transport acknowledgements, and security expectations,
 - working with catalog publishing and catalog extension APIs,
-- and onboarding implementers through a structured documentation path.
+- and onboarding implementers through the versioned API package and governance references.
 
-When working at the API level, start with [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml).
-When working at the explanatory or architectural level, start with [`docs/README.md`](docs/README.md).
+When working at the API and transport level, start with [`api/v2.0.0/beckn.yaml`](api/v2.0.0/beckn.yaml).
+When working at the process and policy level, start with [`GOVERNANCE.md`](GOVERNANCE.md).
 
 ---
 
@@ -186,7 +159,6 @@ When working at the explanatory or architectural level, start with [`docs/README
 
 - [`ACKNOWLEDGEMENTS.md`](ACKNOWLEDGEMENTS.md)
 - [`api/v2.0.0/README.md`](api/v2.0.0/README.md)
-- [`docs/README.md`](docs/README.md)
 - [`GOVERNANCE.md`](GOVERNANCE.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)

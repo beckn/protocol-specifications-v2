@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Beckn Protocol API
   description: "The Beckn Protocol API Specification v2.0 — a concrete, developer-friendly OpenAPI 3.1.1\nspecification with one named path per Beckn protocol action.\n\n## Design Philosophy\n- **Minimalism**: Transport-layer schemas are inline. All data-model schemas\n (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.\n\n## Typical Transaction Lifecycle\n```\ndiscover → on_discover\nselect → on_select → init → on_init → confirm → on_confirm\n→ [status / on_status]* → [update / on_update]* → [cancel / on_cancel]?\n→ [track / on_track]* → rate / on_rate → support / on_support\n```\n\n## `context.try` — Sandbox Mode\nThe `try` flag on the `Context` object (defined in `#/components/schemas/Context`)\nindicates sandbox mode on the network participant:\n- `context.try: true` — test consequences without changing state.\n- `context.try: false` (default) — commit the action.\nThis pattern is applicable to `update`, `cancel`, `rate`, and `support` actions.\n\n## Authentication\n\
-    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.\nThe `Ack` response body MUST carry a `CounterSignature` proving receipt.\nSee `docs/10_Signing_Beckn_APIs_in_HTTP.md` for the signing specification.\n\n## Scope\nThis specification is designed for interoperability across value-exchange use cases:\nretail, mobility, logistics, energy, healthcare, skilling, financial services,\ncarbon trading, hiring, data licensing, and other domains built on Beckn."
+    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.\nThe `Ack` response body MUST carry a `CounterSignature` proving receipt.\nSee `api/v2.0.0/README.md` for implementation notes aligned to this specification.\n\n## Scope\nThis specification is designed for interoperability across value-exchange use cases:\nretail, mobility, logistics, energy, healthcare, skilling, financial services,\ncarbon trading, hiring, data licensing, and other domains built on Beckn."
   version: 2.0.0
   contact:
     name: Beckn Protocol
@@ -2313,7 +2313,7 @@ components:
           type: string
           format: uri
         docs:
-          description: Links to downloadable documents
+          description: Links to downloadable business/supporting documents
           type: array
           items:
             $ref: '#/components/schemas/Document'
@@ -2372,7 +2372,7 @@ components:
 
         Domain-specific error codes SHOULD follow the Beckn error code registry
 
-        (see docs/11_Error_Codes.md). Custom error objects may be expressed as
+        (see response definitions in this specification). Custom error objects may be expressed as
 
         `oneOf [string, object]` payloads via the `errorDetails` field.'
       type: object
