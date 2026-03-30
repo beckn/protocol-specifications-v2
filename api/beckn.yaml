@@ -13,8 +13,8 @@ info:
     name: Beckn Protocol
     url: https://becknprotocol.io
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: CC-BY-NC-SA-4.1
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 servers:
   - url: https://staging-api.becknprotocol.io
