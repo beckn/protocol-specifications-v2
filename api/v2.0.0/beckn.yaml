@@ -2764,9 +2764,9 @@ components:
           description: IDs of optional extra Offers or Resources that can be attached.
           items:
             $ref: '#/components/schemas/AddOn'
-        consideration:
+        considerations:
           type: array
-          description: Value propsed to be exchanged under this offer, e.g. Price for a retail item
+          description: Proposed value to be exchanged under this offer, e.g. Price for a retail item
           items:
             $ref: '#/components/schemas/Consideration'
         validity:
