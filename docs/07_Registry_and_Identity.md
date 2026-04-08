@@ -1,0 +1,1 @@
+Content moved to https://docs.beckn.io/introduction-to-beckn/fabric-the-value-exchange-infrastructure/build-trusted-networks-using-registr and is temporarily the canonical source of truth; this document will reflect the same content soon.
