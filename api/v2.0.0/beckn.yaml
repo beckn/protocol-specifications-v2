@@ -2766,7 +2766,7 @@ components:
             $ref: '#/components/schemas/AddOn'
         consideration:
           type: array
-          description: Value agreed to be exchanged under this offer.
+          description: Value propsed to be exchanged under this offer, e.g. Price for a retail item
           items:
             $ref: '#/components/schemas/Consideration'
         validity:
