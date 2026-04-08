@@ -39,6 +39,7 @@
 <!-- TOC START -->
 ## Table of Contents
 
+- [RFC-002: Beckn Architecture Design Philosophy and Principles](#rfc-002-beckn-architecture-design-philosophy-and-principles)
   - [CWG Working Draft - 2026-04-07](#cwg-working-draft---2026-04-07)
 - [1. Document Details](#1-document-details)
   - [1.1 Version History](#11-version-history)
@@ -52,6 +53,7 @@
     - [1.7.2 Discussions](#172-discussions)
     - [1.7.3 Pull Requests](#173-pull-requests)
   - [1.8 Errata](#18-errata)
+  - [Table of Contents](#table-of-contents)
 - [2. Context](#2-context)
   - [Abstract](#abstract)
   - [1. Context](#1-context)
@@ -113,11 +115,11 @@ This RFC provides a durable decision framework for protocol evolution. It reduce
 
 ## 4. Design Principles
 
-- **Interoperability-first:** The protocol surface in `beckn.yaml` is treated as a long half-life interoperability contract.
-- **Abstraction over specificity:** Contract-centric and JSON-LD composable models enable cross-domain reuse.
-- **Optimal ignorance:** Transport, trust, and domain semantics remain separated to minimize coupling.
+- **Semantic Interoperability:** The protocol design MUST ensure that every concept defined in it MUST be interpreted in the same way across the globe
+- **Fabric-Enabled:** The protocol MUST extensively leverage the ***[Universal Value-Exchange Fabric](https://docs.beckn.io/introduction-to-beckn/fabric-the-value-exchange-infrastructure)*** containing essential building blocks for ***addresability***, ***discoverability***, ***trust***, ***non-repudiation***, and other essential factors to create *value-exchange at scale*
+- **Reusability via Abstraction:** All concepts in the protocol MUST be designed to be abstract enough to be reusable across the maximum number of use cases across domains and regions
+- **Optimal Ignorance:** Every layer defined the protocol must have as little awareness of other layers to allow smooth evolution 
 - **Security by design:** Mandatory signatures and `CounterSignature` acknowledgements are baseline transport behavior.
-- **Reusability before novelty:** Catalog publish/subscribe/pull/search capabilities are modeled as reusable infrastructure APIs.
 
 ---
 
