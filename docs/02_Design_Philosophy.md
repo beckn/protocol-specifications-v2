@@ -24,32 +24,27 @@ This RFC defines the architectural philosophy and derived principles that guide 
 
 # 3. Table of Contents
 
-- [Introduction](#4-introduction)
-- [Specification](#5-specification)
-- [5.1 Philosophical Baseline](#51-philosophical-baseline)
-- [5.2 Architecture and Actor Topology](#52-architecture-and-actor-topology)
-- [5.3 API Surface and Interaction Model](#53-api-surface-and-interaction-model)
-- [5.4 Conformance Requirements and Alignment Notes](#54-conformance-requirements-and-alignment-notes)
-- [5.5 Security, Migration, and Evolution Notes](#55-security-migration-and-evolution-notes)
-- [5.6 Examples](#56-examples)
-- [Conclusion](#6-conclusion)
-- [Acknowledgements](#7-acknowledgements)
-- [References](#8-references)
+- [RFC-002: Beckn Architecture Design Philosophy and Principles](#rfc-002-beckn-architecture-design-philosophy-and-principles)
+- [1. Document Details](#1-document-details)
+- [2. Abstract](#2-abstract)
+- [3. Table of Contents](#3-table-of-contents)
+- [4. Introduction](#4-introduction)
+- [5. Specification](#5-specification)
+  - [5.1 Philosophical Baseline](#51-philosophical-baseline)
+  - [5.2 Architecture and Actor Topology](#52-architecture-and-actor-topology)
+  - [5.3 API Surface and Interaction Model](#53-api-surface-and-interaction-model)
+  - [5.4 Conformance Requirements and Alignment Notes](#54-conformance-requirements-and-alignment-notes)
+  - [5.5 Security, Migration, and Evolution Notes](#55-security-migration-and-evolution-notes)
+  - [5.6 Examples](#56-examples)
+- [6. Conclusion](#6-conclusion)
+- [7. Acknowledgements](#7-acknowledgements)
+- [8. References](#8-references)
 
 # 4. Introduction
 
 Beckn has evolved into a multi-service value-exchange fabric spanning discovery, transaction, fulfillment, post-fulfillment, and infrastructure APIs. Without a formal architectural baseline, changes to API surface, actor roles, transport behavior, and schema semantics can drift across implementations. This RFC provides that baseline so protocol evolution remains coherent and aligned with the canonical v2 artifacts.
 
 The architectural intent is to keep transport behavior explicit, preserve semantic interoperability across domains and regions, and allow new actor roles and value-exchange patterns to emerge without redesigning the core structure. This motivates a catalog-first discovery model, asynchronous business workflows with synchronous acknowledgements, and generalized contract abstractions that remain reusable across use cases.
-
-For this document, the following terms are used consistently:
-
-- **Semantic interoperability:** consistent interpretation of protocol concepts across ecosystems and implementations.
-- **Universal Value-Exchange Fabric:** shared infrastructure building blocks for addressability, discoverability, trust, non-repudiation, and value exchange at scale.
-- **Catalog-first discovery:** an index-based discovery model rather than runtime multicast fan-out.
-- **Async interaction model:** immediate acknowledgement followed by callback-based business outcomes.
-- **Contract-centric modeling:** use of generalized contract abstractions for cross-domain compatibility.
-- **Canonical artifact:** `api/v2.0.0/beckn.yaml` as the interoperability source for v2 behavior.
 
 # 5. Specification
 
@@ -81,7 +76,7 @@ Core roles in v2 include BAP, BPP, Catalog Service (CS), Discovery Service (DS),
 High-level interaction shape:
 
 ```text
-BPP -> CS -> DS -> BAP discovery
+BPP -> CP -> DS -> BAP discovery
 BAP <-> BPP transaction lifecycle
 All actors <-> Registry for trust resolution
 ```
