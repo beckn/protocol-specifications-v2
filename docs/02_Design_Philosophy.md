@@ -52,7 +52,7 @@ The key words MUST, SHOULD, and MAY in this document are to be interpreted as de
 
 ## 5.1 Design Principles
 
-1. **Fabric-first design:** All features of the protocol MUST _first_ leverage services on the Universal Value-Exchange Fabric before adding any features to ensure long-term stability.
+1. **Fabric-first design:** All features of the protocol MUST _first_ leverage first-class primitives on the Universal Value-Exchange Fabric before adding any features to ensure long-term stability.
 2. **Agent-first design:** The protocol MUST first leverage AI for its evolution _and_ also empower AI Agents to participate in trusted value-exchange transactions via unstructure
 3. **Minimalism:** Beckn architecture SHOULD keep its features as minimal as possible and only use handles and pointers to services offered by Fabric
 4. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
