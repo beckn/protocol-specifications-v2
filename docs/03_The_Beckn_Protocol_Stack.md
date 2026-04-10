@@ -1,10 +1,74 @@
-# The Beckn Protocol Stack
+# RFC-003: The Beckn Protocol Stack
 
-The **Beckn Protocol Version 2.0** specification defines a standard protocol stack that allows independently run applications to take part in trusted value exchange transactions. These transactions usually move through discovery, contracting, fulfillment, and post-fulfillment.
+## 1. Document Details
 
-This document explains the Beckn v2 protocol stack at a high level. It is meant to help a human or an AI agent understand how the layers fit together before going into the full API files and schema files.
+- **Status:** Draft.
+- **Authors:** Beckn Protocol contributors.
+- **Created:** 2026-04-10.
+- **Updated:** 2026-04-10.
+- **Version history:** Repository history on `main` does not yet show commits for this file; Draft-01 (2026-04-10) migrated the protocol stack guide into RFC template structure.
+- **Latest editor's draft:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/draft/docs/03_The_Beckn_Protocol_Stack.md).
+- **Implementation report:** Informative RFC; no standalone implementation report required.
+- **Stress test report:** Not applicable for this architecture-overview RFC.
+- **Conformance impact:** Informative with normative guidance for layer responsibilities.
+- **Security/privacy implications:** Clarifies trust-layer and signature responsibilities across the stack.
+- **Replaces / relates to:** Replaces non-RFC-form content in `03_The_Beckn_Protocol_Stack.md`.
+- **Feedback:** Issues Click [here](https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-003%22), discussions Click [here](https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-003%22), pull requests Click [here](https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-003%22).
+- **Errata:** To be published.
 
-This protocol stack consists of the following layers (bottom to top) as shown in the diagram
+## 2. Abstract
+
+This RFC defines the Beckn v2 protocol stack as six layers and explains how networking, trust, data, semantics, policy, and application concerns interact to provide a consistent implementation model across participants.
+
+## 3. Table of Contents
+
+- [RFC-003: The Beckn Protocol Stack](#rfc-003-the-beckn-protocol-stack)
+  - [1. Document Details](#1-document-details)
+  - [2. Abstract](#2-abstract)
+  - [3. Table of Contents](#3-table-of-contents)
+  - [4. Introduction](#4-introduction)
+  - [5. Specification](#5-specification)
+    - [5.1 Stack definition](#51-stack-definition)
+    - [5.2 Layer 1: Networking Layer](#52-layer-1-networking-layer)
+    - [Network Architecture](#network-architecture)
+    - [Endpoint Pattern and Action Surface](#endpoint-pattern-and-action-surface)
+    - [Request Modes and Message Exchange](#request-modes-and-message-exchange)
+    - [Discovery on Beckn](#discovery-on-beckn)
+    - [5.3 Layer 2: Trust Layer](#53-layer-2-trust-layer)
+    - [5.4 Layer 3: Core Data Layer](#54-layer-3-core-data-layer)
+    - [5.5 Layer 4: Linked Data Layer](#55-layer-4-linked-data-layer)
+    - [5.6 Layer 5: Policy Layer](#56-layer-5-policy-layer)
+    - [5.7 Layer 6: Application Layer](#57-layer-6-application-layer)
+    - [5.8 Interaction examples](#58-interaction-examples)
+    - [5.9 Conformance requirements](#59-conformance-requirements)
+    - [5.10 Security considerations](#510-security-considerations)
+    - [5.11 Migration notes](#511-migration-notes)
+  - [6. Conclusion](#6-conclusion)
+  - [7. Acknowledgements](#7-acknowledgements)
+  - [8. References](#8-references)
+
+## 4. Introduction
+
+Beckn implementations involve multiple independently operated actors and services, and without a canonical layering model responsibilities can blur across transport, trust, data, semantics, policy, and business workflow concerns. This RFC establishes a shared architecture baseline so implementations remain coherent and interoperable across BAP, BPP, DS, PS, Registry, and related infrastructure.
+
+In this layering model, the Networking Layer handles routing, addressing, discovery flow, and request/callback movement; the Trust Layer handles identity resolution, signature verification, key management, and non-repudiation controls; the Core Data Layer handles structural payload interoperability using JSON and schema validation; the Linked Data Layer handles JSON-LD semantics for extensibility and shared meaning; the Policy Layer handles runtime rule enforcement beyond core schema constraints; and the Application Layer handles participant-specific business logic and workflow execution.
+
+The stack is guided by four implementation principles: each layer MUST own a clearly defined set of responsibilities, shared contracts and semantics SHOULD be interpreted consistently across participants, request acknowledgement and callback completion patterns SHOULD be preserved for async-ready exchanges, and signature verification with trust lookup MUST be treated as first-class runtime behavior.
+
+## 5. Specification
+
+The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in Click [here](./00_Keyword_Definitions.md).
+
+### 5.1 Stack definition
+
+Beckn v2 architecture is defined as a six-layer stack:
+
+1. Networking Layer
+2. Trust Layer
+3. Core Data Layer
+4. Linked Data Layer
+5. Policy Layer
+6. Application Layer
 
 ```mermaid
 flowchart TD
@@ -19,26 +83,9 @@ flowchart TD
     end
 
     L1 --> L2 --> L3 --> L4 --> L5 --> L6
-
-    classDef infra fill:#eaf4ff,stroke:#1d4e89,stroke-width:1.5px,color:#0f172a;
-    classDef data fill:#eefcf3,stroke:#166534,stroke-width:1.5px,color:#0f172a;
-    classDef app fill:#fff7e6,stroke:#9a6700,stroke-width:1.5px,color:#0f172a;
-
-    class L1,L2 infra;
-    class L3,L4 data;
-    class L5,L6 app;
 ```
 
-Let us understand each of these layers briefly.
-
-1. **Networking Layer:** Handles addressing, sync / async behaviour, Registry lookup, Discovery API calls, Transaction API calls, etc.  
-2. **Trust Layer:** Handles signing, signature verification, key management
-3. **Core Data Layer:** Core objects are JSON and are structurally validated using JSON Schema
-4. **Linked Data Layer:** `Attribute` properties bridge into JSON-LD for semantic linking, with JSON Schema used for structure
-5. **Policy Layer:** Handles post-schema, policy rules validation
-6. **Application Layer:** Handles business logic
-
-## Layer 1: Networking Layer
+### 5.2 Layer 1: Networking Layer
 
 The networking layer defines how participants are arranged and how requests, callbacks, and discovery traffic move between them.
 
@@ -49,49 +96,33 @@ A Beckn network is a set of independently run platforms that communicate through
 In Beckn v2, the runtime can be viewed as two architectural bands:
 
 1. **Open Network Layer (top):** BAP, BPP, DS  
-2. **Universal Value-Exchange Infrastructure (bottom):** Registry, PS
+2. **Universal Value-Exchange Infrastructure Fabric (bottom):** Registry, Catalog Publishing service (CP)
 
 ```mermaid
 flowchart TB
-    subgraph TOP[Open Network Layer]
+    subgraph TOP[Transaction Layer]
         direction TB
-
-        subgraph TOP_ROW[ ]
-            direction LR
-            BAP[BAP]
-            BPP[BPP]
-        end
-
-        subgraph DS_ROW[ ]
-            direction LR
-            PAD_L[ ]
-            DS[DS]
-            PAD_R[ ]
-        end
-
-        BAP -->|discover| DS
-        DS -->|on_discover| BAP
+        BAP <-->|discover / on_discover| DS
         BAP <-->|Transaction API| BPP
     end
 
-    subgraph BOTTOM[Universal Value-Exchange Infrastructure]
+    subgraph BOTTOM[Fabric : Universal Value-Exchange Infrastructure]
         direction LR
         REG[Registry]
-        PS[PS]
+        CP[CP]
     end
 
-    BPP -->|Publish API| PS
-    DS <-->|push/pull| PS
+    BPP -->|catalog/publish| CP
+    DS <-->|catalog/subscribe| CP
+    DS <-->|push/pull| CP
 
-    BAP -.->|dedi:lookup| REG
-    BPP -.->|dedi:lookup| REG
-    DS -.->|dedi:lookup| REG
-    PS -.->|dedi:lookup| REG
+    BAP -.->|lookup| REG
+    BPP -.->|lookup| REG
+    DS -.->|lookup| REG
+    CP -.->|lookup| REG
 
     style TOP fill:#f8fbff,stroke:#1d4e89,stroke-width:2px
-    style BOTTOM fill:#f6fcf8,stroke:#166534,stroke-width:2px
-    style PAD_L fill:transparent,stroke:transparent
-    style PAD_R fill:transparent,stroke:transparent
+    style BOTTOM fill:#efefef,stroke:#9f9f9f,stroke-width:2px
 ```
 
 The key networking shift in v2 is catalog-first discovery. Discovery does not depend on live multicast fan-out.
@@ -120,8 +151,8 @@ Action support depends on the participant role and network policy.
 Beckn v2 supports three transport request modes:
 
 1. `POST` for normal forward requests and callbacks  
-2. `legacy GET Body` mode where GET with JSON body is allowed  
-3. `legacy GET Query` mode where request and signature are URL-contained
+2. `GET` mode with JSON body for Discovery Service 
+3. `GET` mode with query parameters request and signature are URL-contained
 
 The standard exchange pattern is:
 
@@ -146,257 +177,133 @@ sequenceDiagram
     Sender-->>Receiver: Ack
 ```
 
-In `legacy GET Query` mode, the server only returns acknowledgement and does not send asynchronous callbacks.
+In `GET Query` mode, the server only returns acknowledgement and does not send asynchronous callbacks.
 
-### Discovery Path in v2
+### Discovery on Beckn
 
-Discovery is index-based and catalog-first:
+Discovery in Beckn is performed via the synchronization of two actors, Catalog Publishing service (on Fabric) and the Discovery Service (on Network):
 
-1. BPP publishes catalog updates to PS  
-2. PS validates/normalizes and shares with DS  
-3. DS indexes catalog data  
-4. BAP sends `discover` to DS  
-5. DS returns matching results (sync or callback per policy)
+1. The **Beckn Provider Platform** (BPP) publishes / updates catalogs on the **Catalog Publishing** (CP) service hosted on the **Universal Value-Exchange Fabric**
+2. The **Catalog Publishing** service validates and indexes catalogs  
+3. The **Discovery Service** (DS) subscribes to various catalogs across various discovery scopes 
+4. The **Discovery Service** (DS) syncs the catalogs from **Catalog Publishing Service** (CP))
+5. The **Beckn Application Platform** (BAP) calls `discover` on DS  
+6. The **Discovery Service** (DS) returns matching results (sync or callback per policy)
 
 ```mermaid
 sequenceDiagram
     participant BPP
-    participant PS
+    participant CP
     participant DS
     participant BAP
 
-    BPP->>PS: publish catalog updates
-    PS-->>BPP: Ack
-    PS->>DS: normalize and index catalog
-    BAP->>DS: discover
-    DS-->>BAP: Ack
-    DS->>BAP: on_discover or synchronous response
+    BPP->>CP: POST catalog/publish
+    DS->>CP: POST catalog/subscribe
+    CP->>DS: push
+    DS->>CP: pull
+    BAP->>DS: POST discover
+    DS->>BAP: POST on_discover
+
+```
+### 5.3 Layer 2: Trust Layer
+
+The trust layer provides identity and non-repudiation controls.
+
+- The NFH Fabric contains a Registry service that MUST be used as a trust directory for identity, endpoint, and key resolution.
+- Open Network Participants (BAP, BPP, DS) MUST lookup the Registry using DeDi protocol
+- Receivers MUST verify signatures against trusted key material returned from the Registry `lookup`
+
+### 5.4 Layer 3: Core Data Layer
+
+The core data layer defines structural interoperability.
+
+- Payloads MUST preserve envelope fields such as `context` and `message`.
+- Core objects MUST be validated with JSON Schema/OpenAPI constraints.
+- Callback correlation SHOULD use `inReplyTo`.
+
+### 5.5 Layer 4: Linked Data Layer
+
+The linked data layer defines semantic interoperability through JSON-LD.
+
+- `Attribute` extension points MAY carry JSON-LD structures.
+- `@context` and `@type` SHOULD be used for semantic interpretation.
+- Structural validation and semantic validation are complementary and SHOULD both be applied.
+
+### 5.6 Layer 5: Policy Layer
+
+The policy layer governs runtime behavior outside core schema structure.
+
+Examples include:
+
+1. Sync vs async callback behavior by action.
+2. Mandatory/optional action groups by network.
+3. Ranking, filtering, and discovery constraints.
+4. Timeout/TTL and acknowledgement expectations.
+
+### 5.7 Layer 6: Application Layer
+
+The application layer contains participant workflows and business logic.
+
+Typical lifecycle groups:
+
+- Discovery: `discover`, `on_discover`.
+- Contracting: `select`, `on_select`, `init`, `on_init`, `confirm`, `on_confirm`.
+- Fulfillment: `status`, `on_status`, `update`, `on_update`, `track`, `on_track`, `cancel`, `on_cancel`.
+- Post-fulfillment: `rate`, `on_rate`, `support`, `on_support`.
+- Infrastructure: `publish`, trust lookups.
+
+### 5.8 Interaction examples
+
+Example 1 - Discovery to transaction path:
+
+```text
+BPP -> CP (publish)
+BP -> DS (index)
+BAP -> DS (discover)
+BAP <-> BPP (select/init/confirm/.../support lifecycle)
 ```
 
-## Layer 2: Trust Layer
-
-The trust layer provides identity, key resolution, signing, verification, and non-repudiation.
-
-- Registry is the network trust directory for participant identity, endpoints, capabilities, and public keys.
-- Registry lookups are used before request dispatch and during signature verification.
-- Every request except `legacy GET Query` mode carries a Beckn Signature in `Authorization`.
-- Receiver verifies sender signatures using public keys from Registry.
-- `counterSignature` in `Ack` strengthens non-repudiation.
-
-In Beckn v2, Registry alignment to a DeDi-compliant model makes trust directory behavior explicit and interoperable.
-
-## Layer 3: Core Data Layer
-
-The core data layer defines structural interoperability for shared business objects as standard JSON objects.
-
-Core data schemas are validated using JSON Schema validators. Some properties in core schemas are typed as `Attribute`; these are the bridge points into Layer 4.
-
-### Envelope vs Business Payload
-
-Every Beckn packet contains:
-
-- `context` (routing/control metadata)
-- `message` (business payload)
-
-Callbacks additionally carry `inReplyTo` for request correlation.
-
-Fields such as `context`, `message`, `inReplyTo`, `status`, and signatures are part of the transport contract and must not be renamed by domain models.
-
-A simplified packet:
+Example 2 - Envelope shape:
 
 ```json
 {
   "context": {
-    "domain": "beckn:retail",
     "action": "discover",
     "version": "2.0.0",
-    "bapId": "bap.example.com",
-    "bapUri": "https://bap.example.com/callback",
     "transactionId": "txn-123",
-    "messageId": "msg-456",
-    "timestamp": "2026-03-27T00:00:00Z",
-    "ttl": "PT30S"
+    "messageId": "msg-456"
   },
-  "message": {
-    "@context": [
-      "https://schema.org/",
-      "https://schema.beckn.io/core/v2.0/context.jsonld"
-    ],
-    "@type": "Intent"
-  }
+  "message": {}
 }
 ```
 
-### Shared Core Types
+### 5.9 Conformance requirements
 
-Core schema objects include `Catalog`, `Item`, `Offer`, `Intent`, `Contract`, `Provider`, `Fulfillment`, `Tracking`, `Rating`, and `Support`.
-
-Note on terminology: v2 uses `Contract` and `ContractItem` where older materials often used `Order` and `OrderItem`.
-
-## Layer 4: Linked Data Layer
-
-The linked data layer gives semantic interoperability through JSON-LD objects.
-
-When a core schema uses `Attribute`, that value can carry JSON-LD structure for semantic linking across domains and networks.
-
-- `@context` defines where term meanings come from.
-- `@type` defines object meaning.
-- Schema terms map to `schema.org` where possible and Beckn namespace where needed.
-- JSON-LD processors validate and resolve semantic links.
-- JSON Schema validators enforce structural correctness of the JSON payload.
-
-Beckn v2 schema composition is layered:
-
-1. Transport envelope schemas  
-2. Core schema vocabulary  
-3. Domain schema packs (retail, mobility, health, logistics, etc.)
-
-```mermaid
-flowchart TB
-    A[Transport envelope]
-    B[Core schema]
-    C[Domain schema packs]
-    D[schema.beckn.io]
-
-    A -->|carries| B
-    B -->|extended by| C
-    B -->|published as stable contexts and vocabularies| D
-    C -->|published as domain contexts and vocabularies| D
-```
-
-`schema.beckn.io` publishes stable IRIs, JSON-LD contexts, RDF vocabularies, and versioned schema resources.
-
-## Layer 5: Policy Layer
-
-The policy layer governs post-schema rules and runtime behavior chosen by each network.
-
-Typical policy-controlled areas include:
-
-1. Whether an action response is synchronous, asynchronous callback, or both  
-2. Which action groups are mandatory, optional, or disallowed in a domain  
-3. Validation profiles beyond base schema checks  
-4. Discovery behavior, ranking, and query constraints at DS level  
-5. Timeout/TTL and acknowledgement handling expectations
-
-This is why Beckn actions are reusable building blocks: protocol structure is common, while policy decides concrete operational behavior.
-
-## Layer 6: Application Layer
-
-The application layer contains business workflows, role logic, and state transitions.
-
-### Main Action Groups
-
-| Stage | Main actions | What they do |
+| ID | Requirement | Level |
 |---|---|---|
-| Discovery | `discover`, `on_discover` | Find matching catalog data |
-| Contracting | `select`, `on_select`, `init`, `on_init`, `confirm`, `on_confirm` | Agree on scope, terms, price, and create the contract |
-| Fulfillment | `status`, `on_status`, `update`, `on_update`, `track`, `on_track`, `cancel`, `on_cancel` | Manage live contract state |
-| Post-fulfillment | `rate`, `on_rate`, `support`, `on_support` | Handle rating and support |
-| Infrastructure | `publish`, Registry lookups | Publish supply and resolve trust data |
+| CON-003-01 | Implementations MUST preserve the six-layer responsibility boundaries defined in this RFC. | MUST |
+| CON-003-02 | Implementations MUST enforce signature verification and trust lookup behavior in the trust layer. | MUST |
+| CON-003-03 | Implementations SHOULD preserve async acknowledgement/callback interaction semantics where defined by action policy. | SHOULD |
 
-### Typical Workflow
+### 5.10 Security considerations
 
-1. BPP publishes catalog data  
-2. BAP discovers through DS  
-3. BAP starts transaction with BPP  
-4. BAP and BPP agree terms  
-5. BPP fulfills contract  
-6. Parties exchange rating/support if needed
+This RFC emphasizes trust-layer controls including signature verification, key resolution, and signed acknowledgements. Misplacing these responsibilities outside the trust layer can create verification gaps and replay/non-repudiation weaknesses.
 
-```mermaid
-flowchart LR
-    A[publish] --> B[discover]
-    B --> C[select]
-    C --> D[init]
-    D --> E[confirm]
-    E --> F[status]
-    E --> G[update]
-    E --> H[track]
-    E --> I[cancel]
-    F --> J[rate]
-    F --> K[support]
-```
+### 5.11 Migration notes
 
-### Role Responsibilities
+This update migrates the document to RFC format. It does not introduce new wire-level protocol behavior.
 
-**BAP**
+## 6. Conclusion
 
-1. Calls DS and BPP endpoints  
-2. Receives `on_*` callbacks  
-3. Uses Registry lookup support  
-4. Maintains buyer-side contract/fulfillment state
+The Beckn protocol stack provides a consistent implementation model by separating networking, trust, structural data validation, semantic interpretation, policy enforcement, and application behavior into explicit layers. Future standardization work may still be useful for formal actor capability profiles and policy-layer conformance profiles across networks, but these questions do not change the stack definition established here.
 
-**BPP**
+## 7. Acknowledgements
 
-1. Publishes catalog to PS  
-2. Serves transaction actions from BAPs  
-3. Sends callbacks to BAPs  
-4. Maintains provider-side contract/payment/fulfillment logic
+This RFC reflects contributions from Beckn Protocol contributors who developed and reviewed the architecture, interoperability, and trust-model guidance represented in this stack description.
 
-**DS**
+## 8. References
 
-1. Exposes `discover` endpoint  
-2. Maintains searchable index for catalog graph  
-3. Applies ranking/filter/query logic  
-4. Returns sync or callback results per policy
-
-**PS**
-
-1. Receives catalog publications from BPPs  
-2. Validates and normalizes catalogs  
-3. Pushes/pulls catalog state with DS
-
-**Registry**
-
-1. Stores identity, endpoints, keys, and capabilities  
-2. Serves trust lookups to BAP, BPP, DS, and PS
-
-### Full Flow at a Glance
-
-```mermaid
-sequenceDiagram
-    participant BPP
-    participant PS
-    participant DS
-    participant BAP
-    participant Registry
-
-    BPP->>Registry: register identity, endpoint, and keys
-    BAP->>Registry: lookup DS and BPP details
-
-    BPP->>PS: publish
-    PS->>DS: index catalog
-
-    BAP->>DS: discover
-    DS->>BAP: on_discover or synchronous result
-
-    BAP->>BPP: select
-    BPP->>BAP: on_select
-
-    BAP->>BPP: init
-    BPP->>BAP: on_init
-
-    BAP->>BPP: confirm
-    BPP->>BAP: on_confirm
-
-    BAP->>BPP: status / update / track / cancel
-    BPP->>BAP: on_status / on_update / on_track / on_cancel
-
-    BAP->>BPP: rate / support
-    BPP->>BAP: on_rate / on_support
-```
-
-Not every domain uses every action. Networks apply only the actions needed by their business process and policy profile.
-
-## Summary
-
-Beckn v2 is easiest to implement when viewed strictly as a six-layer stack:
-
-1. **Networking Layer** - participant topology, endpoints, request modes, and callback patterns  
-2. **Trust Layer** - identity, signatures, Registry lookup, and non-repudiation  
-3. **Core Data Layer** - JSON object schemas and stable packet contracts validated by JSON Schema  
-4. **Linked Data Layer** - `Attribute`-driven JSON-LD semantics with JSON-LD and JSON Schema validation  
-5. **Policy Layer** - network-specific operational rules above schema  
-6. **Application Layer** - business workflows across discovery, contracting, fulfillment, and support
-
-If this layered mental model is clear, the transport files, schema files, and network guides become easier to read and implement correctly.
+- Click [here](./00_Keyword_Definitions.md)
+- Click [here](../api/v2.0.0/beckn.yaml)
+- Click [here](https://docs.beckn.io/introduction-to-beckn/beckn-protocol)
+- Click [here](https://docs.beckn.io/introduction-to-beckn/fabric-the-value-exchange-infrastructure)

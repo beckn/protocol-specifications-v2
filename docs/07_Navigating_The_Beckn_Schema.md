@@ -1,122 +1,78 @@
 # RFC-007: Navigating the Beckn Schema
-## CWG Working Draft - 2026-04-08
 
 # 1. Document Details
-## 1.1 Version History
-| Version | Date | Summary |
-|---|---|---|
-| Draft-01 | 2026-04-08 | Migrated schema navigation guide to RFC template format |
 
-## 1.2 Latest editor's draft
-- ./07_Navigating_The_Beckn_Schema.md
+- **Status:** Draft.
+- **Authors:** Beckn Protocol contributors.
+- **Created:** 2026-04-08.
+- **Updated:** 2026-04-08.
+- **Version history:** No commits found on `main` for `docs/07_Navigating_The_Beckn_Schema.md`.
+- **Latest editor's draft:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/draft/docs/07_Navigating_The_Beckn_Schema.md)
+- **Implementation report:** To be published.
+- **Stress test report:** To be published.
+- **Conformance impact:** Informative with normative implementation guidance.
+- **Security/privacy implications:** Clarifies schema validation responsibilities for safe processing.
+- **Replaces / Relates to:** Replaces non-RFC-form content in `07_Navigating_The_Beckn_Schema.md`.
+- **Feedback:** Issues Click [here](https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-007%22), Discussions Click [here](https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-007%22), Pull Requests Click [here](https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-007%22).
+- **Errata:** To be published.
 
-## 1.3 Implementation report
-- To be published.
+# 2. Abstract
 
-## 1.4 Stress Test Report
-- To be published.
+This RFC defines how implementers should navigate Beckn schema assets across OpenAPI contracts, core schema objects, JSON-LD extension containers, and registry-published versioned artifacts to preserve structural and semantic interoperability.
 
-## 1.5 Editors
-- Beckn Protocol Core Working Group editors.
+# 3. Table of Contents
 
-## 1.6 Authors
-- Beckn Protocol contributors.
+- [Introduction](#4-introduction)
+- [Specification](#5-specification)
+- [Conclusion](#6-conclusion)
+- [Acknowledgements](#7-acknowledgements)
+- [References](#8-references)
 
-## 1.7 Feedback
-### 1.7.1 Issues
-- https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-007%22
+# 4. Introduction
 
-### 1.7.2 Discussions
-- https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-007%22
+Beckn implementations consume both transport contracts and semantic schema artifacts. Without a common navigation model, independent implementations can diverge on contract precedence, extension handling, version discovery, and semantic interpretation. This document defines a consistent way to read and validate these assets so implementations remain structurally and semantically interoperable.
 
-### 1.7.3 Pull Requests
-- https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-007%22
+For this document, the canonical contract is `api/v2.0.0/beckn.yaml`, which is the primary OpenAPI artifact for envelope and operation constraints. Core schema objects are shared entities such as `Context`, `Ack`, `Contract`, `Catalog`, `Intent`, and `Support`, and they require structural validation before business execution. `Attributes` containers are designated extension points for domain-specific semantics and MUST NOT be used to change the meaning of inherited core fields. Structural validation refers to JSON Schema or OpenAPI conformance checks, while semantic validation refers to JSON-LD processing through `@context` and `@type` so that meaning is preserved across participants.
 
-## 1.8 Errata
-- To be published.
+The guidance in this RFC follows four principles: contract fidelity, so `beckn.yaml` remains authoritative for transport shape; semantic composability, so extensions are carried through linked-data containers; dual validation, so structural and semantic checks complement each other; and version continuity, so schema versions evolve without changing canonical concept meaning.
 
-# 2. Context
+# 5. Specification
 
-**Status:** Draft  
-**Author(s):** Beckn Protocol contributors  
-**Created:** 2026-04-08  
-**Updated:** 2026-04-08  
-**Conformance impact:** Informative with normative implementation guidance  
-**Security/privacy implications:** Clarifies schema validation responsibilities for safe processing  
-**Replaces / Relates to:** Replaces non-RFC-form content in `07_Navigating_The_Beckn_Schema.md`.
+The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in Click [here](./00_Keyword_Definitions.md).
 
----
-
-## Abstract
-
-This RFC defines how implementers should navigate Beckn schema assets across OpenAPI references, core schema objects, JSON-LD extensibility containers, and registry-published versioned artifacts.
-
----
-
-## 1. Context
-
-Beckn implementations consume a combination of transport contracts and semantic schema artifacts. Consistent navigation of these layers is required for interoperable validation and processing.
-
----
-
-## 2. Problem
-
-Without a formal schema-navigation model, implementations can diverge on artifact precedence, extension handling, and semantic interpretation.
-
----
-
-## 3. Motivation
-
-This RFC provides a common method for reading and validating schema assets so independent implementations preserve structural and semantic compatibility.
-
----
-
-## 4. Design Principles
-
-- **Contract fidelity:** `beckn.yaml` remains the source contract for transport payload shape.
-- **Semantic composability:** Extension points support domain evolution through linked-data containers.
-- **Dual validation:** Structural and semantic checks are complementary, not interchangeable.
-- **Version continuity:** Schema versions MUST preserve canonical meaning across releases.
-
----
-
-## 5. Specification (Normative)
-
-The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in [00_Keyword_Definitions.md](./00_Keyword_Definitions.md).
-
-### 5.1 Canonical contract interpretation
+## 5.1 Canonical contract interpretation
 
 Implementations MUST treat `api/v2.0.0/beckn.yaml` as the primary contract for envelope and operation payload constraints.
 
-### 5.2 Core schema handling
+## 5.2 Core schema handling
 
-Core schema objects referenced from OpenAPI (for example `Context`, `Ack`, `Contract`, `Catalog`, `Intent`, `Support`, and related entities) MUST be validated for structural conformance before business execution.
+Core schema objects referenced from OpenAPI, including `Context`, `Ack`, `Contract`, `Catalog`, `Intent`, `Support`, and related entities, MUST be validated for structural conformance before business execution.
 
-### 5.3 `Attributes` extensibility model
+## 5.3 `Attributes` extensibility model
 
 - Properties typed as `Attributes` are designated extension containers.
 - Implementations SHOULD place domain-specific payload extensions inside these containers.
 - Extensions MUST NOT alter the meaning of inherited core fields.
 
-### 5.4 Dual validation requirement
+## 5.4 Dual validation requirement
 
 Schema processing consists of:
 
-1. structural validation (JSON Schema / OpenAPI constraints)
-2. semantic validation (JSON-LD context and type resolution)
+1. structural validation through JSON Schema or OpenAPI constraints
+2. semantic validation through JSON-LD context and type resolution
 
 Structural validation MUST be enforced. Semantic validation SHOULD be enforced for cross-network semantic consistency.
 
-### 5.5 Registry artifact model
+## 5.5 Registry artifact model
 
-Implementations MAY consume schema assets from recognized repositories indexed through `https://schema.beckn.io`.
+Implementations MAY consume schema assets from recognized repositories indexed through the Beckn schema registry at Click [here](https://schema.beckn.io).
 
 Commonly referenced source repositories include:
 
-- `https://github.com/beckn/schemas/tree/main/schema/`
-- `https://github.com/beckn/DEG/tree/main/specification/schema/`
+- Click [here](https://github.com/beckn/schemas/tree/main/schema/)
+- Click [here](https://github.com/beckn/DEG/tree/main/specification/schema/)
 
-### 5.6 Versioned schema pack expectations
+## 5.6 Versioned schema pack expectations
 
 Schema version directories SHOULD include:
 
@@ -125,19 +81,17 @@ Schema version directories SHOULD include:
 - `context.jsonld`
 - `vocab.jsonld`
 - `README.md`
-- optional auxiliary assets (`renderer.json`, `profile.json`, `examples/`)
+- optional auxiliary assets such as `renderer.json`, `profile.json`, and `examples/`
 
 Optional artifacts MUST NOT replace required structural and semantic contract files.
 
-### 5.7 Semantic stability
+## 5.7 Semantic stability and migration
 
-Schema versions MAY evolve structure and detail, but MUST preserve canonical concept meaning across versions.
+Schema versions MAY evolve structure and detail, but MUST preserve canonical concept meaning across versions. The current RFC restructuring is a documentation migration only and does not alter protocol wire behavior.
 
----
+## 5.8 Implementation sequence and example
 
-## 6. Examples
-
-### Example 1 - Validation sequence
+Implementations SHOULD follow this processing sequence:
 
 ```text
 Step 1: Validate envelope and payload shape against OpenAPI/schema contracts
@@ -145,9 +99,7 @@ Step 2: Resolve @context and @type for Attributes containers
 Step 3: Execute domain logic with validated structural + semantic data
 ```
 
----
-
-## 7. Conformance Requirements
+## 5.9 Conformance requirements
 
 | ID | Requirement | Level |
 |---|---|---|
@@ -155,38 +107,21 @@ Step 3: Execute domain logic with validated structural + semantic data
 | CON-007-02 | Implementations SHOULD process JSON-LD semantics for `Attributes` extension containers. | SHOULD |
 | CON-007-03 | Schema version evolution MUST preserve canonical term meaning. | MUST |
 
----
+## 5.10 Security and trust considerations
 
-## 8. Security Considerations
+Improper schema interpretation can enable unsafe processing paths. Structural validation and trusted schema-source usage are required to mitigate malformed payload and semantic confusion risks. Open implementation questions remain around whether schema-source trust policies should be standardized for network certification and whether minimum semantic-validation requirements should become mandatory for all production deployments.
 
-Improper schema interpretation can enable unsafe processing paths. Structural validation and trusted schema-source usage are required to mitigate malformed payload and semantic confusion risks.
+# 6. Conclusion
 
----
+This RFC establishes a common navigation model for Beckn schema assets by defining contract precedence, extension handling, dual validation, registry discovery, and version continuity expectations. This draft also records the current Draft-01 restructuring completed on 2026-04-08 as an RFC-template migration that preserves existing technical behavior while carrying forward the outstanding trust and semantic-validation questions for future standardization work.
 
-## 9. Migration Notes
+# 7. Acknowledgements
 
-This update is a structural migration to RFC template form. It does not alter protocol wire behavior.
+This document reflects the work of Beckn Protocol contributors and related community participants who developed the underlying schema-navigation guidance and RFC restructuring.
 
----
+# 8. References
 
-## 10. Open Questions
-
-1. Should schema-source trust policies be standardized for network certification?
-2. Should semantic-validation minimum requirements be made mandatory for all production deployments?
-
----
-
-## 11. References
-
-- [00_Keyword_Definitions.md](./00_Keyword_Definitions.md)
-- [05_Specification_Authoring_Style_Guide.md](./05_Specification_Authoring_Style_Guide.md)
-- `api/v2.0.0/beckn.yaml`
-- https://schema.beckn.io
-
----
-
-## 12. Changelog
-
-| Version | Date | Author | Summary |
-|---|---|---|---|
-| Draft-01 | 2026-04-08 | Beckn Protocol contributors | RFC-template migration for schema navigation guide |
+- Keyword definitions: Click [here](./00_Keyword_Definitions.md)
+- Specification authoring style guide: Click [here](./05_Specification_Authoring_Style_Guide.md)
+- Canonical OpenAPI contract: `api/v2.0.0/beckn.yaml`
+- Beckn schema registry: Click [here](https://schema.beckn.io)

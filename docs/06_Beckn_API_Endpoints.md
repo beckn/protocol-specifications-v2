@@ -1,51 +1,86 @@
-# Beckn API Endpoint Guide (v2.0.0)
+# RFC-006: Beckn API Endpoints (v2.0.0)
 
-Source of truth: `api/v2.0.0/beckn.yaml`
+# 1. Document Details
 
-This document explains all API endpoints defined in the Beckn v2.0.0 OpenAPI contract and how they are used across discovery, contracting, fulfillment, post-fulfillment, catalog services, and master resource search.
+- **Status:** Draft.
+- **Authors:** Beckn Protocol contributors.
+- **Created:** 2026-04-10.
+- **Updated:** 2026-04-10.
+- **Version history:** No commits found on `main` for `docs/06_Beckn_API_Endpoints.md`.
+- **Latest editor's draft:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/draft/docs/06_Beckn_API_Endpoints.md).
+- **Implementation report:** To be published by the implementation working group.
+- **Stress test report:** To be published by the testing and certification working group.
+- **Conformance impact:** Normative endpoint interpretation guidance for v2.0.0.
+- **Security/privacy implications:** Reinforces signature and counter-signature requirements on endpoint interactions.
+- **Replaces / Relates to:** Replaces non-RFC-form content in `06_Beckn_API_Endpoints.md`; the source contract remains `api/v2.0.0/beckn.yaml`.
+- **Feedback:** Issues Click [here](https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22RFC-006%22), Discussions Click [here](https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22RFC-006%22), Pull Requests Click [here](https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22RFC-006%22).
+- **Errata:** To be published.
 
-## 1) API Fundamentals
+# 2. Abstract
 
-- **OpenAPI version:** `3.1.1`
-- **Spec version:** `2.0.0`
-- **Base server:** `https://{subscriberUrl}`
-- **Authentication:** every endpoint requires `Authorization` header using Beckn HTTP Signature (`#/components/schemas/Signature`)
-- **ACK model:** success responses use Ack/Nack envelopes, with counter-signature in body (`#/components/schemas/CounterSignature`)
+This RFC explains the Beckn v2.0.0 endpoint surface, covering action and callback lifecycle semantics, common envelopes, endpoint grouping, and implementation constraints derived from the canonical OpenAPI contract.
 
-### 1.1 Common request envelope
+# 3. Table of Contents
 
-Most POST operations use:
+- [Introduction](#4-introduction)
+- [Specification](#5-specification)
+- [Conclusion](#6-conclusion)
+- [Acknowledgements](#7-acknowledgements)
+- [References](#8-references)
+
+# 4. Introduction
+
+Beckn v2 defines a broad action surface across discovery, transaction, fulfillment, post-fulfillment, and catalog infrastructure. Without a normalized interpretation guide, implementations can diverge on action semantics, callback behavior, envelope handling, and transport trust expectations even when they use the same OpenAPI contract. This document consolidates lifecycle and endpoint behavior so implementations remain interoperable while preserving the canonical contract in `api/v2.0.0/beckn.yaml`.
+
+Within this document, the canonical OpenAPI contract is `api/v2.0.0/beckn.yaml`, action and callback pairing refers to a forward action endpoint and its corresponding `on_*` asynchronous callback endpoint, an envelope is the standard transport container carrying `context` and `message`, the ACK/NACK model refers to the immediate acknowledgement response families (`Ack`, `AckNoCallback`, `Nack*`, and `ServerError`), counter-signature refers to the signed receipt used to strengthen non-repudiation, and catalog infrastructure endpoints cover publish, subscription, pull, and master resource search flows.
+
+Implementations are expected to preserve three design foundations throughout this endpoint surface: the OpenAPI contract remains the source of endpoint and payload truth, forward actions and `on_*` callbacks remain semantically paired, and the async-first interaction model with request signatures and acknowledgement counter-signatures remains intact wherever the contract defines it.
+
+# 5. Specification
+
+The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in `00_Keyword_Definitions.md` (Click [here](./00_Keyword_Definitions.md)).
+
+## 5.1 API fundamentals
+
+- OpenAPI version: `3.1.1`
+- Spec version: `2.0.0`
+- Base server: subscriber-specific HTTPS origin represented by the `subscriberUrl` server variable in the canonical contract.
+- Canonical contract: `api/v2.0.0/beckn.yaml`
+- Authentication: every protected endpoint MUST validate Beckn HTTP Signature (`Authorization`).
+- Interoperability model: implementations MUST treat the OpenAPI contract as the canonical endpoint and payload definition, and SHOULD preserve action/callback pairing semantics for lifecycle interoperability.
+
+## 5.2 Common envelope semantics and acknowledgements
+
+Most request operations use `context` and `message` envelopes.
+
+Standard response families are:
+
+- `Ack`
+- `AckNoCallback` (`409`)
+- `NackBadRequest` (`400`)
+- `NackUnauthorized` (`401`)
+- `ServerError` (`500`)
+
+Successful acknowledgements SHOULD include signed receipt semantics through counter-signature, and implementations SHOULD verify response counter-signatures where provided.
+
+Illustrative request envelope:
 
 ```json
 {
   "context": {
     "version": "2.0.0",
-    "action": "<endpoint-specific-action>",
-    "bapId": "...",
-    "bapUri": "...",
-    "bppId": "...",
-    "bppUri": "...",
-    "transactionId": "...",
-    "messageId": "...",
-    "timestamp": "..."
+    "action": "select",
+    "transactionId": "txn-123",
+    "messageId": "msg-456",
+    "timestamp": "2026-04-10T00:00:00Z"
   },
-  "message": {
-    "...": "endpoint-specific payload"
-  }
+  "message": {}
 }
 ```
 
-### 1.2 Common response envelope semantics
+## 5.3 Lifecycle mapping
 
-- `Ack`: `status` (`ACK|NACK`) + mandatory `signature` (counter-signature)
-- `AckNoCallback` (`409`): request accepted but no callback follows, includes `error`
-- `NackBadRequest` (`400`): invalid request payload/structure
-- `NackUnauthorized` (`401`): signature/auth failure
-- `ServerError` (`500`): internal processing failure
-
-## 2) Transaction Lifecycle Mapping
-
-Core lifecycle defined in the API description:
+Core lifecycle:
 
 ```text
 discover -> on_discover
@@ -54,115 +89,79 @@ select -> on_select -> init -> on_init -> confirm -> on_confirm
 -> [track / on_track]* -> rate / on_rate -> support / on_support
 ```
 
-## 3) Endpoint Matrix (All Paths)
+This lifecycle expresses the intended action symmetry between forward actions and asynchronous callbacks and should be preserved unless the canonical contract defines operation-specific behavior otherwise.
 
-| Method | Path | operationId | Tag | `context.action` | Message schema | Responses |
-|---|---|---|---|---|---|---|
-| POST | `/discover` | `discover` | Discovery | `discover` | `DiscoverAction` | `200,400,401,409,500` |
-| POST | `/on_discover` | `onDiscover` | Discovery | `on_discover` | `OnDiscoverAction` | `200,400,401,500` |
-| POST | `/select` | `select` | Transaction | `select` | `SelectAction` | `200,400,401,409,500` |
-| POST | `/on_select` | `onSelect` | Transaction | `on_select` | `OnSelectAction` | `200,400,401,500` |
-| POST | `/init` | `init` | Transaction | `init` | `InitAction` | `200,400,401,409,500` |
-| POST | `/on_init` | `onInit` | Transaction | `on_init` | `OnInitAction` | `200,400,401,500` |
-| POST | `/confirm` | `confirm` | Transaction | `confirm` | `ConfirmAction` | `200,400,401,409,500` |
-| POST | `/on_confirm` | `onConfirm` | Transaction | `on_confirm` | `OnConfirmAction` | `200,400,401,500` |
-| POST | `/status` | `status` | Fulfillment | `status` | `StatusAction` | `200,400,401,409,500` |
-| POST | `/on_status` | `onStatus` | Fulfillment | `on_status` | `OnStatusAction` | `200,400,401,500` |
-| POST | `/track` | `track` | Fulfillment | `track` | `TrackAction` | `200,400,401,409,500` |
-| POST | `/on_track` | `onTrack` | Fulfillment | `on_track` | `OnTrackAction` | `200,400,401,500` |
-| POST | `/update` | `update` | Fulfillment | `update` | `UpdateAction` | `200,400,401,409,500` |
-| POST | `/on_update` | `onUpdate` | Fulfillment | `on_update` | `OnUpdateAction` | `200,400,401,500` |
-| POST | `/cancel` | `cancel` | Fulfillment | `cancel` | `CancelAction` | `200,400,401,409,500` |
-| POST | `/on_cancel` | `onCancel` | Fulfillment | `on_cancel` | `OnCancelAction` | `200,400,401,500` |
-| POST | `/rate` | `rate` | Post-Fulfillment | `rate` | `RateAction` | `200,400,401,409,500` |
-| POST | `/on_rate` | `onRate` | Post-Fulfillment | `on_rate` | `OnRateAction` | `200,400,401,500` |
-| POST | `/support` | `support` | Post-Fulfillment | `support` | `SupportAction` | `200,400,401,409,500` |
-| POST | `/on_support` | `onSupport` | Post-Fulfillment | `on_support` | `OnSupportAction` | `200,400,401,500` |
-| POST | `/catalog/publish` | `catalogPublish` | Catalog Publishing | `catalog/publish` or `catalog_publish` | `CatalogPublishAction` | `200,400,401,409,500` |
-| POST | `/catalog/on_publish` | `catalogOnPublish` | Catalog Publishing | `on_catalog_publish` or `catalog/on_publish` | `CatalogOnPublishAction` | `200,400,401,500` |
-| POST | `/catalog/subscription` | `catalogSubscribe` | Subscription | `catalog/subscription` | `CatalogSubscribeAction` | `200,400,401,500` |
-| GET | `/catalog/subscriptions` | `catalogSubscribeList` | Subscription | - | - | `200,400,500` |
-| GET | `/catalog/subscription/{subscriptionId}` | `catalogSubscribeGet` | Subscription | - | - | `200,400,401,404,500` |
-| DELETE | `/catalog/subscription/{subscriptionId}` | `catalogSubscribeDelete` | Subscription | - | - | `200,400,401,404,500` |
-| POST | `/catalog/pull` | `catalogPull` | Catalog Pull | `catalog/pull` | `CatalogPullAction` | `200,400,401,500` |
-| GET | `/catalog/pull/result/{requestId}/{filename}` | `getPullResult` | Catalog Pull | - | - | `200,400,401,404` |
-| POST | `/catalog/master/search` | `masterSearch` | Master Resource Search | `catalog/master_search` | `MasterSearchAction` | `200,400,401,500` |
-| GET | `/catalog/master/schemaTypes` | `listMasterSchemaTypes` | Master Resource Search | - | - | `200,401,500` |
-| GET | `/catalog/master/{masterItemId}` | `getMasterItem` | Master Resource Search | - | - | `200,400,404,500` |
+## 5.4 Endpoint groups
 
-## 4) Detailed Endpoint Walkthrough
+### 5.4.1 Discovery
 
-### 4.1 Discovery
+- `POST /discover`
+- `POST /on_discover`
 
-- **`POST /discover`**: BAP asks DS/BPP for matching catalogs; supports text, JSONPath filtering (RFC 9535), geo constraints, and media search. Returns immediate ACK; result comes in callback.
-- **`POST /on_discover`**: callback carrying `OnDiscoverAction` (`message.catalogs[]`) from CDS/BPP to BAP.
+### 5.4.2 Transaction
 
-### 4.2 Transaction (Contracting)
+- `POST /select`, `POST /on_select`
+- `POST /init`, `POST /on_init`
+- `POST /confirm`, `POST /on_confirm`
 
-- **`POST /select`**: BAP selects resources/offers and requests quote (`SelectAction`).
-- **`POST /on_select`**: BPP returns priced/updated contract (`OnSelectAction`).
-- **`POST /init`**: BAP sends billing, fulfillment/performance, and payment intent (`InitAction`).
-- **`POST /on_init`**: BPP returns final draft contract with payment terms (`OnInitAction`).
-- **`POST /confirm`**: BAP commits accepted terms and confirms contract (`ConfirmAction`).
-- **`POST /on_confirm`**: BPP returns confirmed contract (`OnConfirmAction`).
+### 5.4.3 Fulfillment
 
-### 4.3 Fulfillment
+- `POST /status`, `POST /on_status`
+- `POST /track`, `POST /on_track`
+- `POST /update`, `POST /on_update`
+- `POST /cancel`, `POST /on_cancel`
 
-- **`POST /status`**: BAP asks for current contract state (`StatusAction`).
-- **`POST /on_status`**: BPP returns latest state (`OnStatusAction`); can push proactively after status stream is initiated.
-- **`POST /track`**: BAP requests real-time tracking handle (`TrackAction`) for live progress/position updates
-- **`POST /on_track`**: BPP returns tracking URL/handle and status (`OnTrackAction`).
-- **`POST /update`**: BAP requests mutation on active contract (`UpdateAction`)
-- **`POST /on_update`**: BPP returns recalculated terms or committed updated contract (`OnUpdateAction`).
-- **`POST /cancel`**: BAP requests cancellation (`CancelAction`)
-- **`POST /on_cancel`**: BPP returns cancellation policy preview or confirmed cancellation (`OnCancelAction`).
+### 5.4.4 Post-fulfillment
 
-### 4.4 Post-Fulfillment
+- `POST /rate`, `POST /on_rate`
+- `POST /support`, `POST /on_support`
 
-- **`POST /rate`**: BAP sends rating inputs (`RateAction`), supports `context.try` preview mode.
-- **`POST /on_rate`**: BPP confirms rating and may return aggregate/details (`OnRateAction`).
-- **`POST /support`**: BAP requests support channels or opens support ticket (`SupportAction`).
-- **`POST /on_support`**: BPP returns support details/ticket outcomes (`OnSupportAction`).
+### 5.4.5 Catalog infrastructure
 
-### 4.5 Catalog Publishing
+- `POST /catalog/publish`, `POST /catalog/on_publish`
+- `POST /catalog/subscription`, `GET /catalog/subscriptions`
+- `GET|DELETE /catalog/subscription/{subscriptionId}`
+- `POST /catalog/pull`, `GET /catalog/pull/result/{requestId}/{filename}`
 
-- **`POST /catalog/publish`**: BPP submits catalogs for indexing (`CatalogPublishAction`). Action supports both `catalog/publish` and `catalog_publish`.
-- **`POST /catalog/on_publish`**: CDS returns per-catalog processing results (`CatalogOnPublishAction`). Action supports both `on_catalog_publish` and `catalog/on_publish`.
+### 5.4.6 Master resource search
 
-### 4.6 Subscription
+- `POST /catalog/master/search`
+- `GET /catalog/master/schemaTypes`
+- `GET /catalog/master/{masterItemId}`
 
-- **`POST /catalog/subscription`**: creates subscription (`CatalogSubscribeAction`). At least one of `networkIds` or `schemaTypes` must be non-empty; empty `schemaTypes` behaves as wildcard `"*"`.
-- **`GET /catalog/subscriptions`**: list subscriptions for subscriber.
-- **`GET /catalog/subscription/{subscriptionId}`**: fetch one subscription record.
-- **`DELETE /catalog/subscription/{subscriptionId}`**: soft delete/deactivate subscription (`status=DELETED`).
+Endpoint grouping shorthand:
 
-### 4.7 Catalog Pull
+```text
+Discovery: /discover, /on_discover
+Transaction: /select,/on_select,/init,/on_init,/confirm,/on_confirm
+Fulfillment: /status,/on_status,/track,/on_track,/update,/on_update,/cancel,/on_cancel
+Post-fulfillment: /rate,/on_rate,/support,/on_support
+```
 
-- **`POST /catalog/pull`**: asynchronous pull request; returns immediate ACK with `requestId`.
-  - `mode=FULL`: latest version of each matching catalog.
-  - `mode=INCREMENTAL`: all versions in `fromDate`..`toDate`.
-  - completion is callback to `{context.bapUri}/on_catalog_pull` with pull result metadata.
-- **`GET /catalog/pull/result/{requestId}/{filename}`**: downloads large result payload file.
-  - path validation: UUID regex on `requestId` and allowlist for `filename` (`catalogs.json`).
+## 5.5 Operation behavior and conformance requirements
 
-### 4.8 Master Resource Search
+- `context.try` semantics are used for preview and commit behavior in selected flows, including `update`, `cancel`, `rate`, and `support`.
+- Catalog publishing actions may support alias forms such as `catalog/publish` and `catalog_publish` where defined in OpenAPI.
+- Catalog pull is asynchronous and returns an immediate acknowledgement with request tracking metadata.
+- Implementations MUST treat `api/v2.0.0/beckn.yaml` as the canonical endpoint and payload contract.
+- Implementations MUST enforce request signature validation and SHOULD verify response counter-signatures where provided.
+- Catalog infrastructure endpoints MUST follow operation-specific constraints defined in OpenAPI, including parameter and response semantics.
 
-- **`POST /catalog/master/search`**: query indexed master items (`MasterSearchAction`), response action is `on_catalog_master_search`.
-- **`GET /catalog/master/schemaTypes`**: list schema types available in master index.
-- **`GET /catalog/master/{masterItemId}`**: fetch one master item (path param pattern: `^[a-zA-Z0-9_\-:.]+$`).
+## 5.6 Security and compatibility considerations
 
-## 5) Payload Schemas Used by Endpoint Groups
+Endpoint misuse, weak signature validation, or misinterpreted callback behavior can create spoofing and state inconsistency risks. Implementations SHOULD enforce strict request authentication, response integrity checks, and message correlation controls.
 
-- Discovery: `DiscoverAction`, `OnDiscoverAction`
-- Transaction: `SelectAction`, `OnSelectAction`, `InitAction`, `OnInitAction`, `ConfirmAction`, `OnConfirmAction`
-- Fulfillment: `StatusAction`, `OnStatusAction`, `TrackAction`, `OnTrackAction`, `UpdateAction`, `OnUpdateAction`, `CancelAction`, `OnCancelAction`
-- Post-Fulfillment: `RateAction`, `OnRateAction`, `SupportAction`, `OnSupportAction`
-- Catalog services: `CatalogPublishAction`, `CatalogOnPublishAction`, `CatalogSubscribeAction`, `CatalogPullAction`, `CatalogSubscription`
-- Master search: `MasterSearchAction`
+This RFC-format restructuring preserves the existing v2.0.0 endpoint interpretation intent. Compatibility questions that remain relevant to future revisions include whether alias action forms should be deprecated over a defined compatibility window and whether endpoint conformance profiles should be published as machine-readable test suites.
 
-## 6) Implementation Notes from the Spec
+# 6. Conclusion
 
-- The `Context` schema is broad by design; endpoint-level constraints are applied inline per operation.
-- `context.version` is fixed to `2.0.0` in the schema.
-- `context.try` is explicitly used for preview/commit behavior in `update`, `cancel`, `rate`, and `support` flows.
-- Request signatures and response counter-signatures are normative for transport trust.
+This document normalizes the Beckn v2.0.0 endpoint surface into a single RFC-style interpretation guide while preserving the canonical OpenAPI contract, endpoint groupings, lifecycle semantics, and transport security expectations. The current draft reflects the migration of the endpoint guide into RFC structure as Draft-01 dated 2026-04-10.
+
+# 7. Acknowledgements
+
+This document reflects the work of Beckn Protocol contributors and the implementation, testing, and certification working groups that support endpoint interoperability, conformance, and operational guidance.
+
+# 8. References
+
+- Keyword definitions: Click [here](./00_Keyword_Definitions.md)
+- Canonical OpenAPI contract: `api/v2.0.0/beckn.yaml` (Click [here](../api/v2.0.0/beckn.yaml))
