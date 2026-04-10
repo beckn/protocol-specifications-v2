@@ -96,7 +96,7 @@ A Beckn network is a set of independently run platforms that communicate through
 In Beckn v2, the runtime can be viewed as two architectural bands:
 
 1. **Open Network Layer (top):** BAP, BPP, DS  
-2. **Universal Value-Exchange Infrastructure Fabric (bottom):** Registry, Catalog Publishing service (CP)
+2. **Universal Value-Exchange Infrastructure Fabric (bottom):** Registry, Cataloging Service (CS)
 
 ```mermaid
 flowchart TB
@@ -109,17 +109,17 @@ flowchart TB
     subgraph BOTTOM[Fabric : Universal Value-Exchange Infrastructure]
         direction LR
         REG[Registry]
-        CP[CP]
+        CS[CS]
     end
 
-    BPP -->|catalog/publish| CP
-    DS <-->|catalog/subscribe| CP
-    DS <-->|push/pull| CP
+    BPP -->|catalog/publish| CS
+    DS <-->|catalog/subscribe| CS
+    DS <-->|push/pull| CS
 
     BAP -.->|lookup| REG
     BPP -.->|lookup| REG
     DS -.->|lookup| REG
-    CP -.->|lookup| REG
+    CS -.->|lookup| REG
 
     style TOP fill:#f8fbff,stroke:#1d4e89,stroke-width:2px
     style BOTTOM fill:#efefef,stroke:#9f9f9f,stroke-width:2px
@@ -181,26 +181,26 @@ In `GET Query` mode, the server only returns acknowledgement and does not send a
 
 ### Discovery on Beckn
 
-Discovery in Beckn is performed via the synchronization of two actors, Catalog Publishing service (on Fabric) and the Discovery Service (on Network):
+Discovery in Beckn is performed via the synchronization of two actors, Cataloging Service (on Fabric) and the Discovery Service (on Network):
 
-1. The **Beckn Provider Platform** (BPP) publishes / updates catalogs on the **Catalog Publishing** (CP) service hosted on the **Universal Value-Exchange Fabric**
-2. The **Catalog Publishing** service validates and indexes catalogs  
+1. The **Beckn Provider Platform** (BPP) publishes / updates catalogs on the **Cataloging Service** (CS) hosted on the **Fabric**
+2. The **Cataloging Service** validates and indexes catalogs  
 3. The **Discovery Service** (DS) subscribes to various catalogs across various discovery scopes 
-4. The **Discovery Service** (DS) syncs the catalogs from **Catalog Publishing Service** (CP))
+4. The **Discovery Service** (DS) syncs the catalogs from **Cataloging Service** (CS))
 5. The **Beckn Application Platform** (BAP) calls `discover` on DS  
 6. The **Discovery Service** (DS) returns matching results (sync or callback per policy)
 
 ```mermaid
 sequenceDiagram
     participant BPP
-    participant CP
+    participant CS
     participant DS
     participant BAP
 
-    BPP->>CP: POST catalog/publish
-    DS->>CP: POST catalog/subscribe
-    CP->>DS: push
-    DS->>CP: pull
+    BPP->>CS: POST catalog/publish
+    DS->>CS: POST catalog/subscribe
+    CS->>DS: push
+    DS->>CS: pull
     BAP->>DS: POST discover
     DS->>BAP: POST on_discover
 
@@ -257,7 +257,7 @@ Typical lifecycle groups:
 Example 1 - Discovery to transaction path:
 
 ```text
-BPP -> CP (publish)
+BPP -> CS (publish)
 BP -> DS (index)
 BAP -> DS (discover)
 BAP <-> BPP (select/init/confirm/.../support lifecycle)
