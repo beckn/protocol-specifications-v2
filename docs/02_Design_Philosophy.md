@@ -50,7 +50,7 @@ The architectural intent is to keep transport behavior explicit, preserve semant
 
 The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in Click [here](./00_Keyword_Definitions.md).
 
-## 5.1 Philosophical Baseline
+## 5.1 Design Principles
 
 1. **Fabric-enabled design:** The protocol MUST leverage the Universal Value-Exchange Fabric to support addressability, discoverability, trust, non-repudiation, and exchange at scale.
 2. **Agent-empowering:** The protocol MUST leverage AI for its evolution _and_ also empower AI Agents to participate in trusted value-exchange transactions via unstructure
