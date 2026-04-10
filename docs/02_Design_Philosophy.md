@@ -52,14 +52,15 @@ The key words MUST, SHOULD, and MAY in this document are to be interpreted as de
 
 ## 5.1 Philosophical Baseline
 
-1. **Minimalism:** Beckn architecture MUST keep transport behavior explicit and uniform across actions.
-2. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
-3. **Pragmatism:** Architecture decisions SHOULD prioritize implementability with current ecosystem tooling.
-4. **Optimal ignorance:** Each layer MUST avoid embedding concerns owned by other layers.
-5. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations.
-6. **Fabric-enabled design:** The protocol MUST leverage the Universal Value-Exchange Fabric to support addressability, discoverability, trust, non-repudiation, and exchange at scale.
-7. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
-8. **Security by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
+1. **Fabric-enabled design:** The protocol MUST leverage the Universal Value-Exchange Fabric to support addressability, discoverability, trust, non-repudiation, and exchange at scale.
+2. **Agent-empowering:** The protocol MUST leverage AI for its evolution _and_ also empower AI Agents to participate in trusted value-exchange transactions via unstructure
+3. **Minimalism:** Beckn architecture MUST keep its features as minimal as possible and only use handles and pointers to services offered by Fabric
+4. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
+5. **Pragmatism:** Architecture decisions SHOULD prioritize implementability and developer friendliness with current ecosystem tooling.
+6. **Optimal ignorance:** Each layer MUST avoid embedding concerns owned by other layers.
+7. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations.
+8. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
+9. **Trust by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
 
 ## 5.2 Architecture and Actor Topology
 
