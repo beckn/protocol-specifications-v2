@@ -21,6 +21,8 @@ tags:
   description: Rate and support completed contracts
 - name: Catalog Publishing
   description: Publish catalogs to a Catalog Discovery Service (CDS)
+- name: Catalog Distribution
+  description: Push pre-resolved catalogs from a CDS to downstream discovery services
 - name: Subscription
   description: 'Beckn v2.0 catalog subscription management.
 
@@ -972,7 +974,6 @@ paths:
                         type: string
                         enum:
                         - catalog/publish
-                        - catalog_publish
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -1024,6 +1025,52 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /catalog/push:
+    post:
+      summary: Push pre-resolved catalogs to a discovery service
+      description: >-
+        A Catalog Discovery Service (CDS) pushes fully assembled, pre-resolved
+        catalogs to a downstream discovery service. Resources are already resolved
+        (master-wins merge applied, variants expanded, offers merged).
+        Returns an ACK immediately if accepted for async processing.
+      operationId: catalogPush
+      tags:
+      - Catalog Distribution
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - catalog/push
+                message:
+                  $ref: '#/components/schemas/CatalogPublishAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '409':
+          $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -1598,7 +1645,7 @@ components:
                 enum:
                 - FULL
                 - MERGE
-                default: FULL
+                default: MERGE
                 description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
               resourceDirectives:
                 description: Optional per-resource extension mapping for regular catalogs
