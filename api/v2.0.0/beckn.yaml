@@ -45,16 +45,24 @@ tags:
 
     Two delivery modes:
 
-    - **FULL** — latest version of each matching catalog
+    - **FULL** — latest version of each matching catalog (from cache, git fallback)
 
-    - **INCREMENTAL** — all versions within a date range (`fromDate`/`toDate`)
+    - **INCREMENTAL** — all historical versions within a date range from git history;
+    multiple entries per catalogId possible, ordered newest first
 
 
-    Large payloads exceeding the configured inline threshold are written to disk
+    Large payloads exceeding the configured inline threshold are served via
 
-    and served via `GET /catalog/pull/result/{requestId}/catalogs.json`; the
+    `GET /catalog/pull/result/{requestId}`; the callback''s `objectUrl` field
 
-    callback''s `objectUrl` field carries the download URL and `sha256` checksum.
+    carries the download URL and `sha256` checksum.
+
+
+    Callback response follows standard Beckn envelope:
+
+    `{ context: { action: on_catalog_pull }, message: { requestId, status, catalogs[], pagination } }`
+
+    Catalogs are flat Catalog objects — no distribution envelope wrapping.
 
     '
 - name: Master Resource Search
@@ -1036,6 +1044,8 @@ paths:
         catalogs to a downstream discovery service. Resources are already resolved
         (master-wins merge applied, variants expanded, offers merged).
         Returns an ACK immediately if accepted for async processing.
+        This is a fire-and-forget pattern — no on_catalog_push callback is defined.
+        Processing failures are handled internally via Kafka retries and dead-letter topics.
       operationId: catalogPush
       tags:
       - Catalog Distribution
@@ -1341,7 +1351,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       summary: Submit async catalog pull request
-      description: "Accepts a pull request and returns an immediate HTTP 200 ACK with a\ngenerated `requestId`. Processing runs asynchronously on the\n`pullExecutor` thread pool.\n\nWhen processing completes, the Catalog Indexer Job POSTs to\n`{context.bapUri}/on_catalog_pull` with a `PullCallbackPayload`.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the filters.\n\n**INCREMENTAL mode:** returns all catalog versions indexed between\n`message.fromDate` and `message.toDate` (ISO-8601, inclusive).\n\n**Payload size:**\n- Small (< inline threshold): catalogs returned inline in the callback body.\n- Large (≥ inline threshold): callback contains an `objectUrl` pointing to\n  `GET /catalog/pull/result/{requestId}/catalogs.json`.\n"
+      description: "Accepts a pull request and returns an immediate HTTP 200 ACK with a\ngenerated `requestId`. Processing runs asynchronously.\n\nWhen processing completes, the Catalog Indexer Job POSTs to\n`{context.bapUri}/on_catalog_pull` with a standard Beckn envelope:\n`{ context: { action: on_catalog_pull }, message: { requestId, status, catalogs[], pagination } }`.\nCatalogs are flat Catalog objects — no distribution envelope wrapping.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the\nfilters. Reads from cache (KVRocks) with git manifest fallback.\n\n**INCREMENTAL mode:** returns all historical catalog versions published\nbetween `message.fromDate` and `message.toDate` (ISO-8601, inclusive).\nReads from git commit history. Multiple entries per catalogId are possible\n(one per publish in the date range), ordered newest first. Capped at\n`maxHistoryPerCatalog` (default 100) versions per catalog.\n\n**Payload size:**\n- Small (< inline threshold): catalogs returned inline in the callback body.\n- Large (>= inline threshold): callback contains an `objectUrl` pointing to\n  `GET /catalog/pull/result/{requestId}`.\n\n**SSRF protection:** `context.bapUri` is validated before returning ACK.\nInvalid callback URLs are rejected immediately with a NACK.\n"
       requestBody:
         required: true
         content:
@@ -1387,7 +1397,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /catalog/pull/result/{requestId}/{filename}:
+  /catalog/pull/result/{requestId}:
     get:
       operationId: getPullResult
       tags:
@@ -1402,30 +1412,36 @@ paths:
           type: string
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-      - name: filename
-        in: path
-        required: true
-        description: Result filename — must be `catalogs.json`
-        schema:
-          type: string
-          enum:
-          - catalogs.json
-        example: catalogs.json
-      summary: Download large pull result file
-      description: "Serves the result file written to disk when the pull payload exceeds the\nconfigured inline threshold. Called by the BAP after receiving a callback\nwith a non-null `message.objectUrl`.\n\n**Path traversal protection:**\n- `requestId` must match the UUID v4 pattern\n  (`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).\n- `filename` is validated against an allowlist; only `catalogs.json` is permitted.\n\nRequests failing either check return HTTP 400 without a body.\n"
+      summary: Download large pull result
+      description: "Serves the pull result when the payload exceeds the configured inline\nthreshold. Called by the BAP after receiving a callback with a non-null\n`message.objectUrl`.\n\nThe response body has the same structure as the inline callback:\nflat `catalogs[]` array with `pagination` metadata.\n\n**Path traversal protection:**\n`requestId` must match the UUID v4 pattern. Invalid formats return HTTP 400.\n"
       responses:
         '200':
           description: Pull result as JSON
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PullResultFile'
+                type: object
+                properties:
+                  catalogs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Catalog'
+                    description: Flat Catalog objects (same shape as inline callback)
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
         '400':
-          description: Invalid requestId format or disallowed filename
+          description: Invalid requestId format
         '401':
           $ref: '#/components/responses/NackUnauthorized'
         '404':
-          description: Result file not found (processing may still be in progress)
+          description: Result not found (processing may still be in progress)
 
   /catalog/master/search:
     post:
@@ -3350,22 +3366,6 @@ components:
           format: date-time
           description: Inclusive upper bound for INCREMENTAL mode
 
-    PullResultFile:
-      type: object
-      description: 'JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
-
-        Same structure as the inline `catalog` array in the callback payload —
-
-        a list of distribution-envelope catalog objects.
-
-        '
-      properties:
-        catalogs:
-          type: array
-          items:
-            type: object
-            description: Full catalog distribution envelope (context + message + meta)
-            additionalProperties: true
   responses:
     Ack:
       description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
