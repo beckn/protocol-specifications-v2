@@ -50,28 +50,28 @@ The architectural intent is to keep transport behavior explicit, preserve semant
 
 The key words MUST, SHOULD, and MAY in this document are to be interpreted as described in Click [here](./00_Keyword_Definitions.md).
 
-## 5.1 Philosophical Baseline
+## 5.1 Design Principles
 
-1. **Minimalism:** Beckn architecture MUST keep transport behavior explicit and uniform across actions.
-2. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
-3. **Pragmatism:** Architecture decisions SHOULD prioritize implementability with current ecosystem tooling.
-4. **Optimal ignorance:** Each layer MUST avoid embedding concerns owned by other layers.
-5. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations.
-6. **Fabric-enabled design:** The protocol MUST leverage the Universal Value-Exchange Fabric to support addressability, discoverability, trust, non-repudiation, and exchange at scale.
-7. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
-8. **Security by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
+1. **Fabric-first design:** All features of the protocol MUST _first_ leverage first-class primitives on the Universal Value-Exchange Fabric before adding any features to ensure long-term stability.
+2. **Agent-first design:** The protocol MUST first leverage AI for its evolution _and_ also empower AI Agents to participate in trusted value-exchange transactions via unstructure
+3. **Minimalism:** Beckn architecture SHOULD keep its features as minimal as possible and only use handles and pointers to services offered by Fabric
+4. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
+5. **Pragmatism:** Architecture decisions SHOULD prioritize implementability and developer friendliness with current ecosystem tooling.
+6. **Optimal ignorance:** Each layer MUST avoid embedding concerns owned by other layers.
+7. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations.
+8. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
+9. **Trust by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
 
-## 5.2 Architecture and Actor Topology
+## 5.2 Network Actors
 
-Beckn v2 architecture is defined as a layered stack:
+Beckn Protocol v2 specification is designed to run as a layered stack built on a Universal Value Exchange Fabric:
 
-1. Network Architecture
+1. Communication Protocol
 2. API Specification
 3. Composable Linked-Data Schema
-4. Communication Protocol
-5. Workflows
+4. Workflows
 
-Core roles in v2 include BAP, BPP, Catalog Service (CS), Discovery Service (DS), and Registry.
+Core roles in v2 include BAP, BPP, Discovery Service (DS), and Registry.
 
 High-level interaction shape:
 
@@ -105,12 +105,6 @@ The request envelope MUST include `context` and `message`. Implementations MUST 
 ## 5.4 Conformance Requirements and Alignment Notes
 
 Architecture-level protocol changes to envelope, security, or acknowledgement semantics MUST be reviewed as interoperability-impacting changes. Implementations MUST treat `api/v2.0.0/beckn.yaml` as the source contract for v2.0.x endpoint and envelope behavior. Beckn deployments SHOULD preserve asynchronous request and callback semantics for lifecycle actions. Infrastructure capabilities such as publish, subscribe, pull, and search SHOULD be implemented as protocol-visible APIs where applicable.
-
-The following alignment notes apply to v2.0.0:
-
-1. Action aliases, including slash and underscore variants, MAY be supported for compatibility where explicitly defined in `beckn.yaml`.
-2. `context.try` behavior is currently operation-documented for selected flows (`update`, `cancel`, `rate`, and `support`) and SHOULD be interpreted as a two-phase preview and commit interaction model.
-3. Deployment route prefixes, for example `/beckn/...`, MAY vary by participant runtime, while operation semantics remain governed by the OpenAPI path and action contract.
 
 ## 5.5 Security, Migration, and Evolution Notes
 
