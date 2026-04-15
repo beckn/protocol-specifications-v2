@@ -938,6 +938,7 @@ paths:
                         type: string
                         enum:
                         - catalog/publish
+                        - catalog_publish
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -954,10 +955,7 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: Callback — return per-catalog processing results to the BPP
-      description: 'Delivers the per-catalog processing outcome for each catalog submitted
-        via `/catalog/publish`. Each result indicates whether the catalog was accepted,
-        rejected, or partially processed, along with any validation errors.'
+      summary: summary: CDS returns per-catalog processing results to the BPP
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
