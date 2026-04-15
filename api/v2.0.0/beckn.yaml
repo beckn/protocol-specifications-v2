@@ -21,8 +21,6 @@ tags:
   description: Rate and support completed contracts
 - name: Catalog Publishing
   description: Publish and manage catalogs on a Beckn network
-- name: Catalog Distribution
-  description: Distribute catalogs between network participants
 - name: Subscription
   description: Subscribe to catalog updates across networks and schema types
 - name: Catalog Pull
@@ -995,15 +993,16 @@ paths:
 
   /catalog/push:
     post:
-      summary: Push pre-resolved catalogs to a discovery service
+      summary: Push a catalog to a downstream participant
       description: >-
-        Sends fully assembled, pre-resolved catalogs to a downstream discovery service.
-        Resources are already fully resolved — variants expanded, offers merged.
-        Returns an ACK immediately; processing is asynchronous.
-        No callback is defined for this action.
+        Sends a catalog directly from a BPP or Catalog Discovery Service to a specific
+        downstream Beckn participant. Unlike `/catalog/publish`, which offers a catalog
+        to a CDS for onward handling, `/catalog/push` targets a single known recipient
+        and is fire-and-forget — the receiver returns an ACK and no callback is defined
+        for this action.
       operationId: catalogPush
       tags:
-      - Catalog Distribution
+      - Catalog Publishing
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       requestBody:
@@ -1297,8 +1296,16 @@ paths:
       - Catalog Pull
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      summary: Submit async catalog pull request
-      description: "Submits a catalog pull request and returns an immediate ACK with a\ngenerated `requestId`. The actual catalog data is delivered asynchronously via\nHTTP callback to `{context.bapUri}/on_catalog_pull`.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the filters.\n\n**INCREMENTAL mode:** returns all catalog versions published between\n`message.fromDate` and `message.toDate` (ISO-8601, inclusive). Multiple entries\nper catalogId are possible, ordered newest first.\n\nFor large result sets, the callback body contains an `objectUrl` field pointing\nto `GET /catalog/pull/result/{requestId}` where the full payload can be downloaded.\n"
+      summary: Pull catalogs on demand
+      description: >-
+        Requests one or more catalogs from a Catalog Discovery Service. The BAP sends
+        the pull request and receives an immediate ACK with a `requestId`; the catalogs
+        are delivered asynchronously via callback to `{context.bapUri}/on_catalog_pull`.
+
+
+        Two modes are supported: `FULL` returns the latest version of each catalog
+        matching the request filters; `INCREMENTAL` returns catalog versions published
+        within the supplied `fromDate`/`toDate` window.
       requestBody:
         required: true
         content:
@@ -1359,8 +1366,11 @@ paths:
           type: string
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-      summary: Download large pull result
-      description: "Downloads a pull result by its request ID. Call this endpoint after receiving\na callback that contains a non-null `message.objectUrl` field.\n\nThe response body contains a flat `catalogs[]` array with `pagination` metadata,\nidentical in structure to the inline callback.\n\n`requestId` must be a valid UUID v4. Invalid formats return HTTP 400.\n"
+      summary: Retrieve catalogs for a pull request
+      description: >-
+        Retrieves the catalogs associated with a previously acknowledged pull request,
+        identified by its `requestId`. The response carries the same `catalogs[]` and
+        `pagination` structure as the asynchronous callback.
       responses:
         '200':
           description: Pull result as JSON
