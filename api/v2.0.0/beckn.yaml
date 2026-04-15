@@ -20,59 +20,15 @@ tags:
 - name: Post-Fulfillment
   description: Rate and support completed contracts
 - name: Catalog Publishing
-  description: Publish catalogs to a Catalog Discovery Service (CDS)
+  description: Publish and manage catalogs on a Beckn network
 - name: Catalog Distribution
-  description: Push pre-resolved catalogs from a CDS to downstream discovery services
+  description: Distribute catalogs between network participants
 - name: Subscription
-  description: 'Beckn v2.0 catalog subscription management.
-
-    Subscriptions determine which networks and schema types a BAP receives
-
-    `on_discover` callbacks for. Only `ACTIVE` subscriptions are matched
-
-    during evaluation.
-
-    '
+  description: Subscribe to catalog updates across networks and schema types
 - name: Catalog Pull
-  description: 'Async catalog pull API hosted on the Catalog Indexer Job.
-
-    The BAP POSTs a pull request and receives an immediate ACK with a `requestId`.
-
-    The actual catalog data is delivered asynchronously via HTTP callback to
-
-    `{bapUri}/on_catalog_pull`.
-
-
-    Two delivery modes:
-
-    - **FULL** — latest version of each matching catalog (from cache, git fallback)
-
-    - **INCREMENTAL** — all historical versions within a date range from git history;
-    multiple entries per catalogId possible, ordered newest first
-
-
-    Large payloads exceeding the configured inline threshold are served via
-
-    `GET /catalog/pull/result/{requestId}`; the callback''s `objectUrl` field
-
-    carries the download URL and `sha256` checksum.
-
-
-    Callback response follows standard Beckn envelope:
-
-    `{ context: { action: on_catalog_pull }, message: { requestId, status, catalogs[], pagination } }`
-
-    Catalogs are flat Catalog objects — no distribution envelope wrapping.
-
-    '
+  description: Pull catalogs on demand with full or incremental sync
 - name: Master Resource Search
-  description: 'Query APIs for master catalog items stored in the Catalog Indexer git
-
-    repository. All endpoints return a Beckn v2.0 response envelope with
-
-    `action: "on_catalog_master_search"`.
-
-    '
+  description: Search and retrieve master resource definitions
 security: []
 servers:
 - url: https://{subscriberUrl}
@@ -998,7 +954,10 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: CDS returns per-catalog processing results to the BPP
+      summary: Callback — return per-catalog processing results to the BPP
+      description: 'Delivers the per-catalog processing outcome for each catalog submitted
+        via `/catalog/publish`. Each result indicates whether the catalog was accepted,
+        rejected, or partially processed, along with any validation errors.'
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
@@ -1040,12 +999,10 @@ paths:
     post:
       summary: Push pre-resolved catalogs to a discovery service
       description: >-
-        A Catalog Discovery Service (CDS) pushes fully assembled, pre-resolved
-        catalogs to a downstream discovery service. Resources are already resolved
-        (master-wins merge applied, variants expanded, offers merged).
-        Returns an ACK immediately if accepted for async processing.
-        This is a fire-and-forget pattern — no on_catalog_push callback is defined.
-        Processing failures are handled internally via Kafka retries and dead-letter topics.
+        Sends fully assembled, pre-resolved catalogs to a downstream discovery service.
+        Resources are already fully resolved — variants expanded, offers merged.
+        Returns an ACK immediately; processing is asynchronous.
+        No callback is defined for this action.
       operationId: catalogPush
       tags:
       - Catalog Distribution
@@ -1092,20 +1049,11 @@ paths:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      description: 'Creates a new catalog subscription using the Beckn v2.0 envelope
+      description: 'Creates a new catalog subscription. The subscriber receives catalog
+        update callbacks at the URL specified in `callbackUrl` (defaults to `context.bapUri`).
 
-        (`action: "catalog/subscription"`). The subscriber identity is derived
-
-        from `context.bapId` / `context.bapUri`; the callback URL defaults
-
-        to `bapUri`.
-
-
-        At least one of `networkIds` or `schemaTypes` must be non-empty.
-
-        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
-
-        matching all schema types for the specified networks.
+        At least `networkIds` must be provided. Omitting `schemaTypes` or providing an empty
+        array subscribes to all schema types on the specified networks.
 
         '
       requestBody:
@@ -1185,6 +1133,8 @@ paths:
   /catalog/subscriptions:
     get:
       summary: List subscriptions for a subscriber
+      description: 'Returns all subscriptions belonging to the given subscriber, with pagination.
+        Use the `subscriberId` query parameter to scope results to a specific BAP.'
       operationId: catalogSubscribeList
       tags:
       - Subscription
@@ -1193,7 +1143,7 @@ paths:
       - name: subscriberId
         in: query
         required: true
-        description: BAP URI, BAP ID, or internal subscriber UUID
+        description: Subscriber identifier — typically the BAP ID or BAP URI used when creating the subscription
         schema:
           type: string
         example: https://bap.example.com
@@ -1235,6 +1185,8 @@ paths:
   /catalog/subscription/{subscriptionId}:
     get:
       summary: Get subscription by ID
+      description: 'Returns the full details of a single subscription, including its network scope,
+        schema type filters, callback URL, status, and delivery policy.'
       operationId: catalogSubscribeGet
       tags:
       - Subscription
@@ -1289,11 +1241,8 @@ paths:
       operationId: catalogSubscribeDelete
       tags:
       - Subscription
-      description: 'Soft-deletes a subscription by setting its status to `DELETED`.
-
-        The subscription record is retained in the database; it will no longer
-
-        receive catalog delivery callbacks.
+      description: 'Deactivates a subscription. The subscription will no longer receive
+        catalog delivery callbacks. The subscription record is returned with status `DELETED`.
 
         '
       parameters:
@@ -1351,7 +1300,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       summary: Submit async catalog pull request
-      description: "Accepts a pull request and returns an immediate HTTP 200 ACK with a\ngenerated `requestId`. Processing runs asynchronously.\n\nWhen processing completes, the Catalog Indexer Job POSTs to\n`{context.bapUri}/on_catalog_pull` with a standard Beckn envelope:\n`{ context: { action: on_catalog_pull }, message: { requestId, status, catalogs[], pagination } }`.\nCatalogs are flat Catalog objects — no distribution envelope wrapping.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the\nfilters. Reads from cache (KVRocks) with git manifest fallback.\n\n**INCREMENTAL mode:** returns all historical catalog versions published\nbetween `message.fromDate` and `message.toDate` (ISO-8601, inclusive).\nReads from git commit history. Multiple entries per catalogId are possible\n(one per publish in the date range), ordered newest first. Capped at\n`maxHistoryPerCatalog` (default 100) versions per catalog.\n\n**Payload size:**\n- Small (< inline threshold): catalogs returned inline in the callback body.\n- Large (>= inline threshold): callback contains an `objectUrl` pointing to\n  `GET /catalog/pull/result/{requestId}`.\n\n**SSRF protection:** `context.bapUri` is validated before returning ACK.\nInvalid callback URLs are rejected immediately with a NACK.\n"
+      description: "Submits a catalog pull request and returns an immediate ACK with a\ngenerated `requestId`. The actual catalog data is delivered asynchronously via\nHTTP callback to `{context.bapUri}/on_catalog_pull`.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the filters.\n\n**INCREMENTAL mode:** returns all catalog versions published between\n`message.fromDate` and `message.toDate` (ISO-8601, inclusive). Multiple entries\nper catalogId are possible, ordered newest first.\n\nFor large result sets, the callback body contains an `objectUrl` field pointing\nto `GET /catalog/pull/result/{requestId}` where the full payload can be downloaded.\n"
       requestBody:
         required: true
         content:
@@ -1413,7 +1362,7 @@ paths:
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
       summary: Download large pull result
-      description: "Serves the pull result when the payload exceeds the configured inline\nthreshold. Called by the BAP after receiving a callback with a non-null\n`message.objectUrl`.\n\nThe response body has the same structure as the inline callback:\nflat `catalogs[]` array with `pagination` metadata.\n\n**Path traversal protection:**\n`requestId` must match the UUID v4 pattern. Invalid formats return HTTP 400.\n"
+      description: "Downloads a pull result by its request ID. Call this endpoint after receiving\na callback that contains a non-null `message.objectUrl` field.\n\nThe response body contains a flat `catalogs[]` array with `pagination` metadata,\nidentical in structure to the inline callback.\n\n`requestId` must be a valid UUID v4. Invalid formats return HTTP 400.\n"
       responses:
         '200':
           description: Pull result as JSON
@@ -1445,7 +1394,10 @@ paths:
 
   /catalog/master/search:
     post:
-      summary: Search master catalog items
+      summary: Search master resource definitions
+      description: 'Searches canonical master resource definitions by network and schema type.
+        Returns matching resources grouped by catalog, with pagination. An empty `networkIds`
+        or `schemaTypes` list matches all values for that dimension.'
       operationId: masterSearch
       tags:
       - Master Resource Search
@@ -1512,7 +1464,9 @@ paths:
 
   /catalog/master/schemaTypes:
     get:
-      summary: List distinct schema types
+      summary: List available master resource schema types
+      description: 'Returns the list of distinct schema type URIs for all master resources
+        currently available. Use these values to populate `schemaTypes` filters in search requests.'
       operationId: listMasterSchemaTypes
       tags:
       - Master Resource Search
@@ -1553,7 +1507,10 @@ paths:
 
   /catalog/master/{masterItemId}:
     get:
-      summary: Get single master item
+      summary: Get a master resource by ID
+      description: 'Returns a single master resource wrapped in its catalog envelope.
+        The response contains the full resource definition along with catalog-level
+        metadata such as provider and descriptor.'
       operationId: getMasterItem
       tags:
       - Master Resource Search
@@ -1662,7 +1619,7 @@ components:
                 - FULL
                 - MERGE
                 default: MERGE
-                description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+                description: 'FULL replaces all existing resources for this catalog with the incoming set. MERGE upserts incoming resources while preserving existing ones not present in this publish.'
               resourceDirectives:
                 description: Optional per-resource extension mapping for regular catalogs
                 type: array
@@ -3167,13 +3124,9 @@ components:
 
     CatalogSubscribeAction:
       type: object
-      description: 'Message payload for catalog/subscription.
-
-        At least one of `networkIds` or `schemaTypes` must be non-empty.
-
-        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
-
-        matching all schema types for the specified networks.
+      description: 'Message payload for catalog/subscription. At least `networkIds` must
+        be provided. Omitting `schemaTypes` or providing an empty array subscribes to all
+        schema types on the specified networks.
 
         '
       required:
@@ -3259,7 +3212,7 @@ components:
             maxRetries:
               type: integer
               default: 5
-              description: Maximum retry attempts before sending to DLT
+              description: Maximum number of delivery retry attempts
             initialDelaySeconds:
               type: integer
               default: 5
