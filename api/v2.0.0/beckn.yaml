@@ -955,7 +955,7 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: summary: CDS returns per-catalog processing results to the BPP
+      summary: CDS returns per-catalog processing results to the BPP
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
