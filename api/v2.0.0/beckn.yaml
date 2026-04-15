@@ -1351,6 +1351,61 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /on_catalog_pull:
+    post:
+      summary: Receive an asynchronous pull result
+      description: >-
+        Hosted by the BAP at `{bapUri}/on_catalog_pull`. Invoked by the Catalog
+        Discovery Service as the asynchronous callback for a previously
+        acknowledged `/catalog/pull` request. The callback carries the final
+        state of the request — either the assembled catalogs (inline or via
+        `objectUrl`) or a terminal failure reason.
+
+
+        The BAP MUST deduplicate on `message.requestId`. The callback is
+        delivered with at-least-once semantics and may fire more than once if a
+        CDS instance restarts between completion and offset commit.
+
+
+        Deduplicated submissions (identical expensive request within the CDS
+        large-result dedup window, default 24 hours) do NOT fire a new callback
+        — the BAP should poll `GET /catalog/pull/result/{requestId}` instead.
+      operationId: onCatalogPull
+      tags:
+      - Catalog Pull
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_catalog_pull
+                message:
+                  $ref: '#/components/schemas/CatalogPullCallbackAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /catalog/pull/result/{requestId}:
     get:
       operationId: getPullResult
@@ -3340,6 +3395,86 @@ components:
           type: string
           format: date-time
           description: Inclusive upper bound for INCREMENTAL mode
+
+    CatalogPullCallbackAction:
+      type: object
+      description: >-
+        Message payload for `on_catalog_pull`. Exactly one of `catalogs`
+        (inline) or `objectUrl` (fetch the full payload from the CDS) is
+        present when `status = COMPLETED`. Neither is present when
+        `status` is `FAILED` or `DLT_EXHAUSTED` — `error` carries the reason
+        instead.
+      additionalProperties: false
+      required:
+      - requestId
+      - status
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          description: Echoes the `requestId` returned by the original `/catalog/pull` ACK.
+        status:
+          type: string
+          enum:
+          - COMPLETED
+          - FAILED
+          - DLT_EXHAUSTED
+        attempts:
+          type: integer
+          minimum: 1
+          description: Number of processing attempts. 1 for first-try success.
+        catalogs:
+          type: array
+          description: Inline catalog payload, present only for small results below the CDS inline threshold.
+          items:
+            type: object
+        objectUrl:
+          type: object
+          description: >-
+            Present when the result exceeds the inline threshold. BAP fetches
+            via GET on `url`. When the CDS is in signed-URL mode, `url` is
+            re-generated on every status poll with a fresh 15-minute expiry.
+          additionalProperties: false
+          required:
+          - url
+          - format
+          - sizeBytes
+          - checksum
+          properties:
+            url:
+              type: string
+              description: Either a CDS-hosted `/catalog/pull/result/{requestId}` URL or a pre-signed object store URL.
+            expiresAt:
+              type: string
+              format: date-time
+              description: Expiry for signed URLs; absent for CDS-hosted URLs.
+            format:
+              type: string
+              enum:
+              - json
+              - json.gz
+            sizeBytes:
+              type: integer
+              minimum: 0
+            checksum:
+              type: string
+              description: SHA-256 hex prefixed with `sha256:`.
+        pagination:
+          type: object
+          additionalProperties: false
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            limit:
+              type: integer
+              minimum: 1
+            offset:
+              type: integer
+              minimum: 0
+        error:
+          description: Present only when `status != COMPLETED`.
+          $ref: '#/components/schemas/Error'
 
   responses:
     Ack:
