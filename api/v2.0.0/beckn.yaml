@@ -3284,8 +3284,10 @@ components:
     CatalogPullAction:
       type: object
       description: Message payload for catalog/pull
+      additionalProperties: false
       required:
       - mode
+      - filters
       properties:
         mode:
           type: string
@@ -3295,29 +3297,41 @@ components:
           description: "- `FULL` — returns the latest version of each matching catalog.\n- `INCREMENTAL` — returns all catalog versions indexed between\n  `fromDate` and `toDate` (inclusive).\n"
         filters:
           type: object
-          description: Optional filters narrowing which catalogs are returned
+          description: "Required filters scoping which catalogs are returned. At least\
+            \ one of catalogIds, networkIds, or schemaTypes must be provided with a\
+            \ non-empty array — an unscoped pull is rejected. When multiple fields\
+            \ are supplied they are ANDed together (intersection). Unknown fields\
+            \ are rejected."
+          additionalProperties: false
+          minProperties: 1
           properties:
+            catalogIds:
+              type: array
+              items:
+                type: string
+              minItems: 1
+              description: "Explicit catalog IDs to pull. When combined with networkIds\
+                \ or schemaTypes the result is the intersection of all constraints."
             networkIds:
               type: array
               items:
                 type: string
-              description: Filter by network IDs (empty = all networks)
-              default: []
+              minItems: 1
+              description: Filter by network IDs.
             schemaTypes:
               type: array
               items:
                 type: string
-              description: Filter by schema type URIs (empty = all types)
-              default: []
-        catalogIds:
-          type: array
-          items:
-            type: string
-          description: Explicit catalog IDs to pull (alternative to filters)
+              minItems: 1
+              description: Filter by schema type URIs.
         limit:
           type: integer
           minimum: 1
           description: Maximum number of catalogs to return (server may apply its own cap)
+        offset:
+          type: integer
+          minimum: 0
+          description: Zero-based page start for pagination
         fromDate:
           type: string
           format: date-time
