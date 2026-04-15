@@ -1406,55 +1406,6 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /catalog/pull/result/{requestId}:
-    get:
-      operationId: getPullResult
-      tags:
-      - Catalog Pull
-      parameters:
-      - $ref: '#/components/parameters/AuthorizationHeader'
-      - name: requestId
-        in: path
-        required: true
-        description: UUID v4 returned in the pull ACK response
-        schema:
-          type: string
-          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-      summary: Retrieve catalogs for a pull request
-      description: >-
-        Retrieves the catalogs associated with a previously acknowledged pull request,
-        identified by its `requestId`. The response carries the same `catalogs[]` and
-        `pagination` structure as the asynchronous callback.
-      responses:
-        '200':
-          description: Pull result as JSON
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  catalogs:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Catalog'
-                    description: Flat Catalog objects (same shape as inline callback)
-                  pagination:
-                    type: object
-                    properties:
-                      total:
-                        type: integer
-                      limit:
-                        type: integer
-                      offset:
-                        type: integer
-        '400':
-          description: Invalid requestId format
-        '401':
-          $ref: '#/components/responses/NackUnauthorized'
-        '404':
-          description: Result not found (processing may still be in progress)
-
   /catalog/master/search:
     post:
       summary: Search master resource definitions
@@ -3399,11 +3350,16 @@ components:
     CatalogPullCallbackAction:
       type: object
       description: >-
-        Message payload for `on_catalog_pull`. Exactly one of `catalogs`
-        (inline) or `objectUrl` (fetch the full payload from the CDS) is
-        present when `status = COMPLETED`. Neither is present when
-        `status` is `FAILED` or `DLT_EXHAUSTED` — `error` carries the reason
-        instead.
+        Message payload for `on_catalog_pull`. Delivered with at-least-once
+        semantics — the CDS may redeliver a callback if it crashes between
+        sending and committing the Kafka offset. The BAP MUST deduplicate on
+        `requestId`.
+
+
+        Exactly one of `catalogs` (inline, for small results) or `objectUrl`
+        (pre-signed object-store URL, for large results) is present when
+        `status = COMPLETED`. Neither is present when `status = FAILED` —
+        `error` carries the reason instead.
       additionalProperties: false
       required:
       - requestId
@@ -3418,11 +3374,7 @@ components:
           enum:
           - COMPLETED
           - FAILED
-          - DLT_EXHAUSTED
-        attempts:
-          type: integer
-          minimum: 1
-          description: Number of processing attempts. 1 for first-try success.
+          description: Terminal status only. There is no intermediate `PROCESSING` state — the callback fires exactly once (logically) per terminal outcome.
         catalogs:
           type: array
           description: Inline catalog payload, present only for small results below the CDS inline threshold.
@@ -3431,23 +3383,25 @@ components:
         objectUrl:
           type: object
           description: >-
-            Present when the result exceeds the inline threshold. BAP fetches
-            via GET on `url`. When the CDS is in signed-URL mode, `url` is
-            re-generated on every status poll with a fresh 15-minute expiry.
+            Present when the result exceeds the inline threshold. The BAP
+            fetches the payload by HTTP GET on `url`, which points directly at
+            a pre-signed object-store location (e.g. GCS V4 signed URL). The
+            CDS does not proxy the download.
           additionalProperties: false
           required:
           - url
           - format
           - sizeBytes
           - checksum
+          - expiresAt
           properties:
             url:
               type: string
-              description: Either a CDS-hosted `/catalog/pull/result/{requestId}` URL or a pre-signed object store URL.
+              description: Pre-signed object-store URL. Short-lived (typically 15 minutes).
             expiresAt:
               type: string
               format: date-time
-              description: Expiry for signed URLs; absent for CDS-hosted URLs.
+              description: URL expiry timestamp.
             format:
               type: string
               enum:
@@ -3473,7 +3427,7 @@ components:
               type: integer
               minimum: 0
         error:
-          description: Present only when `status != COMPLETED`.
+          description: Present only when `status = FAILED`.
           $ref: '#/components/schemas/Error'
 
   responses:
