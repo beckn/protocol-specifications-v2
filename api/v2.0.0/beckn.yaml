@@ -1359,7 +1359,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /on_catalog_pull:
+  /catalog/on_pull:
     post:
       summary: Receive catalog pull results
       description: >-
@@ -1396,7 +1396,7 @@ paths:
                     properties:
                       action:
                         type: string
-                        const: on_catalog_pull
+                        const: catalog/on_pull
                 message:
                   $ref: '#/components/schemas/CatalogPullCallbackAction'
       responses:
