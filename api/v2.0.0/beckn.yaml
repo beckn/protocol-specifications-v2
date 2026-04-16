@@ -911,7 +911,7 @@ paths:
 
         Returns an **ACK** immediately if accepted for processing. The per-catalog processing
 
-        result arrives asynchronously via `/catalog/on_publish`.'
+        result arrives asynchronously via `/beckn/catalog/on_publish`.'
       operationId: catalogPublish
       tags:
       - Catalog Publishing
