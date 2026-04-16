@@ -906,12 +906,12 @@ paths:
 
   /catalog/publish:
     post:
-      summary: Publish catalogs to the network
-      description: >-
-        Submit one or more catalogs for indexing and distribution across the
-        network. Returns an immediate acknowledgement; per-catalog processing
-        results are delivered asynchronously via the `/catalog/on_publish`
-        callback.
+      summary: BPP publishes catalogs for indexing by a CDS
+      description: 'BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
+
+        Returns an **ACK** immediately if accepted for processing. The per-catalog processing
+
+        result arrives asynchronously via `/catalog/on_publish`.'
       operationId: catalogPublish
       tags:
       - Catalog Publishing
@@ -934,7 +934,9 @@ paths:
                     properties:
                       action:
                         type: string
-                        const: catalog/publish
+                        enum:
+                        - catalog/publish
+                        - catalog_publish
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -951,7 +953,7 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: Receive catalog publish results
+      summary: CDS returns per-catalog processing results to the BPP
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
@@ -974,7 +976,9 @@ paths:
                     properties:
                       action:
                         type: string
-                        const: catalog/on_publish
+                        enum:
+                        - on_catalog_publish
+                        - catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
@@ -993,9 +997,8 @@ paths:
       description: >-
         Sends a catalog directly to a known downstream participant.
         Unlike `/catalog/publish` which submits catalogs for network-wide
-        indexing, `/catalog/push` delivers to a single recipient.
-        Fire-and-forget — the receiver returns an ACK and no callback
-        follows.
+        indexing and distribution, `/catalog/push` delivers to a single
+        recipient.
       operationId: catalogPush
       tags:
       - Catalog Publishing
