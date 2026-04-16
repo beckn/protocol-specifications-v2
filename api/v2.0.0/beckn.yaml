@@ -24,7 +24,7 @@ tags:
 - name: Subscription
   description: Subscribe to catalog updates across networks and schema types
 - name: Catalog Pull
-  description: Pull catalogs on demand with full or incremental sync
+  description: Pull catalogs on demand — full snapshot or incremental updates delivered asynchronously
 - name: Master Resource Search
   description: Search and retrieve master resource definitions
 security: []
