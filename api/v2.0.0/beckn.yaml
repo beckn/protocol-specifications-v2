@@ -906,12 +906,12 @@ paths:
 
   /catalog/publish:
     post:
-      summary: BPP publishes catalogs for indexing by a CDS
-      description: 'BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
-
-        Returns an **ACK** immediately if accepted for processing. The per-catalog processing
-
-        result arrives asynchronously via `/beckn/catalog/on_publish`.'
+      summary: Publish catalogs to the network
+      description: >-
+        Submit one or more catalogs for indexing and distribution across the
+        network. Returns an immediate acknowledgement; per-catalog processing
+        results are delivered asynchronously via the `/catalog/on_publish`
+        callback.
       operationId: catalogPublish
       tags:
       - Catalog Publishing
@@ -934,9 +934,7 @@ paths:
                     properties:
                       action:
                         type: string
-                        enum:
-                        - catalog/publish
-                        - catalog_publish
+                        const: catalog/publish
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
       responses:
@@ -953,7 +951,7 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: CDS returns per-catalog processing results to the BPP
+      summary: Receive catalog publish results
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
@@ -976,9 +974,7 @@ paths:
                     properties:
                       action:
                         type: string
-                        enum:
-                        - on_catalog_publish
-                        - catalog/on_publish
+                        const: catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
       responses:
@@ -993,13 +989,13 @@ paths:
 
   /catalog/push:
     post:
-      summary: Push a catalog to a downstream participant
+      summary: Push a catalog to a specific participant
       description: >-
-        Sends a catalog directly from a BPP or Catalog Discovery Service to a specific
-        downstream Beckn participant. Unlike `/catalog/publish`, which offers a catalog
-        to a CDS for onward handling, `/catalog/push` targets a single known recipient
-        and is fire-and-forget — the receiver returns an ACK and no callback is defined
-        for this action.
+        Sends a catalog directly to a known downstream participant.
+        Unlike `/catalog/publish` which submits catalogs for network-wide
+        indexing, `/catalog/push` delivers to a single recipient.
+        Fire-and-forget — the receiver returns an ACK and no callback
+        follows.
       operationId: catalogPush
       tags:
       - Catalog Publishing
@@ -1040,19 +1036,19 @@ paths:
 
   /catalog/subscription:
     post:
-      summary: Subscribe to catalog distribution events
+      summary: Subscribe to catalog updates
       operationId: catalogSubscribe
       tags:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      description: 'Creates a new catalog subscription. The subscriber receives catalog
-        update callbacks at the URL specified in `callbackUrl` (defaults to `context.bapUri`).
-
-        At least `networkIds` must be provided. Omitting `schemaTypes` or providing an empty
-        array subscribes to all schema types on the specified networks.
-
-        '
+      description: >-
+        Creates a subscription to receive catalog updates for specified
+        networks and schema types. When matching catalogs are published,
+        the subscriber receives callbacks at the provided `callbackUrl`
+        (defaults to `context.bapUri`). At least one network must be
+        specified; omitting `schemaTypes` subscribes to all types on
+        those networks.
       requestBody:
         required: true
         content:
@@ -1129,9 +1125,11 @@ paths:
 
   /catalog/subscriptions:
     get:
-      summary: List subscriptions for a subscriber
-      description: 'Returns all subscriptions belonging to the given subscriber, with pagination.
-        Use the `subscriberId` query parameter to scope results to a specific BAP.'
+      summary: List subscriptions
+      description: >-
+        Returns all subscriptions belonging to the caller, with
+        pagination. Use the `subscriberId` query parameter to identify
+        the subscriber.
       operationId: catalogSubscribeList
       tags:
       - Subscription
@@ -1181,9 +1179,11 @@ paths:
 
   /catalog/subscription/{subscriptionId}:
     get:
-      summary: Get subscription by ID
-      description: 'Returns the full details of a single subscription, including its network scope,
-        schema type filters, callback URL, status, and delivery policy.'
+      summary: Get a subscription
+      description: >-
+        Returns the full details of a single subscription — network
+        scope, schema type filters, callback URL, status, and delivery
+        policy. Only the subscription owner can access it.
       operationId: catalogSubscribeGet
       tags:
       - Subscription
@@ -1229,19 +1229,21 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
+        '403':
+          $ref: '#/components/responses/NackForbidden'
         '404':
           $ref: '#/components/responses/NackBadRequest'
         '500':
           $ref: '#/components/responses/ServerError'
     delete:
-      summary: Delete (deactivate) subscription
+      summary: Delete a subscription
       operationId: catalogSubscribeDelete
       tags:
       - Subscription
-      description: 'Deactivates a subscription. The subscription will no longer receive
-        catalog delivery callbacks. The subscription record is returned with status `DELETED`.
-
-        '
+      description: >-
+        Deactivates a subscription so it no longer receives catalog
+        update callbacks. The subscription record is retained with
+        status `DELETED`. Only the subscription owner can delete it.
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       - name: subscriptionId
@@ -1284,6 +1286,8 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
+        '403':
+          $ref: '#/components/responses/NackForbidden'
         '404':
           $ref: '#/components/responses/NackBadRequest'
         '500':
@@ -1298,14 +1302,15 @@ paths:
       - $ref: '#/components/parameters/AuthorizationHeader'
       summary: Pull catalogs on demand
       description: >-
-        Requests one or more catalogs from a Catalog Discovery Service. The BAP sends
-        the pull request and receives an immediate ACK with a `requestId`; the catalogs
-        are delivered asynchronously via callback to `{context.bapUri}/on_catalog_pull`.
+        Request catalogs matching the specified filters. Returns an
+        immediate acknowledgement with a `requestId`; the actual
+        catalogs are delivered asynchronously to your callback URL.
 
 
-        Two modes are supported: `FULL` returns the latest version of each catalog
-        matching the request filters; `INCREMENTAL` returns catalog versions published
-        within the supplied `fromDate`/`toDate` window.
+        Two modes: **FULL** returns the latest version of each matching
+        catalog. **INCREMENTAL** returns all versions published within
+        the given date range, useful for syncing changes since your
+        last pull.
       requestBody:
         required: true
         content:
@@ -1353,23 +1358,18 @@ paths:
 
   /on_catalog_pull:
     post:
-      summary: Receive an asynchronous pull result
+      summary: Receive catalog pull results
       description: >-
-        Hosted by the BAP at `{bapUri}/on_catalog_pull`. Invoked by the Catalog
-        Discovery Service as the asynchronous callback for a previously
-        acknowledged `/catalog/pull` request. The callback carries the final
-        state of the request — either the assembled catalogs (inline or via
-        `objectUrl`) or a terminal failure reason.
+        Callback endpoint hosted by the BAP. After the BAP submits a
+        `/catalog/pull` request, the Catalog Discovery Service delivers
+        the results here asynchronously. The callback carries the final
+        outcome — assembled catalogs (inline or via a pre-signed
+        `objectUrl`) on success, or an error reason on failure.
 
 
-        The BAP MUST deduplicate on `message.requestId`. The callback is
-        delivered with at-least-once semantics and may fire more than once if a
-        CDS instance restarts between completion and offset commit.
-
-
-        Deduplicated submissions (identical expensive request within the CDS
-        large-result dedup window, default 24 hours) do NOT fire a new callback
-        — the BAP should poll `GET /catalog/pull/result/{requestId}` instead.
+        The callback is delivered with at-least-once semantics; the BAP
+        MUST deduplicate on `message.requestId` to handle retries
+        gracefully.
       operationId: onCatalogPull
       tags:
       - Catalog Pull
@@ -1408,10 +1408,12 @@ paths:
 
   /catalog/master/search:
     post:
-      summary: Search master resource definitions
-      description: 'Searches canonical master resource definitions by network and schema type.
-        Returns matching resources grouped by catalog, with pagination. An empty `networkIds`
-        or `schemaTypes` list matches all values for that dimension.'
+      summary: Search master resources
+      description: >-
+        Search for canonical master resource definitions across
+        networks. Filter by network and schema type; results are
+        grouped by catalog with pagination. Omitting a filter matches
+        all values for that dimension.
       operationId: masterSearch
       tags:
       - Master Resource Search
@@ -1478,9 +1480,11 @@ paths:
 
   /catalog/master/schemaTypes:
     get:
-      summary: List available master resource schema types
-      description: 'Returns the list of distinct schema type URIs for all master resources
-        currently available. Use these values to populate `schemaTypes` filters in search requests.'
+      summary: List master resource schema types
+      description: >-
+        Returns the distinct schema type URIs available across all
+        master resources. Use these values to populate the
+        `schemaTypes` filter in search requests.
       operationId: listMasterSchemaTypes
       tags:
       - Master Resource Search
@@ -1521,10 +1525,10 @@ paths:
 
   /catalog/master/{masterItemId}:
     get:
-      summary: Get a master resource by ID
-      description: 'Returns a single master resource wrapped in its catalog envelope.
-        The response contains the full resource definition along with catalog-level
-        metadata such as provider and descriptor.'
+      summary: Get a master resource
+      description: >-
+        Returns a single master resource by its identifier, wrapped in
+        its catalog envelope with full provider and descriptor metadata.
       operationId: getMasterItem
       tags:
       - Master Resource Search
@@ -3129,6 +3133,18 @@ components:
           error:
             $ref: '#/components/schemas/Error'
 
+    NackForbidden:
+      description: Caller is authenticated but does not have permission to access or modify this resource.
+      allOf:
+      - $ref: '#/components/schemas/Ack'
+      - type: object
+        properties:
+          status:
+            type: string
+            const: NACK
+          error:
+            $ref: '#/components/schemas/Error'
+
     ServerError:
       description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
       type: object
@@ -3138,11 +3154,11 @@ components:
 
     CatalogSubscribeAction:
       type: object
-      description: 'Message payload for catalog/subscription. At least `networkIds` must
-        be provided. Omitting `schemaTypes` or providing an empty array subscribes to all
-        schema types on the specified networks.
-
-        '
+      description: >-
+        Subscription request payload. Specifies which networks and
+        schema types the subscriber wants to receive catalog updates
+        for. At least one network must be provided; omitting schema
+        types subscribes to all types on those networks.
       required:
       - subscription
       properties:
@@ -3256,7 +3272,9 @@ components:
 
     MasterSearchAction:
       type: object
-      description: Message payload for catalog/master_search
+      description: >-
+        Search request payload for master resources. Filter by network
+        and schema type; omit a filter to match all values.
       properties:
         filters:
           type: object
@@ -3289,7 +3307,9 @@ components:
 
     CatalogPullAction:
       type: object
-      description: Message payload for catalog/pull
+      description: >-
+        Pull request payload specifying which catalogs to retrieve and
+        in which mode (FULL or INCREMENTAL).
       additionalProperties: false
       required:
       - mode
@@ -3303,11 +3323,11 @@ components:
           description: "- `FULL` — returns the latest version of each matching catalog.\n- `INCREMENTAL` — returns all catalog versions indexed between\n  `fromDate` and `toDate` (inclusive).\n"
         filters:
           type: object
-          description: "Required filters scoping which catalogs are returned. At least\
-            \ one of catalogIds, networkIds, or schemaTypes must be provided with a\
-            \ non-empty array — an unscoped pull is rejected. When multiple fields\
-            \ are supplied they are ANDed together (intersection). Unknown fields\
-            \ are rejected."
+          description: >-
+            Filters scoping which catalogs are returned. At least one
+            of catalogIds, networkIds, or schemaTypes must be provided.
+            When multiple filters are supplied they are combined
+            (intersection).
           additionalProperties: false
           minProperties: 1
           properties:
@@ -3350,16 +3370,12 @@ components:
     CatalogPullCallbackAction:
       type: object
       description: >-
-        Message payload for `on_catalog_pull`. Delivered with at-least-once
-        semantics — the CDS may redeliver a callback if it crashes between
-        sending and committing the Kafka offset. The BAP MUST deduplicate on
-        `requestId`.
-
-
-        Exactly one of `catalogs` (inline, for small results) or `objectUrl`
-        (pre-signed object-store URL, for large results) is present when
-        `status = COMPLETED`. Neither is present when `status = FAILED` —
-        `error` carries the reason instead.
+        Callback payload for pull results. Contains either the
+        requested catalogs inline or a download URL for large results.
+        Delivered with at-least-once semantics — the BAP must
+        deduplicate on `requestId`. On success (`COMPLETED`), exactly
+        one of `catalogs` or `objectUrl` is present. On failure
+        (`FAILED`), `error` carries the reason.
       additionalProperties: false
       required:
       - requestId
@@ -3455,6 +3471,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/NackUnauthorized'
+    NackForbidden:
+      description: Caller is authenticated but does not have permission to access or modify this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NackForbidden'
     ServerError:
       description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
       content:
