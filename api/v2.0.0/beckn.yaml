@@ -939,6 +939,149 @@ paths:
                         - catalog_publish
                 message:
                   $ref: '#/components/schemas/CatalogPublishAction'
+            examples:
+              simplePublish:
+                summary: Publish a catalog without publishDirectives (defaults to regular + MERGE)
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/publish
+                    messageId: 550e8400-e29b-41d4-a716-446655440000
+                    transactionId: 550e8400-e29b-41d4-a716-446655440001
+                    timestamp: '2026-03-04T10:00:00.000Z'
+                    bppId: bpp.techmart.com
+                    bppUri: https://bpp.techmart.com
+                    networkId: retail-network
+                  message:
+                    catalogs:
+                    - id: CAT-TECHMART-2026
+                      descriptor:
+                        name: TechMart Product Catalog
+                      provider:
+                        id: provider-techmart-001
+                        descriptor:
+                          name: TechMart Electronics
+                      resources:
+                      - id: ITEM-LAPTOP-001
+                        descriptor:
+                          name: Premium Laptop Pro
+                        resourceAttributes:
+                          '@context': https://schema.beckn.org/retail/schema/1.1.0/context.jsonld
+                          '@type': ElectronicsItem
+                          brand: TechBrand
+                          inStock: true
+              masterCatalogPublish:
+                summary: Publish a master catalog with FULL update mode
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/publish
+                    messageId: 660e8400-e29b-41d4-a716-446655440002
+                    transactionId: 660e8400-e29b-41d4-a716-446655440003
+                    timestamp: '2026-03-04T09:00:00.000Z'
+                    bppId: manufacturer.example.com
+                    bppUri: https://manufacturer.example.com
+                    networkId: retail-network
+                  message:
+                    publishDirectives:
+                    - catalogId: MASTER-ELECTRONICS-2026
+                      catalogType: master
+                      updateMode: FULL
+                    catalogs:
+                    - id: MASTER-ELECTRONICS-2026
+                      descriptor:
+                        name: Official Electronics Master Catalog 2026
+                      provider:
+                        id: manufacturer-001
+                        descriptor:
+                          name: Global Electronics Authority
+                      resources:
+                      - id: MASTER-LAPTOP-XPS-15
+                        descriptor:
+                          name: XPS 15 Laptop
+                          shortDesc: '15.6-inch FHD+ display, Intel Core i7, 16GB RAM, 512GB SSD'
+                        resourceAttributes:
+                          '@context': https://schema.beckn.org/retail/schema/1.1.0/context.jsonld
+                          '@type': ElectronicsItem
+                          brand: Dell
+                          model: XPS 15 9530
+                          processor: Intel Core i7-13700H
+              regularExtendingMaster:
+                summary: Regular catalog extending a master resource
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/publish
+                    messageId: 770e8400-e29b-41d4-a716-446655440004
+                    transactionId: 770e8400-e29b-41d4-a716-446655440005
+                    timestamp: '2026-03-04T10:00:00.000Z'
+                    bppId: bpp.techmart.com
+                    bppUri: https://bpp.techmart.com
+                    networkId: retail-network
+                  message:
+                    publishDirectives:
+                    - catalogId: CAT-TECHMART-2026
+                      catalogType: regular
+                      updateMode: MERGE
+                      resourceDirectives:
+                      - resourceId: ITEM-LAPTOP-XPS-15-TECHMART
+                        extends:
+                          masterResourceId: MASTER-LAPTOP-XPS-15
+                    catalogs:
+                    - id: CAT-TECHMART-2026
+                      descriptor:
+                        name: TechMart Product Catalog
+                      provider:
+                        id: provider-techmart-001
+                        descriptor:
+                          name: TechMart Electronics
+                      resources:
+                      - id: ITEM-LAPTOP-XPS-15-TECHMART
+                        descriptor:
+                          name: XPS 15 - TechMart Edition
+                        resourceAttributes:
+                          '@context': https://schema.beckn.org/retail/schema/1.1.0/context.jsonld
+                          '@type': ElectronicsItem
+                          inStock: true
+                          deliveryEstimate: 3-5 business days
+              regularWithVariant:
+                summary: Regular catalog with a geographic variant of a master resource
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/publish
+                    messageId: 880e8400-e29b-41d4-a716-446655440006
+                    transactionId: 880e8400-e29b-41d4-a716-446655440007
+                    timestamp: '2026-03-04T11:00:00.000Z'
+                    bppId: bpp.techmart.com
+                    bppUri: https://bpp.techmart.com
+                    networkId: retail-network
+                  message:
+                    publishDirectives:
+                    - catalogId: CAT-TECHMART-2026
+                      catalogType: regular
+                      updateMode: MERGE
+                      resourceDirectives:
+                      - resourceId: ITEM-LAPTOP-XPS-15-TECHMART
+                        extends:
+                          masterResourceId: MASTER-LAPTOP-XPS-15
+                        variant:
+                          type: geo
+                          id: bangalore
+                          label: Bangalore region
+                    catalogs:
+                    - id: CAT-TECHMART-2026
+                      provider:
+                        id: provider-techmart-001
+                        descriptor:
+                          name: TechMart Electronics
+                      resources:
+                      - id: ITEM-LAPTOP-XPS-15-TECHMART
+                        resourceAttributes:
+                          '@context': https://schema.beckn.org/retail/schema/1.1.0/context.jsonld
+                          '@type': ElectronicsItem
+                          deliveryEstimate: 1-2 business days
+                          localWarehouse: true
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1610,13 +1753,45 @@ components:
       - contract
 
     CatalogPublishAction:
-      description: Catalog publish request payload.
+      description: >-
+        Catalog publish request payload. Contains one or more catalogs
+        and optional `publishDirectives` that control how the catalog
+        service processes them. When `publishDirectives` is absent, the
+        catalog service treats the catalog as a standalone regular
+        catalog and adds or updates resources without removing existing
+        ones.
       required:
       - catalogs
       type: object
       properties:
         publishDirectives:
-          description: Directives controlling publish behavior for master/regular catalog flow.
+          description: >-
+            Processing instructions for the catalog service, one entry
+            per catalog in this request. Each entry is matched to a
+            catalog by its `catalogId`.
+
+            The Beckn catalog system supports two kinds of catalogs —
+            master and regular. A master catalog is published by an
+            authoritative entity (such as a manufacturer or standards
+            body) and defines the canonical version of each resource.
+            A regular catalog is published by an individual provider
+            who may choose to inherit from a master resource and add
+            their own fields on top (such as pricing or availability).
+
+            When publishing, the provider can also choose how existing
+            resources should be handled — either add/update individual
+            resources while keeping the rest intact (MERGE), or
+            completely replace all resources for that catalog (FULL).
+
+            Additionally, providers can publish multiple variants of
+            the same resource (for example, different configurations
+            for different regions or buyer segments) using the
+            `variant` field inside `resourceDirectives`.
+
+            When `publishDirectives` is not provided, the catalog
+            service treats every catalog in the request as a standalone
+            regular catalog with add/update behavior — no master
+            inheritance, no variants.
           type: array
           items:
             type: object
@@ -1626,22 +1801,83 @@ components:
             properties:
               catalogId:
                 type: string
-                description: Identifier of the catalog to which these directives apply
+                description: >-
+                  Identifier of the catalog these instructions apply
+                  to. Must exactly match a catalog `id` in the
+                  `catalogs` array of this request.
+                example: CAT-SUMMER-TECHMART-2026
               catalogType:
                 type: string
                 enum:
                 - master
                 - regular
-                description: master = canonical source catalog; regular = seller/provider extension catalog
+                description: >-
+                  Declares the role of this catalog.
+
+                  `master` — A source-of-truth catalog published by an
+                  authoritative entity such as a manufacturer, standards
+                  body, or network operator. Resources in a master
+                  catalog define the baseline attributes — name,
+                  description, images, technical specifications — that
+                  downstream providers inherit. Once a master resource
+                  is published, its fields are protected: providers who
+                  extend it cannot change or remove any field set by the
+                  master. Master catalogs are typically published once
+                  and updated infrequently.
+
+                  `regular` — A provider-specific catalog. Resources
+                  in a regular catalog can optionally inherit from a
+                  master resource using `resourceDirectives`. When
+                  inheriting, the provider only needs to supply their
+                  own fields (such as pricing, availability, or delivery
+                  terms) — all other fields come from the master
+                  automatically. Regular catalogs that do not reference
+                  any master resource are fully standalone.
+                example: regular
               updateMode:
                 type: string
                 enum:
                 - FULL
                 - MERGE
                 default: MERGE
-                description: 'FULL replaces all existing resources for this catalog with the incoming set. MERGE upserts incoming resources while preserving existing ones not present in this publish.'
+                description: >-
+                  Controls what happens to existing resources in the
+                  catalog service when new resources are published.
+
+                  `MERGE` (default) — Each incoming resource is matched
+                  by its `id`. If a resource with the same `id` already
+                  exists, it is replaced with the new version. Resources
+                  already in the catalog service for this catalog that
+                  are NOT included in this request are left untouched.
+                  Use MERGE
+                  when you want to add or update specific resources
+                  without affecting the rest of the catalog.
+
+                  `FULL` — All existing resources for this catalog are
+                  removed first, then only the resources in this request
+                  are stored. After a FULL publish, the catalog service
+                  contains exactly what was sent — nothing more, nothing
+                  less. Use FULL when you want to guarantee the catalog
+                  service is an exact copy of your current catalog
+                  state.
+                example: MERGE
               resourceDirectives:
-                description: Optional per-resource extension mapping for regular catalogs
+                description: >-
+                  Declares how individual resources in a regular catalog
+                  relate to resources in a master catalog. Each entry
+                  links a provider's resource to the master resource it
+                  inherits from, and optionally marks it as a variant.
+
+                  When a resource inherits from a master resource, the
+                  master's fields are always protected — they cannot be
+                  changed or removed by the provider. The provider can
+                  only add new fields that the master does not already
+                  define. This ensures that core attributes like name,
+                  description, and images remain consistent across all
+                  providers who inherit from the same master resource.
+
+                  This array only applies when `catalogType` is
+                  `regular`. It is ignored for master catalogs.
                 type: array
                 items:
                   type: object
@@ -1651,28 +1887,75 @@ components:
                   properties:
                     resourceId:
                       type: string
-                      description: Seller/provider resource identifier in this catalog
+                      description: >-
+                        The provider's resource identifier in this
+                        catalog. Must match a resource `id` in the
+                        `catalogs` array of this request.
+                      example: ITEM-LAPTOP-XPS-15-TECHMART
                     extends:
                       type: object
                       required:
                       - masterResourceId
+                      description: >-
+                        Declares which master resource this provider
+                        resource inherits from. The catalog service
+                        retrieves the master resource and combines it
+                        with the
+                        provider's resource — the master's fields are
+                        always kept as-is, and the provider can only
+                        add fields that the master has not defined.
                       properties:
                         masterResourceId:
                           type: string
-                          description: Canonical master resource identifier being extended
+                          description: >-
+                            The `id` of the master resource to inherit
+                            from. Must refer to a resource that was
+                            previously published in a master catalog
+                            within the same network.
+                          example: MASTER-LAPTOP-XPS-15
                     variant:
                       type: object
                       additionalProperties: true
+                      description: >-
+                        Marks this resource as a named variant of the
+                        master resource it extends. Without this field,
+                        the resource is treated as the base version.
+                        With this field, the resource is stored as a
+                        separate variant that exists alongside the base
+                        version and other variants of the same master
+                        resource.
+
+                        When the catalog service assembles the final
+                        resource for a variant, it starts with the
+                        master resource,
+                        applies the base provider fields on top, then
+                        applies the variant-specific fields on top of
+                        that. At each step, fields from the previous
+                        layer are protected and cannot be overridden.
+
+                        The `type` + `id` combination uniquely
+                        identifies a variant within a resource. A
+                        single resource can have multiple variants
+                        across different types.
                       properties:
                         type:
                           type: string
-                          description: Type of variant extension
+                          description: >-
+                            A category that groups related variants
+                            together. Any string value is valid.
+                          example: geo
                         id:
                           type: string
-                          description: Identifier for this specific variant
+                          description: >-
+                            Identifier for this specific variant within
+                            the given `type`. The combination of `type`
+                            + `id` must be unique per resource.
+                          example: bangalore
                         label:
                           type: string
-                          description: Human-readable label for the variant
+                          description: >-
+                            A human-readable name for this variant.
+                          example: Bangalore region
         catalogs:
           type: array
           minItems: 1
