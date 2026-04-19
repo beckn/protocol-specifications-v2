@@ -1048,10 +1048,9 @@ paths:
       description: >-
         Creates a subscription to receive catalog updates for specified
         networks and schema types. When matching catalogs are published,
-        the subscriber receives callbacks at the provided `callbackUrl`
-        (defaults to `context.bapUri`). At least one network must be
-        specified; omitting `schemaTypes` subscribes to all types on
-        those networks.
+        the subscriber receives callbacks at the URL registered in the
+        DeDi registry. At least one network must be specified; omitting
+        `schemaTypes` subscribes to all types on those networks.
       requestBody:
         required: true
         content:
@@ -1185,8 +1184,8 @@ paths:
       summary: Get a subscription
       description: >-
         Returns the full details of a single subscription — network
-        scope, schema type filters, callback URL, status, and delivery
-        policy. Only the subscription owner can access it.
+        scope, schema type filters, status, and delivery policy. Only
+        the subscription owner can access it.
       operationId: catalogSubscribeGet
       tags:
       - Subscription
@@ -3180,10 +3179,6 @@ components:
               items:
                 type: string
               description: Schema type URIs to filter on (empty = wildcard)
-            callbackUrl:
-              type: string
-              format: uri
-              description: Override callback URL (defaults to context.bapUri)
             deliveryPolicy:
               $ref: '#/components/schemas/DeliveryPolicy'
 
@@ -3208,10 +3203,6 @@ components:
           items:
             type: string
           description: Schema type URIs filtered by this subscription (empty = wildcard "*")
-        callbackUrl:
-          type: string
-          format: uri
-          description: Delivery callback URL
         status:
           type: string
           enum:
