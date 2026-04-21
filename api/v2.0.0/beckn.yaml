@@ -2160,25 +2160,6 @@ components:
       type: object
       title: Context
       properties:
-        domain:
-          description: Domain code that is relevant to this transaction context
-          type: string
-        location:
-          description: The location where the transaction is intended to be fulfilled.
-          type: object
-          properties:
-            city:
-              description: The city code where this transaction is restricted to
-              type: object
-              properties:
-                code:
-                  type: string
-            country:
-              description: The country code this transaction is restricted to
-              type: object
-              properties:
-                code:
-                  type: string
         action:
           description: The Beckn protocol method being called by the sender and executed at the receiver.
           type: string
