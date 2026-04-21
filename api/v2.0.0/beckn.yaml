@@ -1950,10 +1950,19 @@ components:
       - contract
 
     AddOn:
-      description: Add-on to a catalog resource
+      description: | 
+        Additional offers or resources that can be added along with this item. Add-ons may have pricing and terms independent of the resources or offers they are bundled with. Add-ons are optional by default and affect the overall considered value of the contract. Add-ons can be modeled as customer preferences, combo-deals, monetary considerations (like donations), for cross-selling and up-selling a product. 
+
+        Typical examples of add-ons could be:      
+          - Travel insurance added with a ride
+          - Candles with a birthday cake
+          - Extra Toppings on a pizza
+          - A token amount that can be added as a donation 
+          - Wheelchair assistance in an airport or any other mobility service
+        Add-ons MAY be resources and offers that are part of the main catalog, or sometimes even unique to the resource or the offer they are being offered with. Some add-ons may not even make sense when they exist independently. For example, extra cheese on a pizza may ONLY exist as an add-on, as adding it as an independent item to the cart does not make logical sense. 
       oneOf:
-      - $ref: '#/components/schemas/Resource'
-      - $ref: '#/components/schemas/Offer'
+        - $ref: '#/components/schemas/Resource'
+        - $ref: '#/components/schemas/Offer'
 
     Address:
       description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses. Geometry lives in `Location.geo` as GeoJSON.'
@@ -2776,7 +2785,7 @@ components:
             $ref: '#/components/schemas/Resource/properties/id'
         addOns:
           type: array
-          description: IDs of optional extra Offers or Resources that can be attached.
+          description: A list of add-ons that may be included with this offer. 
           items:
             $ref: '#/components/schemas/AddOn'
         considerations:
