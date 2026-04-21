@@ -1209,7 +1209,7 @@ paths:
                       properties:
                         action:
                           type: string
-                          const: catalog/on_subscription
+                          const: catalog/subscription
                   message:
                     type: object
                     required:
@@ -1405,7 +1405,7 @@ paths:
                     properties:
                       action:
                         type: string
-                        const: catalog/master_search
+                        const: catalog/master/search
                 message:
                   $ref: '#/components/schemas/MasterSearchAction'
       responses:
@@ -1553,13 +1553,7 @@ components:
   schemas:
     CancelAction:
       title: Cancel Action
-      description: 'Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request
-
-        cancellation of an active contract. Set context.try to true to first
-
-        retrieve cancellation terms and fees before committing.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: 'Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request cancellation of an active contract. Set context.try to true to first retrieve cancellation terms and fees before committing. (Context wrapper stripped; only the message-content portion is inlined.)'
       properties:
         contract:
           allOf:
@@ -1567,7 +1561,7 @@ components:
           - required:
             - id
       required:
-      - contract
+        - contract
 
     CatalogPublishAction:
       description: Catalog publish request payload.
@@ -1580,16 +1574,85 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/Catalog'
+        publishDirectives:
+          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
+          type: object
+          additionalProperties: false
+          required:
+          - catalogType
+          properties:
+            catalogId:
+              description: ID of the catalog for which this resource is valid
+              type: string
+            catalogType:
+              type: string
+              enum:
+                - master
+                - regular
+              description: master = canonical source catalog; regular = seller/provider extension catalog
+            updateMode:
+              type: string
+              enum:
+                - FULL
+                - MERGE
+              default: FULL
+              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+            resourceDirectives:
+              description: Optional per-resource extension mapping for regular catalogs
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - resourceId
+                  - extends
+                properties:
+                  resourceId:
+                    type: string
+                    description: Seller/provider resource identifier in this catalog
+                  extends:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - masterResourceId
+                    properties:
+                      masterResourceId:
+                        type: string
+                        description: Canonical master resource identifier being extended
+            offerDirectives:
+              type: array
+              items:
+                type: object
+                properties:
+                  availableTo:
+                    type: array
+                    description: 'Optional visibility constraint indicating which network participants(by participantId / networkId / role) are allowed to discover or transact on this entity. If omitted, the entity is assumed to be visible to all participants in the addressed network(s).'
+                    items:
+                      type: object
+                      required:
+                      - offerId
+                      - resourceId
+                      - type
+                      - id
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                          - NETWORK
+                          - PARTICIPANT
+                          - ROLE
+                          description: Scope of visibility constraint.
+                        id:
+                          type: string
+                          description: Identifier of the network, participant, or role.
+                        offerId:
+                          description: ID of the offer for which this directive is applied
+                        resourceId:
+                          description: ID of the resource for which this offer published
 
     ConfirmAction:
       title: Confirm Action
-      description: 'Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
-
-        a contract, finalising the transaction terms agreed during the
-
-        select-init negotiation cycle.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: 'Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm a contract, finalising the transaction terms agreed during the select-init negotiation cycle. (Context wrapper stripped; only the message-content portion is inlined.)'
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
@@ -1953,49 +2016,6 @@ components:
       title: Catalog
       type: object
       properties:
-        publishDirectives:
-          deprecated: true
-          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
-          type: object
-          additionalProperties: false
-          required:
-          - catalogType
-          properties:
-            catalogType:
-              type: string
-              enum:
-              - master
-              - regular
-              description: master = canonical source catalog; regular = seller/provider extension catalog
-            updateMode:
-              type: string
-              enum:
-              - FULL
-              - MERGE
-              default: FULL
-              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
-            resourceDirectives:
-              description: Optional per-resource extension mapping for regular catalogs
-              type: array
-              items:
-                type: object
-                additionalProperties: false
-                required:
-                - resourceId
-                - extends
-                properties:
-                  resourceId:
-                    type: string
-                    description: Seller/provider resource identifier in this catalog
-                  extends:
-                    type: object
-                    additionalProperties: false
-                    required:
-                    - masterResourceId
-                    properties:
-                      masterResourceId:
-                        type: string
-                        description: Canonical master resource identifier being extended
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
@@ -2195,6 +2215,9 @@ components:
         key:
           description: The encryption public key of the sender
           type: string
+        try:
+          description: A flag that must be set to 'try' an API call to view the output without adding it to the records. This can be used to view the consequences of a cancellation, or an update, or just trying out an API call in sandbox mode"
+          type: boolean
         ttl:
           description: The duration in ISO8601 format after timestamp for which this message holds valid
           type: string
@@ -2763,34 +2786,6 @@ components:
             $ref: '#/components/schemas/Consideration'
         validity:
           $ref: '#/components/schemas/TimePeriod'
-        availableTo:
-          type: array
-          description: 'Optional visibility constraint indicating which network participants
-
-            (by participantId / networkId / role) are allowed to discover or
-
-            transact on this entity.
-
-
-            If omitted, the entity is assumed to be visible to all participants
-
-            in the addressed network(s).'
-          items:
-            type: object
-            required:
-            - type
-            - id
-            properties:
-              type:
-                type: string
-                enum:
-                - NETWORK
-                - PARTICIPANT
-                - ROLE
-                description: Scope of visibility constraint.
-              id:
-                type: string
-                description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: '#/components/schemas/Attributes'
 
