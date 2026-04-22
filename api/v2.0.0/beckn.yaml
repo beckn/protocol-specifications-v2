@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Beckn Protocol API
   description: "The Beckn Protocol API Specification v2.0 — a concrete, developer-friendly OpenAPI 3.1.1\nspecification with one named path per Beckn protocol action.\n\n## Design Philosophy\n- **Minimalism**: Transport-layer schemas are inline. All data-model schemas\n (Catalog, Contract, Intent, etc.) are resolved from #/components/schemas.\n\n## Typical Transaction Lifecycle\n```\ndiscover → on_discover\nselect → on_select → init → on_init → confirm → on_confirm\n→ [status / on_status]* → [update / on_update]* → [cancel / on_cancel]?\n→ [track / on_track]* → rate / on_rate → support / on_support\n```\n\n## `context.try` — Sandbox Mode\nThe `try` flag on the `Context` object (defined in `#/components/schemas/Context`)\nindicates sandbox mode on the network participant:\n- `context.try: true` — test consequences without changing state.\n- `context.try: false` (default) — commit the action.\nThis pattern is applicable to `update`, `cancel`, `rate`, and `support` actions.\n\n## Authentication\n\
-    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.\nThe `Ack` response body MUST carry a `CounterSignature` proving receipt.\nSee `docs/10_Signing_Beckn_APIs_in_HTTP.md` for the signing specification.\n\n## Scope\nThis specification is designed for interoperability across value-exchange use cases:\nretail, mobility, logistics, energy, healthcare, skilling, financial services,\ncarbon trading, hiring, data licensing, and other domains built on Beckn."
+    All requests MUST carry a valid Beckn HTTP Signature in the `Authorization` header.\nThe `Ack` response body MUST carry a `CounterSignature` proving receipt.\nSee `api/v2.0.0/README.md` for implementation notes aligned to this specification.\n\n## Scope\nThis specification is designed for interoperability across value-exchange use cases:\nretail, mobility, logistics, energy, healthcare, skilling, financial services,\ncarbon trading, hiring, data licensing, and other domains built on Beckn."
   version: 2.0.0
   contact:
     name: Beckn Protocol
@@ -119,6 +119,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_discover:
     post:
       summary: Callback — return catalogs to the BAP
@@ -159,6 +160,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /select:
     post:
       summary: BAP selects items/resources and requests a quote
@@ -203,6 +205,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_select:
     post:
       summary: BPP returns a priced quote
@@ -243,6 +246,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /init:
     post:
       summary: BAP initiates final contract — submits billing, fulfillment and payment intent
@@ -287,6 +291,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_init:
     post:
       summary: BPP returns final draft contract with payment terms
@@ -327,6 +332,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /confirm:
     post:
       summary: BAP confirms the contract
@@ -369,6 +375,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_confirm:
     post:
       summary: BPP returns the confirmed contract
@@ -409,6 +416,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /status:
     post:
       summary: BAP requests the current state of an contract
@@ -453,6 +461,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_status:
     post:
       summary: BPP returns the current state of the contract
@@ -499,6 +508,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /track:
     post:
       summary: BAP requests a real-time tracking handle for an active contract
@@ -543,6 +553,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_track:
     post:
       summary: BPP returns real-time tracking handle and status
@@ -580,6 +591,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /update:
     post:
       summary: BAP requests a mutation to an active contract
@@ -620,6 +632,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_update:
     post:
       summary: BPP returns the updated contract
@@ -664,6 +677,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /cancel:
     post:
       summary: BAP requests cancellation of an contract
@@ -704,6 +718,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_cancel:
     post:
       summary: BPP returns cancellation terms or confirms cancellation
@@ -742,6 +757,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /rate:
     post:
       summary: BAP submits ratings for one or more entities
@@ -790,6 +806,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_rate:
     post:
       summary: BPP acknowledges rating and optionally returns aggregate
@@ -830,6 +847,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /support:
     post:
       summary: BAP requests support information for an entity
@@ -880,6 +898,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /on_support:
     post:
       summary: BPP returns support details
@@ -920,6 +939,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/publish:
     post:
       summary: BPP publishes catalogs for indexing by a CDS
@@ -966,6 +986,7 @@ paths:
           $ref: '#/components/responses/AckNoCallback'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/on_publish:
     post:
       summary: CDS returns per-catalog processing results to the BPP
@@ -1005,6 +1026,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/subscription:
     post:
       summary: Subscribe to catalog distribution events
@@ -1102,6 +1124,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/subscriptions:
     get:
       summary: List subscriptions for a subscriber
@@ -1151,6 +1174,7 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/subscription/{subscriptionId}:
     get:
       summary: Get subscription by ID
@@ -1261,6 +1285,7 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/pull:
     post:
       operationId: catalogPull
@@ -1314,6 +1339,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/pull/result/{requestId}/{filename}:
     get:
       operationId: getPullResult
@@ -1353,6 +1379,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '404':
           description: Result file not found (processing may still be in progress)
+
   /catalog/master/search:
     post:
       summary: Search master catalog items
@@ -1419,6 +1446,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/master/schemaTypes:
     get:
       summary: List distinct schema types
@@ -1459,6 +1487,7 @@ paths:
           $ref: '#/components/responses/NackUnauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+
   /catalog/master/{masterItemId}:
     get:
       summary: Get single master item
@@ -1539,6 +1568,7 @@ components:
             - id
       required:
       - contract
+
     CatalogPublishAction:
       description: Catalog publish request payload.
       required:
@@ -1550,6 +1580,7 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/Catalog'
+
     ConfirmAction:
       title: Confirm Action
       description: 'Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
@@ -1564,6 +1595,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     DiscoverAction:
       title: Discover Action (External)
       description: 'Beckn /beckn/discover message payload as published at schema.beckn.io.
@@ -1586,6 +1618,7 @@ components:
       additionalProperties: false
       required:
       - intent
+
     InitAction:
       title: Init Action
       description: 'Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
@@ -1599,6 +1632,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnCancelAction:
       title: On Cancel Action
       description: 'Beckn /beckn/on_cancel message payload. Sent by a BPP to a BAP in
@@ -1614,6 +1648,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnConfirmAction:
       title: OnConfirmAction
       description: 'Beckn /beckn/on_confirm message payload. Sent by a BPP to a BAP in
@@ -1629,6 +1664,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnDiscoverAction:
       description: The on_discover response payload containing matching catalogs.
       type: object
@@ -1643,6 +1679,7 @@ components:
           items:
             $ref: '#/components/schemas/Catalog'
       additionalProperties: false
+
     OnInitAction:
       title: On Init Action
       description: 'Beckn /beckn/on_init message payload. Sent by a BPP to a BAP in response
@@ -1658,6 +1695,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnRateAction:
       title: On Rate Action
       description: 'Beckn /beckn/on_rate message payload. Sent by a BPP to a BAP in
@@ -1676,6 +1714,7 @@ components:
             $ref: '#/components/schemas/RatingInput'
       required:
       - ratings
+
     OnSelectAction:
       title: On Select Action
       description: 'Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
@@ -1689,6 +1728,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnStatusAction:
       title: On Status Action
       description: 'Beckn /beckn/on_status message payload. Sent by a BPP to a BAP in
@@ -1704,6 +1744,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     OnSupportAction:
       title: On Support Action
       description: 'Beckn /beckn/on_support message payload. Sent by a BPP to a BAP in
@@ -1719,6 +1760,7 @@ components:
           $ref: '#/components/schemas/Support'
       required:
       - support
+
     OnTrackAction:
       title: On Track Action
       description: 'Beckn /beckn/on_track message payload. Sent by a BPP to a BAP in
@@ -1735,6 +1777,7 @@ components:
           $ref: '#/components/schemas/Tracking'
       required:
       - tracking
+
     OnUpdateAction:
       title: On Update Action
       description: 'Beckn /beckn/on_update message payload. Sent by a BPP to a BAP in
@@ -1750,6 +1793,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     RateAction:
       title: RateAction
       description: 'Beckn /beckn/rate message payload. Sent by a BAP to a BPP to submit
@@ -1768,6 +1812,7 @@ components:
             $ref: '#/components/schemas/RatingInput'
       required:
       - ratingInputs
+
     SelectAction:
       title: Select Action
       description: 'Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
@@ -1781,6 +1826,7 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     StatusAction:
       title: Status Action
       description: 'Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
@@ -1796,6 +1842,7 @@ components:
             - id
       required:
       - contract
+
     SupportAction:
       title: Support Action
       description: 'Beckn /beckn/support message payload. Sent by a BAP to a BPP to request
@@ -1812,8 +1859,17 @@ components:
           $ref: '#/components/schemas/Support'
       required:
       - support
+
     TrackAction:
+      type: object
+      description: Details required to initiate real-time tracking (if relevant) for an ongoing transaction
       additionalProperties: false
+      properties:
+        tracking:
+          $ref: '#/components/schemas/Tracking'
+      required:
+      - tracking
+
     UpdateAction:
       title: Update Action
       description: 'Beckn /beckn/update message payload. Sent by a BAP to a BPP to request
@@ -1829,11 +1885,13 @@ components:
           $ref: '#/components/schemas/Contract'
       required:
       - contract
+
     AddOn:
       description: Add-on to a catalog resource
       oneOf:
       - $ref: '#/components/schemas/Resource'
       - $ref: '#/components/schemas/Offer'
+
     Address:
       description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses. Geometry lives in `Location.geo` as GeoJSON.'
       title: Address
@@ -1864,6 +1922,7 @@ components:
           type: string
           example: 123 Tech Street
       additionalProperties: false
+
     AsyncError:
       title: Asynchronous Error
       description: Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type annotations to allow linked-data processing.
@@ -1872,6 +1931,7 @@ components:
       - type: object
         properties: {}
         additionalProperties: true
+
     Attributes:
       description: JSON-LD aware container for domain-specific attributes of an Item. MUST include @context (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the provided JSON-LD context.
       title: Attributes
@@ -1887,6 +1947,7 @@ components:
       - '@context'
       - '@type'
       additionalProperties: true
+
     Catalog:
       description: Catalog schema for Beckn Protocol v2.0.0
       title: Catalog
@@ -1980,6 +2041,7 @@ components:
       - required:
         - offers
       additionalProperties: false
+
     CatalogOnPublishAction:
       description: Catalog publish processing results from CDS to BPP.
       type: object
@@ -1991,6 +2053,7 @@ components:
           description: Per-catalog processing results
           items:
             $ref: '#/components/schemas/CatalogProcessingResult'
+
     CatalogProcessingResult:
       description: Processing result for a single catalog submission.
       type: object
@@ -2028,6 +2091,7 @@ components:
             categoryCount:
               type: integer
               description: Number of distinct categories
+
     Consideration:
       type: object
       description: 'Generalized representation of value exchanged under a Contract.
@@ -2061,6 +2125,7 @@ components:
 
             For other consideration types, use a generic Attributes bag.'
           $ref: '#/components/schemas/Attributes'
+
     Context:
       description: 'Base context schema for all Beckn API calls. Contains addressing information
 
@@ -2149,6 +2214,7 @@ components:
             format: uri
         requestDigest:
           $ref: '#/components/schemas/RequestDigest'
+
     Contract:
       type: object
       description: "This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.\nAlternate description A digitally agreed commitment between two or more participants\ngoverning the exchange of economic or non-economic value.\n\nContract is the canonical contract object in the generalized\nBeckn v2.1 protocol. It replaces the commerce-specific Order construct\nas the canonical transaction object at the API layer.\n\nA Contract binds:\n - Commitments (what is agreed)\n - Consideration (value promised)\n - Performance (how execution occurs)\n - Settlements (how consideration is discharged)\n\
@@ -2214,6 +2280,7 @@ components:
       additionalProperties: false
       required:
       - commitments
+
     Commitment:
       type: object
       required:
@@ -2252,6 +2319,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/Attributes'
           - properties: {}
+
     CounterSignature:
       title: Beckn HTTP Counter-Signature
       description: 'A signed receipt transmitted in the synchronous `Ack` response body, proving that the
@@ -2287,6 +2355,7 @@ components:
         ```'
       allOf:
       - $ref: '#/components/schemas/Signature'
+
     Descriptor:
       $schema: https://json-schema.org/draft/2020-12/schema
       description: Schema definition for Descriptor in the Beckn Protocol v2.0.1
@@ -2313,7 +2382,7 @@ components:
           type: string
           format: uri
         docs:
-          description: Links to downloadable documents
+          description: Links to downloadable business/supporting documents
           type: array
           items:
             $ref: '#/components/schemas/Document'
@@ -2323,6 +2392,7 @@ components:
           items:
             $ref: '#/components/schemas/MediaFile'
       additionalProperties: false
+
     Document:
       description: A document, that can be parsed, printed, download or displayed. This has intentionally been kept separate from MediaFile as they may contain additional attributes like signature, schema etc.
       title: Document
@@ -2366,13 +2436,14 @@ components:
       - url
       - mimeType
       additionalProperties: false
+
     Error:
       title: Error
       description: 'Base error container returned in NACK responses and async error callbacks.
 
         Domain-specific error codes SHOULD follow the Beckn error code registry
 
-        (see docs/11_Error_Codes.md). Custom error objects may be expressed as
+        (see response definitions in this specification). Custom error objects may be expressed as
 
         `oneOf [string, object]` payloads via the `errorDetails` field.'
       type: object
@@ -2381,6 +2452,7 @@ components:
           type: string
         errorMessage:
           type: string
+
     FormSubmission:
       title: FormSubmission
       x-tags:
@@ -2408,6 +2480,7 @@ components:
       required:
       - data
       additionalProperties: false
+
     Participant:
       type: object
       properties:
@@ -2424,6 +2497,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/Attributes'
           - properties: {}
+
     GeoJSONGeometry:
       description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude, latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)\nNotes: - For rectangles, use a Polygon with a single linear ring where the first\n and last positions are identical.\n- Circles are **not native** to GeoJSON. For circular searches, use\n `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,\n or approximate the circle as a Polygon.\n- Optional `bbox` is `[west, south, east, north]` in degrees."
       title: GeoJSONGeometry
@@ -2458,6 +2532,7 @@ components:
       required:
       - type
       additionalProperties: true
+
     Performance:
       description: 'Generalized execution/performance unit. This is where downstream objects bind:
 
@@ -2505,6 +2580,7 @@ components:
           description: Domain-specific extension attributes for this fulfillment. Use beckn:HyperlocalDelivery (aligned with schema:ParcelDelivery) for hyperlocal physical delivery. Use the generic Attributes schema for other fulfillment types where no well-known domain schema exists.
           $ref: '#/components/schemas/Attributes'
       additionalProperties: false
+
     RequestDigest:
       title: Request Payload Digest
       description: 'A cryptographic binding that explicitly ties a callback to the
@@ -2532,6 +2608,7 @@ components:
           description: 'BLAKE2b-512 hash of the parent request body, Base64-encoded with algorithm prefix.
 
             Format: `BLAKE-512={base64EncodedHash}`'
+
     Intent:
       description: A declaration of an intent to transact
       title: Intent
@@ -2566,6 +2643,7 @@ components:
         mediaSearch:
           $ref: '#/components/schemas/MediaSearch'
       additionalProperties: false
+
     Location:
       description: 'A place represented by GeoJSON geometry and optional address.
 
@@ -2579,6 +2657,7 @@ components:
           $ref: '#/components/schemas/GeoJSONGeometry'
         address:
           $ref: '#/components/schemas/Address'
+
     MediaFile:
       description: A image, audio, or video typically intended for display purposes
       title: MediaFile
@@ -2598,6 +2677,7 @@ components:
           type: string
           format: uri
       additionalProperties: false
+
     MediaInput:
       type: object
       required:
@@ -2626,6 +2706,7 @@ components:
         endMs:
           type: integer
       additionalProperties: false
+
     MediaSearch:
       type: object
       properties:
@@ -2636,6 +2717,7 @@ components:
         options:
           $ref: '#/components/schemas/MediaSearchOptions'
       additionalProperties: false
+
     MediaSearchOptions:
       type: object
       properties:
@@ -2657,6 +2739,7 @@ components:
           type: boolean
           default: false
       additionalProperties: false
+
     Offer:
       type: object
       description: "A generalized, cross-domain Offer that captures the terms under which\none or more Resources may be committed.\n\nCore intent:\n- Support multiple terms/eligibility/constraints/price points for the same Resource(s)\n- Support dynamic / on-the-fly offers (e.g., bundling, combinational discounts,\n eligibility changes, capacity-aware pricing)\n\nThis mirrors the role of Offer in current Beckn (and schema.org patterns),\nbut keeps the shape minimal and composable via `beckn:offerAttributes`."
@@ -2681,13 +2764,11 @@ components:
           description: IDs of optional extra Offers or Resources that can be attached.
           items:
             $ref: '#/components/schemas/AddOn'
-        considerationIds:
+        considerations:
           type: array
+          description: Proposed value to be exchanged under this offer, e.g. Price for a retail item
           items:
-            $ref: '#/components/schemas/Consideration/properties/id'
-        fulfillmentIds:
-          description: Details regarding the fulfillment of this offer
-          $ref: '#/components/schemas/Consideration'
+            $ref: '#/components/schemas/Consideration'
         validity:
           $ref: '#/components/schemas/TimePeriod'
         availableTo:
@@ -2720,6 +2801,7 @@ components:
                 description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: '#/components/schemas/Attributes'
+
     Provider:
       type: object
       description: Schema definition for Provider in the Beckn Protocol v2.0.1
@@ -2742,6 +2824,7 @@ components:
       - id
       - descriptor
       additionalProperties: false
+
     RatingInput:
       $schema: https://json-schema.org/draft/2020-12/schema
       description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings and feedback of their respective users.
@@ -2770,6 +2853,7 @@ components:
       - target
       - range
       additionalProperties: false
+
     Resource:
       type: object
       description: "A minimal, domain-neutral abstraction representing any discoverable,\nreferenceable, or committable unit of value, capability, service,\nentitlement, or asset within the network.\n\nExamples:\n- A retail product SKU, a mobility ride, a job role, a carbon credit unit,\n a dataset/API entitlement, a training course, a clinic service slot.\n\nDesigned for composability through `resourceAttributes` where\ndomain packs can plug in their specific fields without changing the core."
@@ -2784,6 +2868,7 @@ components:
         resourceAttributes:
           description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
           $ref: '#/components/schemas/Attributes'
+
     Settlement:
       type: object
       properties:
@@ -2799,12 +2884,14 @@ components:
           - COMPLETE
         settlementAttributes:
           $ref: '#/components/schemas/Attributes'
+
     Signature:
       title: Beckn HTTP Signature
       description: "A digitally signed authentication credential in the HTTP `Authorization` header.\nFollows draft-cavage-http-signatures-12 as profiled by BECKN-006.\n\nformat:\n```\nSignature keyId=\"{subscriberId}|{uniqueKeyId}|{algorithm}\",\n algorithm=\"{algorithm}\",created=\"{unixTimestamp}\",expires=\"{unixTimestamp}\",\n headers=\"{signedHeaders}\",signature=\"{base64Signature}\"\n```\n\n| Attribute | Description |\n|-----------|-------------|\n| `keyId` | `{subscriberId}|{uniqueKeyId}|{algorithm}` — FQDN, registry UUID, algorithm |\n| `algorithm` | MUST be `ed25519` |\n| `created` | Unix timestamp when the signature was created |\n| `expires` | Unix timestamp when the signature expires |\n| `headers` | Space-separated signed headers. MUST include `(created)`, `(expires)`, `digest` |\n| `signature` | Base64-encoded Ed25519 signature over the signing string |\n\nSigning string:\n`(created): {value}\\n(expires): {value}\\ndigest: BLAKE-512={digest}`\nwhere `digest` is a BLAKE2b-512\
         \ hash of the request body, Base64-encoded."
       type: string
       pattern: ^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$
+
     Support:
       description: Describes a support session info
       title: Support
@@ -2823,6 +2910,7 @@ components:
           items:
             $ref: '#/components/schemas/Attributes'
       additionalProperties: false
+
     SpatialConstraint:
       description: "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
       title: SpatialConstraint
@@ -2876,6 +2964,7 @@ components:
       additionalProperties: false
       x-tags:
       - common
+
     TimePeriod:
       description: Time window with date-time precision for availability/validity
       title: TimePeriod
@@ -2887,9 +2976,8 @@ components:
           description: Start instant (inclusive)
           type: string
           format: date-time
-          example: '2025-01-27T09:00:00Z'
         endDate:
-          description: End instant (exclusive or inclusive per domain semantics)
+          description: End instant in RFC 3339 date-time format
           type: string
           format: date-time
           example: '2025-12-31T23:59:59Z'
@@ -2897,12 +2985,10 @@ components:
           description: Start time of the time period
           type: string
           format: time
-          example: 09:00:00
         endTime:
           description: End time of the time period
           type: string
           format: time
-          example: '22:00:00'
       anyOf:
       - required:
         - startDate
@@ -2912,27 +2998,34 @@ components:
         - startTime
         - endTime
       additionalProperties: false
+
     Tracking:
       description: Information regarding live tracking of the fufillment of a contract
       title: Tracking
       type: object
       properties:
-        refId:
-          description: Tracking reference ID for the tracking session. Could be the Order ID, Fulfillment ID, Fulfillment Stage ID, or any other unique tracking identifier
-          type: string
+        contract:
+          description: Attributes of the contract for which the tracking is performed
+          allOf: 
+            -  $ref: "#/components/schemas/Contract"
+            - required: 
+              -  id
         status:
           type: string
           enum:
           - ACTIVE
           - INACTIVE
-          - NOT-SUPPORTED
         url:
           description: Link/handle to off-network tracking UI or endpoint.
           type: string
           format: uri
+        trackingAttributes:
+          description: Information specific to the use case for which the tracking is performed
+          $ref: "#/components/schemas/Attributes"
       required:
       - url
       - status
+
     Ack:
       description: New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver authenticated, received, and processed the inbound request.
       type: object
@@ -2949,6 +3042,7 @@ components:
       required:
       - status
       - signature
+
     AckNoCallback:
       description: Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider closed, context.try preview complete).
       allOf:
@@ -2961,6 +3055,7 @@ components:
         - status
         - signature
         - error
+
     NackBadRequest:
       description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
       allOf:
@@ -2972,6 +3067,7 @@ components:
             const: NACK
           error:
             $ref: '#/components/schemas/Error'
+
     NackUnauthorized:
       description: Invalid or missing authentication credentials; signature could not be verified.
       allOf:
@@ -2983,12 +3079,14 @@ components:
             const: NACK
           error:
             $ref: '#/components/schemas/Error'
+
     ServerError:
       description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
       type: object
       properties:
         error:
           $ref: '#/components/schemas/Error'
+
     CatalogSubscribeAction:
       type: object
       description: 'Message payload for catalog/subscription.
@@ -3024,6 +3122,7 @@ components:
               description: Override callback URL (defaults to context.bapUri)
             deliveryPolicy:
               $ref: '#/components/schemas/DeliveryPolicy'
+
     CatalogSubscription:
       type: object
       description: Full subscription record
@@ -3064,6 +3163,7 @@ components:
         updatedAt:
           type: string
           format: date-time
+
     DeliveryPolicy:
       type: object
       description: Callback delivery retry configuration
@@ -3094,6 +3194,7 @@ components:
               type: number
               default: 2.0
               description: Delay multiplied by this after each retry
+
     Pagination:
       type: object
       description: Pagination metadata returned with list responses
@@ -3107,6 +3208,7 @@ components:
         offset:
           type: integer
           description: Zero-based offset used in this response
+
     MasterSearchAction:
       type: object
       description: Message payload for catalog/master_search
@@ -3139,6 +3241,7 @@ components:
               minimum: 0
               default: 0
               description: Zero-based result offset
+
     CatalogPullAction:
       type: object
       description: Message payload for catalog/pull
@@ -3184,6 +3287,7 @@ components:
           type: string
           format: date-time
           description: Inclusive upper bound for INCREMENTAL mode
+
     PullResultFile:
       type: object
       description: 'JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
