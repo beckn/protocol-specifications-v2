@@ -81,7 +81,7 @@ A Network Participant submits one or more catalogs for indexing. The catalog sys
 
 **`POST /catalog/on_publish`**
 
-Callback endpoint implemented by the Network Participant. The catalog system delivers per-catalog indexing results here after processing is complete.
+Callback endpoint implemented by the Network Participant to receive per-catalog publish processing results. The catalog system delivers indexing results here after processing is complete.
 
 - The Network Participant MUST implement `POST /catalog/on_publish` to receive processing results.
 - The Network Participant MUST respond with `ACK` on receipt of the callback.
@@ -107,11 +107,11 @@ A Network Participant creates a subscription to receive catalog updates for spec
 - The catalog system MUST return an existing active subscription if an identical scope subscription already exists (idempotent).
 - The catalog system MUST generate and return a unique `subscriptionId` UUID for each new subscription.
 
-**`DELETE /catalog/subscription`**
+**`DELETE /catalog/subscription/{subscriptionId}`**
 
 Deactivates an active subscription. Only the Network Participant that created the subscription can deactivate it.
 
-- The `subscriptionId` MUST be provided in the request body.
+- The `subscriptionId` MUST be provided as a path parameter.
 - The catalog system MUST verify that the requesting Network Participant is the creator of the subscription before deactivating it.
 - Subscription status after deactivation MUST be `INACTIVE`.
 
@@ -131,7 +131,7 @@ A Network Participant requests catalogs matching specified filters. Returns an i
 Two modes are supported:
 
 - **FULL** — returns the latest version of each matching catalog.
-- **INCREMENTAL** — returns all catalog versions indexed between `fromDate` and `toDate`, useful for syncing changes since the last pull.
+- **INCREMENTAL** — returns all catalog versions indexed between `fromDate` and `toDate`, useful for syncing changes since the last pull. The date range MUST NOT exceed 5 days per request.
 
 Requirements:
 
@@ -190,8 +190,9 @@ Requirements:
 | CON-08-10 | Pull callbacks MUST carry terminal status only: `COMPLETED` or `FAILED` | MUST |
 | CON-08-11 | The receiving Network Participant MUST deduplicate `/catalog/on_pull` callbacks on `context.transactionId` | MUST |
 | CON-08-12 | On `COMPLETED` pull status, exactly one of `catalogs` or `objectUrl` MUST be present | MUST |
-| CON-08-13 | Master resource search results MUST be paginated | MUST |
-| CON-08-14 | Omitting a filter dimension in master search MUST match all values for that dimension | MUST |
+| CON-08-13 | The `fromDate` to `toDate` range in INCREMENTAL pull requests MUST NOT exceed 5 days | MUST |
+| CON-08-14 | Master resource search results MUST be paginated | MUST |
+| CON-08-15 | Omitting a filter dimension in master search MUST match all values for that dimension | MUST |
 
 ---
 
@@ -295,7 +296,7 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
       "networkIds": ["retail"]
     },
     "fromDate": "2026-04-01T00:00:00.000Z",
-    "toDate": "2026-04-22T00:00:00.000Z"
+    "toDate": "2026-04-06T00:00:00.000Z"
   }
 }
 ```
@@ -322,7 +323,14 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
 }
 ```
 
-#### Example 5 — Search master resources
+#### Example 5 — Deactivate a subscription
+
+```
+DELETE /catalog/subscription/f47ac10b-58cc-4372-a567-0e02b2c3d479
+Authorization: Signature ...
+```
+
+#### Example 6 — Search master resources
 
 ```json
 {
@@ -334,10 +342,14 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
     "timestamp": "2026-04-22T10:00:00.000Z"
   },
   "message": {
-    "networkIds": ["retail"],
-    "schemaTypes": [
-      "https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType"
-    ]
+    "filters": {
+      "networkIds": ["retail"],
+      "schemaTypes": [
+        "https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType"
+      ]
+    },
+    "limit": 20,
+    "offset": 0
   }
 }
 ```
