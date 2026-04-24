@@ -5,7 +5,7 @@
 - **Status:** Draft.
 - **Authors:** Beckn Protocol contributors.
 - **Created:** 2026-04-22.
-- **Updated:** 2026-04-22.
+- **Updated:** 2026-04-25.
 - **Version history:** To be published.
 - **Latest editor's draft:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/schema-update/docs/08_Catalog_APIs.md).
 - **Implementation report:** To be published by implementation working group.
@@ -18,7 +18,7 @@
 
 ## 2. Abstract
 
-This RFC defines the normative specification for all Catalog APIs in Beckn Protocol v2. It covers the full catalog lifecycle: publishing catalogs for network indexing, pushing catalogs to edge discovery services, subscribing to catalog update streams, pulling catalogs on demand, and searching master resource definitions. All APIs follow the standard Beckn asynchronous request-callback pattern and use Network Participant terminology throughout.
+This RFC defines the normative specification for all Catalog APIs in Beckn Protocol v2. It covers the full catalog lifecycle: publishing catalogs to the network, pushing catalogs to edge discovery services, subscribing to catalog update streams, pulling catalogs on demand, and searching master resource definitions. All APIs follow the standard Beckn asynchronous request-callback pattern and use Network Participant terminology throughout.
 
 ## 3. Table of Contents
 
@@ -45,7 +45,7 @@ In Beckn v2 networks, catalog data must flow efficiently from providers to disco
 - **Normative:** Requirements that define conformance and interoperability behavior.
 - **Informative:** Explanatory guidance that does not by itself define conformance.
 - **Network Participant:** Any entity registered on a Beckn network that implements one or more Beckn protocol APIs.
-- **Catalog system:** The server-side system responsible for ingesting, indexing, and distributing catalog data across the network.
+- **Catalog system:** The server-side system responsible for ingesting, storing, and distributing catalog data across the network.
 - **Edge discovery service:** A discovery service owned and operated by a Network Participant, receiving catalog updates via `/catalog/push`.
 - **Subscription:** A persistent registration by a Network Participant to receive catalog updates for specified networks and/or schema types.
 - **Conformance impact:** Classification of expected compatibility effect (Patch, Minor, Major, Informative).
@@ -72,12 +72,16 @@ _Use MUST / SHOULD / MAY as defined in [Keyword Definitions](https://github.com/
 
 **`POST /catalog/publish`**
 
-A Network Participant submits one or more catalogs for indexing. The catalog system returns an immediate `ACK` and processes catalogs asynchronously, delivering per-catalog results via `/catalog/on_publish`.
+A Network Participant publishes catalogs to the network. The catalog system returns an immediate `ACK` and processes catalogs asynchronously, delivering per-catalog results via `/catalog/on_publish`.
 
 - The Network Participant MUST include a valid Beckn HTTP Signature on every publish request.
 - The catalog system MUST return an `ACK` immediately on receipt.
 - The catalog system MUST validate catalog payloads against the declared schema type.
 - The catalog system MUST deliver per-catalog processing results to `/catalog/on_publish` asynchronously.
+
+**Publish directives and catalog type inference:**
+
+Publish directives define per-catalog processing instructions, matched by `catalogId`. When not defined, the catalog service determines the type from content — catalogs with offers are treated as `regular`; catalogs with only resources are treated as `master`. Default update mode is `MERGE`.
 
 **Network visibility (`visibleTo`):**
 
@@ -89,7 +93,7 @@ Each publish directive may include a `visibleTo` array to restrict the catalog's
 
 **`POST /catalog/on_publish`**
 
-Callback endpoint implemented by the Network Participant to receive per-catalog publish processing results. The catalog system delivers indexing results here after processing is complete.
+Callback endpoint implemented by the Network Participant. The catalog system delivers the publish status of each catalog once processing is complete.
 
 - The Network Participant MUST implement `POST /catalog/on_publish` to receive processing results.
 - The Network Participant MUST respond with `ACK` on receipt of the callback.
@@ -98,7 +102,7 @@ Callback endpoint implemented by the Network Participant to receive per-catalog 
 
 **`POST /catalog/push`**
 
-Endpoint implemented by the edge discovery service owned by a Network Participant. The catalog system invokes this endpoint to push and sync catalogs to the discovery service, keeping it up to date with the subscribed network catalogs.
+Endpoint implemented by the edge discovery service owned by a Network Participant. The catalog system pushes catalog updates matching the Network Participant's subscribed networkIds and schema types.
 
 - The edge discovery service MUST implement `POST /catalog/push`.
 - The catalog system MUST authenticate via Beckn HTTP Signature on every push request.
@@ -125,10 +129,10 @@ Deactivates an active subscription. Only the Network Participant that created th
 
 **`GET /catalog/subscriptions`**
 
-Returns all active subscriptions for the calling Network Participant.
+Returns all subscriptions for the calling Network Participant. Use the `?id=<subscriptionId>` query parameter to retrieve a specific subscription.
 
 - The catalog system MUST scope results to the calling Network Participant's identity.
-- The caller MAY filter to a single subscription using the `?id=<uuid>` query parameter.
+- The caller MAY filter by subscription ID using the `?id=<subscriptionId>` query parameter.
 
 #### 5.1.4 Catalog Pull
 
@@ -139,7 +143,7 @@ A Network Participant requests catalogs scoped by an active subscription. The ca
 Two modes are supported:
 
 - **FULL** — returns the latest version of each matching catalog.
-- **INCREMENTAL** — returns all catalog versions published between `fromDate` and `toDate`, useful for syncing changes since the last pull. When `fromDate` is omitted, defaults to 5 days before the current time. The date range MUST NOT exceed 5 days per request.
+- **INCREMENTAL** — returns all catalog versions published between `fromDate` and `toDate`, useful for syncing changes since the last pull. When `fromDate` is omitted, defaults to 7 days before the current time. The date range MUST NOT exceed 7 days per request.
 
 Requirements:
 
@@ -150,7 +154,7 @@ Requirements:
 
 **`POST /catalog/on_pull`**
 
-Callback endpoint hosted by the receiving Network Participant. After the Network Participant submits a `/catalog/pull` request, the results are delivered here asynchronously.
+Callback endpoint implemented by the Network Participant to receive the results of a `/catalog/pull` request.
 
 - The Network Participant MUST implement `POST /catalog/on_pull` to receive pull results.
 - The callback MUST carry terminal status only: `COMPLETED` or `FAILED`.
@@ -163,15 +167,15 @@ Callback endpoint hosted by the receiving Network Participant. After the Network
 
 **`POST /catalog/master/search`**
 
-Search for canonical master resource definitions across networks. Filter by network and schema type; results are paginated and grouped by catalog.
+A Network Participant searches for master resources by network and schema type.
 
 **`GET /catalog/master/schemaTypes`**
 
-Returns the distinct schema type URIs available across all master resources.
+A Network Participant retrieves the schema types available across all master resources in all networks.
 
-**`GET /catalog/master/{masterItemId}`**
+**`GET /catalog/master/{masterResourceId}`**
 
-Returns a single master resource by its identifier, wrapped in its catalog envelope with full provider and descriptor metadata.
+A Network Participant retrieves a master resource by its identifier.
 
 Requirements:
 
@@ -199,7 +203,7 @@ Requirements:
 | CON-08-11 | Pull callbacks MUST carry terminal status only: `COMPLETED` or `FAILED` | MUST |
 | CON-08-12 | The receiving Network Participant MUST deduplicate `/catalog/on_pull` callbacks on `context.transactionId` | MUST |
 | CON-08-13 | On `COMPLETED` pull status, exactly one of `catalogs` or `objectUrl` MUST be present | MUST |
-| CON-08-14 | The `fromDate` to `toDate` range in INCREMENTAL pull requests MUST NOT exceed 5 days | MUST |
+| CON-08-14 | The `fromDate` to `toDate` range in INCREMENTAL pull requests MUST NOT exceed 7 days | MUST |
 | CON-08-15 | Master resource search results MUST be paginated | MUST |
 | CON-08-16 | Omitting a filter dimension in master search MUST match all values for that dimension | MUST |
 

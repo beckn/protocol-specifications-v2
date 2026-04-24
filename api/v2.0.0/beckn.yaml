@@ -941,7 +941,7 @@ paths:
                   $ref: '#/components/schemas/CatalogPublishAction'
             examples:
               simplePublish:
-                summary: Publish a catalog without publishDirectives (inferred as master — resources only, no offers)
+                summary: Publish a catalog without publishDirectives (resources only, no offers — treated as master)
                 value:
                   context:
                     version: '2.0.0'
@@ -1710,13 +1710,12 @@ components:
       properties:
         publishDirectives:
           description: >-
-            Processing instructions for the catalog service, one entry
-            per catalog in this request. Each entry is matched to a
-            catalog by its `catalogId`.
-
-            When `publishDirectives` is absent, the catalog service
-            infers defaults from the catalog content. Default update
-            mode is MERGE.
+            Publish directives define per-catalog processing
+            instructions, matched by `catalogId`. When not defined,
+            the catalog service determines the type from content —
+            catalogs with offers are treated as `regular`; catalogs
+            with only resources are treated as `master`. Default
+            update mode is `MERGE`.
           type: array
           items:
             type: object
@@ -1749,17 +1748,13 @@ components:
                 - master
                 - regular
                 description: >-
-                  Declares the role of this catalog.
+                  Declares the type of this catalog.
 
-                  `master` — Canonical resource definitions published
-                  by an authoritative entity. Master resource fields
-                  are protected and cannot be overridden by extending
-                  providers.
+                  `master` — Canonical resource definitions reusable
+                  across the network.
 
-                  `regular` — Provider-specific catalog. Resources may
-                  optionally extend master resources via
-                  `resourceDirectives`. Standalone if no master is
-                  referenced.
+                  `regular` — Provider-specific catalog that can
+                  optionally extend master resources.
                 example: regular
               updateMode:
                 type: string
@@ -1768,14 +1763,14 @@ components:
                 - MERGE
                 default: MERGE
                 description: >-
-                  Controls how existing resources are handled.
+                  Controls how the catalog is updated.
 
-                  `MERGE` (default) — Incoming resources matched by
-                  `id`; existing resources not in this request are
-                  left untouched.
+                  `MERGE` (default) — Upserts resources by `id`;
+                  existing resources not in this request are
+                  retained.
 
-                  `FULL` — All existing resources removed first;
-                  catalog becomes an exact copy of this request.
+                  `FULL` — Replaces the entire catalog with this
+                  request.
                 example: MERGE
               resourceDirectives:
                 description: >-
@@ -3485,7 +3480,7 @@ components:
           format: date-time
           description: >-
             Inclusive lower bound for INCREMENTAL mode. When omitted
-            in INCREMENTAL mode, defaults to 5 days before the
+            in INCREMENTAL mode, defaults to 7 days before the
             current time.
         toDate:
           type: string
