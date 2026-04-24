@@ -1147,10 +1147,10 @@ paths:
     post:
       summary: Push catalogs to the edge discovery services owned by a Network Participant
       description: >-
-        Endpoint implemented by the edge discovery service owned by a Network
-        Participant. The catalog system invokes this endpoint to push and sync
-        catalogs to the discovery service, keeping it up to date with the
-        subscribed network catalogs.
+        Endpoint implemented by the edge discovery service owned
+        by a Network Participant. The catalog system pushes
+        catalog updates matching the Network Participant's
+        subscribed networkIds and schema types.
       operationId: catalogPush
       tags:
       - Catalog Publishing
