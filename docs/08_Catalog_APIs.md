@@ -126,16 +126,16 @@ Returns all active subscriptions for the calling Network Participant.
 
 **`POST /catalog/pull`**
 
-A Network Participant requests catalogs matching specified filters. Returns an immediate `ACK`; results are delivered asynchronously via `/catalog/on_pull`.
+A Network Participant requests catalogs scoped by an active subscription. The caller passes a `subscriptionId` — the catalog system uses the subscription's network and schema-type filters to determine which catalogs to return. Returns an immediate `ACK`; results are delivered asynchronously via `/catalog/on_pull`.
 
 Two modes are supported:
 
 - **FULL** — returns the latest version of each matching catalog.
-- **INCREMENTAL** — returns all catalog versions indexed between `fromDate` and `toDate`, useful for syncing changes since the last pull. The date range MUST NOT exceed 5 days per request.
+- **INCREMENTAL** — returns all catalog versions published between `fromDate` and `toDate`, useful for syncing changes since the last pull. When `fromDate` is omitted, defaults to 5 days before the current time. The date range MUST NOT exceed 5 days per request.
 
 Requirements:
 
-- At least one of `catalogIds`, `networkIds`, or `schemaTypes` MUST be provided in `filters`.
+- A valid `subscriptionId` referencing an active subscription MUST be provided.
 - The `context.transactionId` MUST be provided and MUST persist through to the `/catalog/on_pull` callback.
 - The catalog system MUST return an `ACK` immediately on receipt.
 - The catalog system MUST deliver results to `/catalog/on_pull` asynchronously.
@@ -186,13 +186,14 @@ Requirements:
 | CON-08-06 | Subscription status MUST be either `ACTIVE` or `INACTIVE` | MUST |
 | CON-08-07 | Only the Network Participant that created a subscription MUST be permitted to deactivate it | MUST |
 | CON-08-08 | The catalog system MUST return an `ACK` immediately on receipt of `/catalog/pull` | MUST |
-| CON-08-09 | The `context.transactionId` MUST be provided in `/catalog/pull` and MUST persist through to the `/catalog/on_pull` callback | MUST |
-| CON-08-10 | Pull callbacks MUST carry terminal status only: `COMPLETED` or `FAILED` | MUST |
-| CON-08-11 | The receiving Network Participant MUST deduplicate `/catalog/on_pull` callbacks on `context.transactionId` | MUST |
-| CON-08-12 | On `COMPLETED` pull status, exactly one of `catalogs` or `objectUrl` MUST be present | MUST |
-| CON-08-13 | The `fromDate` to `toDate` range in INCREMENTAL pull requests MUST NOT exceed 5 days | MUST |
-| CON-08-14 | Master resource search results MUST be paginated | MUST |
-| CON-08-15 | Omitting a filter dimension in master search MUST match all values for that dimension | MUST |
+| CON-08-09 | A valid `subscriptionId` referencing an active subscription MUST be provided in `/catalog/pull` | MUST |
+| CON-08-10 | The `context.transactionId` MUST be provided in `/catalog/pull` and MUST persist through to the `/catalog/on_pull` callback | MUST |
+| CON-08-11 | Pull callbacks MUST carry terminal status only: `COMPLETED` or `FAILED` | MUST |
+| CON-08-12 | The receiving Network Participant MUST deduplicate `/catalog/on_pull` callbacks on `context.transactionId` | MUST |
+| CON-08-13 | On `COMPLETED` pull status, exactly one of `catalogs` or `objectUrl` MUST be present | MUST |
+| CON-08-14 | The `fromDate` to `toDate` range in INCREMENTAL pull requests MUST NOT exceed 5 days | MUST |
+| CON-08-15 | Master resource search results MUST be paginated | MUST |
+| CON-08-16 | Omitting a filter dimension in master search MUST match all values for that dimension | MUST |
 
 ---
 
@@ -291,10 +292,8 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
     "bapUri": "https://np.example.com"
   },
   "message": {
+    "subscriptionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "mode": "INCREMENTAL",
-    "filters": {
-      "networkIds": ["retail"]
-    },
     "fromDate": "2026-04-01T00:00:00.000Z",
     "toDate": "2026-04-06T00:00:00.000Z"
   }

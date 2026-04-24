@@ -1395,9 +1395,12 @@ paths:
       - $ref: '#/components/parameters/AuthorizationHeader'
       summary: Pull catalogs on demand
       description: >-
-        Request catalogs matching the specified filters. Returns an
-        immediate acknowledgement; the actual catalogs are delivered
-        asynchronously via the `/catalog/on_pull` callback.
+        Request catalogs scoped by an active subscription. The caller
+        passes a `subscriptionId` — the catalog system uses the
+        subscription's network and schema-type filters to determine
+        which catalogs to return. Returns an immediate acknowledgement;
+        the actual catalogs are delivered asynchronously via the
+        `/catalog/on_pull` callback.
 
 
         Two modes: **FULL** returns the latest version of each matching
@@ -1752,6 +1755,13 @@ components:
             for different regions or buyer segments) using the
             `variant` field inside `resourceDirectives`.
 
+            Each directive may include a `visibleTo` array to
+            restrict the catalog's visibility to specific networks.
+            When `visibleTo` is omitted, the catalog is published to
+            the network in `context.networkId`. When neither is
+            provided, the catalog defaults to the global network
+            (`nfh.global/beckn-nodes`).
+
             When `publishDirectives` is not provided, the catalog
             service infers the catalog type from its content:
             a catalog containing only resources (no offers) is treated
@@ -1772,6 +1782,24 @@ components:
                   to. Must exactly match a catalog `id` in the
                   `catalogs` array of this request.
                 example: CAT-SUMMER-TECHMART-2026
+              visibleTo:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  Restricts this catalog's visibility to the listed
+                  networks. When provided, the catalog is published
+                  only to these networks, overriding
+                  `context.networkId`.
+
+                  When omitted, the catalog is published to the
+                  network specified in `context.networkId`. When
+                  neither is provided, the catalog is published to
+                  the default global network
+                  (`nfh.global/beckn-nodes`).
+                example:
+                - retail-network
+                - mobility-network
               catalogType:
                 type: string
                 enum:
@@ -3532,48 +3560,46 @@ components:
     CatalogPullAction:
       type: object
       description: >-
-        Pull request payload specifying which catalogs to retrieve and
-        in which mode (FULL or INCREMENTAL).
+        Pull request payload. The caller references an active
+        subscription by `subscriptionId` — the catalog system uses
+        the subscription's network and schema-type filters to scope
+        which catalogs are returned. An optional date range narrows
+        results further.
       additionalProperties: false
       required:
-      - mode
-      - filters
+      - subscriptionId
       properties:
+        subscriptionId:
+          type: string
+          format: uuid
+          description: >-
+            ID of an active CatalogSubscription owned by the caller.
+            The catalog system uses the subscription's networkIds and
+            schemaTypes to determine which catalogs to return.
         mode:
           type: string
           enum:
           - FULL
           - INCREMENTAL
-          description: "- `FULL` — returns the latest version of each matching catalog.\n- `INCREMENTAL` — returns all catalog versions indexed between\n  `fromDate` and `toDate` (inclusive).\n"
-        filters:
-          type: object
+          default: FULL
           description: >-
-            Filters scoping which catalogs are returned. At least one
-            of catalogIds, networkIds, or schemaTypes must be provided.
-            When multiple filters are supplied they are combined
-            (intersection).
-          additionalProperties: false
-          minProperties: 1
-          properties:
-            catalogIds:
-              type: array
-              items:
-                type: string
-              minItems: 1
-              description: "Explicit catalog IDs to pull. When combined with networkIds\
-                \ or schemaTypes the result is the intersection of all constraints."
-            networkIds:
-              type: array
-              items:
-                type: string
-              minItems: 1
-              description: Filter by network IDs.
-            schemaTypes:
-              type: array
-              items:
-                type: string
-              minItems: 1
-              description: Filter by schema type URIs.
+            - `FULL` — returns the latest version of each matching
+              catalog.
+            - `INCREMENTAL` — returns all catalog versions published
+              between `fromDate` and `toDate` (inclusive).
+        fromDate:
+          type: string
+          format: date-time
+          description: >-
+            Inclusive lower bound for INCREMENTAL mode. When omitted
+            in INCREMENTAL mode, defaults to 5 days before the
+            current time.
+        toDate:
+          type: string
+          format: date-time
+          description: >-
+            Inclusive upper bound for INCREMENTAL mode. When omitted,
+            defaults to the current time.
         limit:
           type: integer
           minimum: 1
@@ -3585,14 +3611,6 @@ components:
           minimum: 0
           default: 0
           description: Zero-based page start for pagination
-        fromDate:
-          type: string
-          format: date-time
-          description: Inclusive lower bound for INCREMENTAL mode.
-        toDate:
-          type: string
-          format: date-time
-          description: Inclusive upper bound for INCREMENTAL mode.
 
     CatalogPullCallbackAction:
       type: object
