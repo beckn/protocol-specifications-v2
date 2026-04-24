@@ -906,11 +906,11 @@ paths:
 
   /catalog/publish:
     post:
-      summary: Publish catalogs for network indexing
+      summary: Publish catalogs to the network for discovery
       description: >-
-        A Network Participant submits one or more catalogs for indexing.
-        Returns an **ACK** immediately if accepted for processing. The
-        per-catalog processing result arrives asynchronously via
+        A Network Participant publishes catalogs to the network.
+        The catalog system stores them asynchronously and returns
+        an ACK. The status of published catalogs is delivered via
         `/catalog/on_publish`.
       operationId: catalogPublish
       tags:
@@ -1101,11 +1101,11 @@ paths:
 
   /catalog/on_publish:
     post:
-      summary: Receive per-catalog publish processing results
+      summary: Receive catalog publish results
       description: >-
-        Callback endpoint implemented by the Network Participant. The catalog
-        system delivers per-catalog indexing results here after processing is
-        complete.
+        Callback endpoint implemented by the Network Participant.
+        The catalog system delivers the publish status of each
+        catalog once processing is complete.
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
@@ -1145,7 +1145,7 @@ paths:
 
   /catalog/push:
     post:
-      summary: Push catalogs to the edge discovery services owned by a Network Participant
+      summary: Push catalogs to a Network Participant's edge discovery service
       description: >-
         Endpoint implemented by the edge discovery service owned by a Network
         Participant. The catalog system invokes this endpoint to push and sync
@@ -1277,8 +1277,10 @@ paths:
       tags:
       - Subscription
       description: >-
-        Deactivates an active subscription. Only the Network Participant
-        that created the subscription can deactivate it.
+        Deactivates an active subscription. Only the Network
+        Participant that created the subscription can deactivate
+        it. Once deactivated, the subscriber will no longer
+        receive catalog updates for this subscription.
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       - name: subscriptionId
@@ -1330,8 +1332,9 @@ paths:
     get:
       summary: List catalog subscriptions
       description: >-
-        Returns all active subscriptions for the calling Network Participant.
-        Use `?id=<uuid>` to retrieve a specific subscription by its UUID.
+        Returns all subscriptions for the calling Network
+        Participant. Use `?id=` to retrieve a specific
+        subscription.
       operationId: catalogSubscribeList
       tags:
       - Subscription
@@ -1340,7 +1343,7 @@ paths:
       - name: id
         in: query
         required: false
-        description: Filter to a single subscription by its UUID
+        description: Filter by subscription ID
         schema:
           type: string
           format: uuid
@@ -1389,20 +1392,11 @@ paths:
       - Catalog Pull
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      summary: Pull catalogs on demand
+      summary: Pull catalogs by subscription
       description: >-
-        Request catalogs scoped by an active subscription. The caller
-        passes a `subscriptionId` — the catalog system uses the
-        subscription's network and schema-type filters to determine
-        which catalogs to return. Returns an immediate acknowledgement;
-        the actual catalogs are delivered asynchronously via the
-        `/catalog/on_pull` callback.
-
-
-        Two modes: **FULL** returns the latest version of each matching
-        catalog. **INCREMENTAL** returns all versions published within
-        the given date range, useful for syncing changes since the
-        last pull.
+        A Network Participant pulls catalogs matching an active
+        subscription. Returns an ACK; results are delivered
+        asynchronously via `/catalog/on_pull`.
       requestBody:
         required: true
         content:
@@ -1449,16 +1443,8 @@ paths:
     post:
       summary: Receive catalog pull results
       description: >-
-        Callback endpoint hosted by the receiving Network Participant. After the
-        Network Participant submits a `/catalog/pull` request, the results are
-        delivered here asynchronously. The callback carries the final
-        outcome — assembled catalogs (inline or via a pre-signed
-        `objectUrl`) on success, or an error reason on failure.
-
-
-        The callback is delivered with at-least-once semantics; the receiving
-        Network Participant MUST deduplicate on `context.transactionId` to
-        handle retries gracefully.
+        Callback endpoint implemented by the Network Participant
+        to receive the results of a `/catalog/pull` request.
       operationId: onCatalogPull
       tags:
       - Catalog Pull
@@ -1499,10 +1485,8 @@ paths:
     post:
       summary: Search master resources
       description: >-
-        Search for canonical master resource definitions across
-        networks. Filter by network and schema type; results are
-        grouped by catalog with pagination. Omitting a filter matches
-        all values for that dimension.
+        A Network Participant searches for master resources by
+        network and schema type.
       operationId: masterSearch
       tags:
       - Master Resource Search
@@ -1586,9 +1570,8 @@ paths:
     get:
       summary: List master resource schema types
       description: >-
-        Returns the distinct schema type URIs available across all
-        master resources. Use these values to populate the
-        `schemaTypes` filter in search requests.
+        A Network Participant retrieves the schema types
+        available across all master resources in all networks.
       operationId: listMasterSchemaTypes
       tags:
       - Master Resource Search
@@ -1629,28 +1612,28 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /catalog/master/{masterItemId}:
+  /catalog/master/{masterResourceId}:
     get:
       summary: Get a master resource
       description: >-
-        Returns a single master resource by its identifier, wrapped in
-        its catalog envelope with full provider and descriptor metadata.
-      operationId: getMasterItem
+        A Network Participant retrieves a master resource by
+        its identifier.
+      operationId: getMasterResource
       tags:
       - Master Resource Search
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      - name: masterItemId
+      - name: masterResourceId
         in: path
         required: true
-        description: Unique identifier of the master resource to retrieve
+        description: Identifier of the master resource
         schema:
           type: string
           pattern: ^[a-zA-Z0-9_\-:.]+$
         example: MASTER-LAPTOP-XPS-15
       responses:
         '200':
-          description: Master item wrapped in catalog envelope
+          description: Master resource wrapped in catalog envelope
           content:
             application/json:
               schema:
@@ -1730,11 +1713,6 @@ components:
             Processing instructions for the catalog service, one entry
             per catalog in this request. Each entry is matched to a
             catalog by its `catalogId`.
-
-            Each directive may include a `visibleTo` array to restrict
-            the catalog's visibility to specific networks. When omitted,
-            falls back to `context.networkId`, then to the default
-            global network (`nfh.global/beckn-nodes`).
 
             When `publishDirectives` is absent, the catalog service
             infers defaults from the catalog content. Default update
@@ -2288,7 +2266,9 @@ components:
       additionalProperties: false
 
     CatalogOnPublishAction:
-      description: Catalog publish processing results from CDS to BPP.
+      description: >-
+        Callback payload containing the publish status of each
+        catalog.
       type: object
       required:
       - results
@@ -3463,12 +3443,12 @@ components:
           minimum: 1
           maximum: 100
           default: 20
-          description: Maximum items per page (clamped to [1, 100])
+          description: Maximum number of catalogs to return per page
         offset:
           type: integer
           minimum: 0
           default: 0
-          description: Zero-based result offset
+          description: Zero-based result offset for pagination
 
     CatalogPullAction:
       type: object
@@ -3518,12 +3498,12 @@ components:
           minimum: 1
           maximum: 100
           default: 20
-          description: Maximum number of catalogs to return (server may apply its own cap)
+          description: Maximum number of catalogs to return per page
         offset:
           type: integer
           minimum: 0
           default: 0
-          description: Zero-based page start for pagination
+          description: Zero-based result offset for pagination
 
     CatalogPullCallbackAction:
       type: object
