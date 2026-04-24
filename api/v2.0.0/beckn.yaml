@@ -1720,10 +1720,7 @@ components:
       description: >-
         Catalog publish request payload. Contains one or more catalogs
         and optional `publishDirectives` that control how the catalog
-        service processes them. When `publishDirectives` is absent, the
-        catalog service treats the catalog as a standalone regular
-        catalog and adds or updates resources without removing existing
-        ones.
+        service processes them.
       required:
       - catalogs
       type: object
@@ -1734,19 +1731,13 @@ components:
             per catalog in this request. Each entry is matched to a
             catalog by its `catalogId`.
 
-            Two catalog types are supported: `master` (canonical
-            resource definitions) and `regular` (provider-specific
-            catalogs that may extend master resources). Update mode
-            controls whether resources are merged or fully replaced.
-
             Each directive may include a `visibleTo` array to restrict
             the catalog's visibility to specific networks. When omitted,
             falls back to `context.networkId`, then to the default
             global network (`nfh.global/beckn-nodes`).
 
-            When `publishDirectives` is absent, the catalog type is
-            inferred from content — resources only implies master;
-            resources with offers implies regular. Default update
+            When `publishDirectives` is absent, the catalog service
+            infers defaults from the catalog content. Default update
             mode is MERGE.
           type: array
           items:
@@ -1768,15 +1759,9 @@ components:
                   type: string
                 description: >-
                   Restricts this catalog's visibility to the listed
-                  networks. When provided, the catalog is published
-                  only to these networks, overriding
-                  `context.networkId`.
-
-                  When omitted, the catalog is published to the
-                  network specified in `context.networkId`. When
-                  neither is provided, the catalog is published to
-                  the default global network
-                  (`nfh.global/beckn-nodes`).
+                  networks. When omitted, falls back to
+                  `context.networkId`, then to the default global
+                  network (`nfh.global/beckn-nodes`).
                 example:
                 - retail-network
                 - mobility-network
@@ -3544,11 +3529,8 @@ components:
       type: object
       description: >-
         Callback payload for pull results. Contains either the
-        requested catalogs inline or a download URL for large results.
-        Delivered with at-least-once semantics — the receiving Network
-        Participant must deduplicate on `context.transactionId`. On success (`COMPLETED`),
-        exactly one of `catalogs` or `objectUrl` is present. On failure
-        (`FAILED`), `error` carries the reason.
+        requested catalogs inline or a download URL for large
+        results.
       additionalProperties: false
       required:
       - status
@@ -3558,19 +3540,18 @@ components:
           enum:
           - COMPLETED
           - FAILED
-          description: Terminal status only. There is no intermediate `PROCESSING` state — the callback fires exactly once (logically) per terminal outcome.
+          description: Status of the pull request result.
         catalogs:
           type: array
-          description: Inline catalog payload, present only for small results below the inline size threshold.
+          description: Requested catalogs inline. Present when status is COMPLETED.
           items:
             $ref: '#/components/schemas/Catalog'
         objectUrl:
           type: object
           description: >-
-            Present when the result exceeds the inline threshold. The Network
-            Participant fetches the payload by HTTP GET on `url`, which points
-            directly at a pre-signed object-store location (e.g. GCS V4 signed
-            URL). The download is not proxied.
+            Pre-signed download URL for the result payload. Present
+            when status is COMPLETED and the result is too large to
+            return inline.
           additionalProperties: false
           required:
           - url
@@ -3581,7 +3562,7 @@ components:
           properties:
             url:
               type: string
-              description: Pre-signed object-store URL. Short-lived (typically 15 minutes).
+              description: Pre-signed object-store download URL.
             expiresAt:
               type: string
               format: date-time
@@ -3591,18 +3572,18 @@ components:
               enum:
               - json
               - json.gz
-              description: Compression format of the downloaded payload.
+              description: Format of the downloaded payload.
             sizeBytes:
               type: integer
               minimum: 0
-              description: Size of the payload in bytes, useful for progress tracking.
+              description: Size of the payload in bytes.
             checksum:
               type: string
-              description: SHA-256 hex prefixed with `sha256:`.
+              description: SHA-256 hex digest prefixed with `sha256:`.
         pagination:
           $ref: '#/components/schemas/Pagination'
         error:
-          description: Present only when `status = FAILED`.
+          description: Present when status is FAILED.
           $ref: '#/components/schemas/Error'
 
   responses:
