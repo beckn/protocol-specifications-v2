@@ -985,6 +985,8 @@ paths:
                   message:
                     publishDirectives:
                     - catalogId: MASTER-ELECTRONICS-2026
+                      visibleTo:
+                      - retail-network
                       catalogType: master
                       updateMode: FULL
                     catalogs:
@@ -1059,6 +1061,9 @@ paths:
                   message:
                     publishDirectives:
                     - catalogId: CAT-TECHMART-2026
+                      visibleTo:
+                      - retail-network
+                      - mobility-network
                       catalogType: regular
                       updateMode: MERGE
                       resourceDirectives:
@@ -1332,15 +1337,6 @@ paths:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      - name: subscriberId
-        in: query
-        required: false
-        description: >-
-          Subscriber identifier. Required in auth-off mode; ignored
-          when a valid Beckn auth header is present.
-        schema:
-          type: string
-        example: np.example.com
       - name: id
         in: query
         required: false
@@ -1737,37 +1733,20 @@ components:
             per catalog in this request. Each entry is matched to a
             catalog by its `catalogId`.
 
-            The Beckn catalog system supports two kinds of catalogs —
-            master and regular. A master catalog is published by an
-            authoritative entity (such as a manufacturer or standards
-            body) and defines the canonical version of each resource.
-            A regular catalog is published by an individual provider
-            who may choose to inherit from a master resource and add
-            their own fields on top (such as pricing or availability).
+            Two catalog types are supported: `master` (canonical
+            resource definitions) and `regular` (provider-specific
+            catalogs that may extend master resources). Update mode
+            controls whether resources are merged or fully replaced.
 
-            When publishing, the provider can also choose how existing
-            resources should be handled — either add/update individual
-            resources while keeping the rest intact (MERGE), or
-            completely replace all resources for that catalog (FULL).
+            Each directive may include a `visibleTo` array to restrict
+            the catalog's visibility to specific networks. When omitted,
+            falls back to `context.networkId`, then to the default
+            global network (`nfh.global/beckn-nodes`).
 
-            Additionally, providers can publish multiple variants of
-            the same resource (for example, different configurations
-            for different regions or buyer segments) using the
-            `variant` field inside `resourceDirectives`.
-
-            Each directive may include a `visibleTo` array to
-            restrict the catalog's visibility to specific networks.
-            When `visibleTo` is omitted, the catalog is published to
-            the network in `context.networkId`. When neither is
-            provided, the catalog defaults to the global network
-            (`nfh.global/beckn-nodes`).
-
-            When `publishDirectives` is not provided, the catalog
-            service infers the catalog type from its content:
-            a catalog containing only resources (no offers) is treated
-            as a **master** catalog; a catalog containing both resources
-            and offers (or only offers) is treated as a **regular**
-            catalog. In both cases the default update mode is MERGE.
+            When `publishDirectives` is absent, the catalog type is
+            inferred from content — resources only implies master;
+            resources with offers implies regular. Default update
+            mode is MERGE.
           type: array
           items:
             type: object
@@ -1808,25 +1787,15 @@ components:
                 description: >-
                   Declares the role of this catalog.
 
-                  `master` — A source-of-truth catalog published by an
-                  authoritative entity such as a manufacturer, standards
-                  body, or network operator. Resources in a master
-                  catalog define the baseline attributes — name,
-                  description, images, technical specifications — that
-                  downstream providers inherit. Once a master resource
-                  is published, its fields are protected: providers who
-                  extend it cannot change or remove any field set by the
-                  master. Master catalogs are typically published once
-                  and updated infrequently.
+                  `master` — Canonical resource definitions published
+                  by an authoritative entity. Master resource fields
+                  are protected and cannot be overridden by extending
+                  providers.
 
-                  `regular` — A provider-specific catalog. Resources
-                  in a regular catalog can optionally inherit from a
-                  master resource using `resourceDirectives`. When
-                  inheriting, the provider only needs to supply their
-                  own fields (such as pricing, availability, or delivery
-                  terms) — all other fields come from the master
-                  automatically. Regular catalogs that do not reference
-                  any master resource are fully standalone.
+                  `regular` — Provider-specific catalog. Resources may
+                  optionally extend master resources via
+                  `resourceDirectives`. Standalone if no master is
+                  referenced.
                 example: regular
               updateMode:
                 type: string
@@ -1835,43 +1804,21 @@ components:
                 - MERGE
                 default: MERGE
                 description: >-
-                  Controls what happens to existing resources in the
-                  catalog service when new resources are published.
+                  Controls how existing resources are handled.
 
-                  `MERGE` (default) — Each incoming resource is matched
-                  by its `id`. If a resource with the same `id` already
-                  exists, it is replaced with the new version. Resources
-                  already in the catalog service for this catalog that
-                  are NOT included in this request are left untouched.
-                  Use MERGE
-                  when you want to add or update specific resources
-                  without affecting the rest of the catalog.
+                  `MERGE` (default) — Incoming resources matched by
+                  `id`; existing resources not in this request are
+                  left untouched.
 
-                  `FULL` — All existing resources for this catalog are
-                  removed first, then only the resources in this request
-                  are stored. After a FULL publish, the catalog service
-                  contains exactly what was sent — nothing more, nothing
-                  less. Use FULL when you want to guarantee the catalog
-                  service is an exact copy of your current catalog
-                  state.
+                  `FULL` — All existing resources removed first;
+                  catalog becomes an exact copy of this request.
                 example: MERGE
               resourceDirectives:
                 description: >-
-                  Declares how individual resources in a regular catalog
-                  relate to resources in a master catalog. Each entry
-                  links a provider's resource to the master resource it
-                  inherits from, and optionally marks it as a variant.
-
-                  When a resource inherits from a master resource, the
-                  master's fields are always protected — they cannot be
-                  changed or removed by the provider. The provider can
-                  only add new fields that the master does not already
-                  define. This ensures that core attributes like name,
-                  description, and images remain consistent across all
-                  providers who inherit from the same master resource.
-
-                  This array only applies when `catalogType` is
-                  `regular`. It is ignored for master catalogs.
+                  Links individual resources in a regular catalog to
+                  master resources they inherit from, and optionally
+                  marks them as variants. Only applies when
+                  `catalogType` is `regular`.
                 type: array
                 items:
                   type: object
@@ -1892,12 +1839,9 @@ components:
                       - masterResourceId
                       description: >-
                         Declares which master resource this provider
-                        resource inherits from. The catalog service
-                        retrieves the master resource and combines it
-                        with the
-                        provider's resource — the master's fields are
-                        always kept as-is, and the provider can only
-                        add fields that the master has not defined.
+                        resource inherits from. Must refer to a
+                        resource previously published in a master
+                        catalog within the same network.
                       properties:
                         masterResourceId:
                           type: string
@@ -1912,25 +1856,10 @@ components:
                       additionalProperties: true
                       description: >-
                         Marks this resource as a named variant of the
-                        master resource it extends. Without this field,
-                        the resource is treated as the base version.
-                        With this field, the resource is stored as a
-                        separate variant that exists alongside the base
-                        version and other variants of the same master
-                        resource.
-
-                        When the catalog service assembles the final
-                        resource for a variant, it starts with the
-                        master resource,
-                        applies the base provider fields on top, then
-                        applies the variant-specific fields on top of
-                        that. At each step, fields from the previous
-                        layer are protected and cannot be overridden.
-
-                        The `type` + `id` combination uniquely
-                        identifies a variant within a resource. A
-                        single resource can have multiple variants
-                        across different types.
+                        master resource it extends. The `type` + `id`
+                        combination uniquely identifies a variant
+                        within a resource. Without this field, the
+                        resource is treated as the base version.
                       properties:
                         type:
                           type: string
