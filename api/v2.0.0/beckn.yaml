@@ -1535,6 +1535,7 @@ paths:
                 messageId: 770e8400-e29b-41d4-a716-446655440004
                 transactionId: 770e8400-e29b-41d4-a716-446655440005
                 timestamp: '2026-04-22T10:00:00.000Z'
+                networkId: retail-network
               message:
                 filters:
                   networkIds:
@@ -1839,9 +1840,7 @@ components:
                       - masterResourceId
                       description: >-
                         Declares which master resource this provider
-                        resource inherits from. Must refer to a
-                        resource previously published in a master
-                        catalog within the same network.
+                        resource inherits from.
                       properties:
                         masterResourceId:
                           type: string

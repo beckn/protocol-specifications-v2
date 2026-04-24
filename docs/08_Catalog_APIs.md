@@ -79,6 +79,14 @@ A Network Participant submits one or more catalogs for indexing. The catalog sys
 - The catalog system MUST validate catalog payloads against the declared schema type.
 - The catalog system MUST deliver per-catalog processing results to `/catalog/on_publish` asynchronously.
 
+**Network visibility (`visibleTo`):**
+
+Each publish directive may include a `visibleTo` array to restrict the catalog's visibility to specific networks. The resolution order is:
+
+1. `publishDirectives[].visibleTo` — catalog is visible only to the listed networks.
+2. `context.networkId` — fallback when `visibleTo` is omitted.
+3. Default global network (`nfh.global/beckn-nodes`) — fallback when neither is provided.
+
 **`POST /catalog/on_publish`**
 
 Callback endpoint implemented by the Network Participant to receive per-catalog publish processing results. The catalog system delivers indexing results here after processing is complete.
@@ -254,7 +262,54 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
 }
 ```
 
-#### Example 2 — Subscribe to catalog updates
+#### Example 2 — Publish with publishDirectives and visibleTo
+
+```json
+{
+  "context": {
+    "version": "2.0.0",
+    "action": "catalog/publish",
+    "messageId": "550e8400-e29b-41d4-a716-446655440010",
+    "transactionId": "550e8400-e29b-41d4-a716-446655440011",
+    "timestamp": "2026-04-22T10:00:00.000Z",
+    "bppId": "np.example.com",
+    "bppUri": "https://np.example.com",
+    "networkId": "retail-network"
+  },
+  "message": {
+    "publishDirectives": [
+      {
+        "catalogId": "CAT-001",
+        "visibleTo": ["retail-network", "mobility-network"],
+        "catalogType": "regular",
+        "updateMode": "MERGE"
+      }
+    ],
+    "catalogs": [
+      {
+        "id": "CAT-001",
+        "descriptor": { "name": "Example Catalog" },
+        "provider": {
+          "id": "provider-001",
+          "descriptor": { "name": "Example Provider" }
+        },
+        "resources": [
+          {
+            "id": "ITEM-001",
+            "descriptor": { "name": "Example Item" },
+            "resourceAttributes": {
+              "@context": "https://schema.beckn.org/retail/schema/1.1.0/context.jsonld",
+              "@type": "RetailItem"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Example 3 — Subscribe to catalog updates
 
 ```json
 {
@@ -278,7 +333,7 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
 }
 ```
 
-#### Example 3 — Pull catalogs (INCREMENTAL mode)
+#### Example 4 — Pull catalogs (INCREMENTAL mode)
 
 ```json
 {
@@ -300,7 +355,7 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
 }
 ```
 
-#### Example 4 — on_pull callback (success, inline)
+#### Example 5 — on_pull callback (success, inline)
 
 ```json
 {
@@ -322,14 +377,14 @@ These catalog lifecycle APIs are new in Beckn v2 and have no direct equivalent i
 }
 ```
 
-#### Example 5 — Deactivate a subscription
+#### Example 6 — Deactivate a subscription
 
 ```
 DELETE /catalog/subscription/f47ac10b-58cc-4372-a567-0e02b2c3d479
 Authorization: Signature ...
 ```
 
-#### Example 6 — Search master resources
+#### Example 7 — Search master resources
 
 ```json
 {
