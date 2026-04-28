@@ -1191,15 +1191,24 @@ paths:
 
   /catalog/subscription:
     post:
-      summary: Subscribe to catalog updates
+      summary: Subscribe to catalog updates on the network
       operationId: catalogSubscribe
       tags:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriptionId
+        in: query
+        required: false
+        description: UUID of an existing subscription to update (partial merge).
+        schema:
+          type: string
+          format: uuid
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
       description: >-
-        Creates a new subscription to receive catalog updates for the
-        specified networks and/or schema types.
+        Subscribe to receive catalog updates for specific networks and
+        schema types. Without `?subscriptionId`, creates a new subscription.
+        With `?subscriptionId`, updates an existing one (partial merge).
       requestBody:
         required: true
         content:
@@ -1220,105 +1229,104 @@ paths:
                         const: catalog/subscription
                 message:
                   $ref: '#/components/schemas/CatalogSubscribeAction'
-            example:
-              context:
-                version: '2.0.0'
-                action: catalog/subscription
-                messageId: 550e8400-e29b-41d4-a716-446655440000
-                transactionId: 550e8400-e29b-41d4-a716-446655440001
-                timestamp: '2026-03-23T10:00:00.000Z'
-                bapId: np.example.com
-                bapUri: https://np.example.com
-              message:
-                subscription:
-                  networkIds:
-                  - retail
-                  schemaTypes:
-                  - https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType
+            examples:
+              create:
+                summary: Subscribe to retail catalogs on a network
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/subscription
+                    messageId: 550e8400-e29b-41d4-a716-446655440000
+                    transactionId: 550e8400-e29b-41d4-a716-446655440001
+                    timestamp: '2026-03-23T10:00:00.000Z'
+                    bapId: np.example.com
+                    bapUri: https://np.example.com
+                  message:
+                    subscription:
+                      networkIds:
+                      - retail
+                      schemaTypes:
+                      - https://schema.beckn.org/retail/schema/1.1.0/item.json#ItemType
+              update:
+                summary: Change the schema types for an existing subscription
+                value:
+                  context:
+                    version: '2.0.0'
+                    action: catalog/subscription
+                    messageId: 660e8400-e29b-41d4-a716-446655440002
+                    transactionId: 660e8400-e29b-41d4-a716-446655440003
+                    timestamp: '2026-03-23T11:00:00.000Z'
+                    bapId: np.example.com
+                    bapUri: https://np.example.com
+                  message:
+                    subscription:
+                      schemaTypes:
+                      - https://schema.beckn.org/retail/schema/1.1.0/offer.json#OfferType
       responses:
         '200':
-          description: Subscription created or existing active subscription returned
+          description: Subscription created or updated successfully.
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - context
-                - message
-                properties:
-                  context:
-                    allOf:
-                    - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/on_subscription
-                  message:
-                    type: object
-                    required:
-                    - subscriptions
-                    properties:
-                      subscriptions:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/CatalogSubscription'
+                $ref: '#/components/schemas/CatalogSubscriptionResponse'
         '400':
           $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
+        '403':
+          $ref: '#/components/responses/NackForbidden'
+        '404':
+          $ref: '#/components/responses/NackNotFound'
+        '409':
+          description: Scope conflict — duplicate active subscription exists.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Ack'
+                - type: object
+                  properties:
+                    status:
+                      type: string
+                      const: NACK
+                    error:
+                      $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/ServerError'
-
-  /catalog/subscription/{subscriptionId}:
     delete:
-      summary: Deactivate a subscription
+      summary: Deactivate a catalog subscription
       operationId: catalogSubscribeDelete
       tags:
       - Subscription
       description: >-
-        Deactivates an active subscription. Only the Network
-        Participant that created the subscription can deactivate
-        it. Once deactivated, the subscriber will no longer
-        receive catalog updates for this subscription.
+        Deactivates a subscription so the subscriber stops receiving
+        catalog updates. Can be reactivated later via POST update.
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriberId
+        in: query
+        required: false
+        description: Subscriber identity (required when auth is disabled).
+        schema:
+          type: string
+        example: np.example.com
       - name: subscriptionId
-        in: path
+        in: query
         required: true
-        description: UUID of the subscription to deactivate
+        description: UUID of the subscription to deactivate.
         schema:
           type: string
           format: uuid
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
       responses:
         '200':
-          description: Subscription deactivated
+          description: Subscription deactivated successfully.
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - context
-                - message
-                properties:
-                  context:
-                    allOf:
-                    - $ref: '#/components/schemas/Context'
-                    - type: object
-                      properties:
-                        action:
-                          type: string
-                          const: catalog/on_subscription
-                  message:
-                    type: object
-                    required:
-                    - subscriptions
-                    properties:
-                      subscriptions:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/CatalogSubscription'
+                $ref: '#/components/schemas/CatalogSubscriptionResponse'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
         '403':
@@ -1332,25 +1340,58 @@ paths:
     get:
       summary: List catalog subscriptions
       description: >-
-        Returns all subscriptions for the calling Network
-        Participant. Use `?id=` to retrieve a specific
-        subscription.
+        Returns the caller's subscriptions, filtered by status
+        (defaults to ACTIVE). Supports pagination and lookup by ID.
       operationId: catalogSubscribeList
       tags:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
+      - name: subscriberId
+        in: query
+        required: false
+        description: Subscriber identity (required when auth is disabled).
+        schema:
+          type: string
+        example: np.example.com
       - name: id
         in: query
         required: false
-        description: Filter by subscription ID
+        description: Filter to a single subscription by UUID.
         schema:
           type: string
           format: uuid
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      - name: status
+        in: query
+        required: false
+        description: Filter by subscription status (default ACTIVE).
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          default: ACTIVE
+      - name: limit
+        in: query
+        required: false
+        description: Page size (default 20, max 100).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        required: false
+        description: Pagination offset (default 0).
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
-          description: List of matching subscriptions
+          description: Matching subscriptions with pagination metadata.
           content:
             application/json:
               schema:
@@ -1382,6 +1423,8 @@ paths:
           $ref: '#/components/responses/NackBadRequest'
         '401':
           $ref: '#/components/responses/NackUnauthorized'
+        '404':
+          $ref: '#/components/responses/NackNotFound'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -3331,13 +3374,37 @@ components:
         error:
           $ref: '#/components/schemas/Error'
 
+    CatalogSubscriptionResponse:
+      description: Subscription response envelope with `catalog/on_subscription` context.
+      type: object
+      required:
+      - context
+      - message
+      properties:
+        context:
+          allOf:
+          - $ref: '#/components/schemas/Context'
+          - type: object
+            properties:
+              action:
+                type: string
+                const: catalog/on_subscription
+        message:
+          type: object
+          required:
+          - subscriptions
+          properties:
+            subscriptions:
+              type: array
+              items:
+                $ref: '#/components/schemas/CatalogSubscription'
+
     CatalogSubscribeAction:
       type: object
       description: >-
         Subscription request payload. At least one of `networkIds` or
-        `schemaTypes` must be provided. Omitting `schemaTypes` subscribes
-        to all schema types on the given networks (wildcard). Omitting
-        `networkIds` subscribes to the given schema types across all networks.
+        `schemaTypes` is required when creating. All fields optional
+        when updating.
       required:
       - subscription
       properties:
@@ -3353,16 +3420,16 @@ components:
               type: array
               items:
                 type: string
-              description: Network IDs to subscribe to
+              description: Networks to subscribe to.
             schemaTypes:
               type: array
               items:
                 type: string
-              description: Schema type URIs to filter on (empty = wildcard)
+              description: Schema type URIs to filter on (empty = all types).
 
     CatalogSubscription:
       type: object
-      description: Full subscription record
+      description: A subscription record.
       required:
       - subscriptionId
       - subscriberId
@@ -3371,26 +3438,26 @@ components:
         subscriptionId:
           type: string
           format: uuid
-          description: UUID of this subscription (server-generated)
+          description: Server-generated unique identifier.
         subscriberId:
           type: string
-          description: Org-level identity of the subscriber (Beckn keyId first segment)
+          description: Subscribing organisation's identity on the network.
         networkIds:
           type: array
           items:
             type: string
-          description: Network IDs covered by this subscription
+          description: Networks this subscription covers.
         schemaTypes:
           type: array
           items:
             type: string
-          description: Schema type URIs filtered by this subscription (empty = wildcard)
+          description: Schema types to filter on (empty = all types).
         status:
           type: string
           enum:
           - ACTIVE
           - INACTIVE
-          description: Lifecycle status of the subscription
+          description: ACTIVE receives updates, INACTIVE does not.
         createdAt:
           type: string
           format: date-time
@@ -3400,17 +3467,17 @@ components:
 
     Pagination:
       type: object
-      description: Pagination metadata returned with list responses
+      description: Pagination metadata for list responses.
       properties:
         total:
           type: integer
-          description: Total number of matching items across all pages
+          description: Total matching records.
         limit:
           type: integer
-          description: Page size used in this response
+          description: Page size.
         offset:
           type: integer
-          description: Zero-based offset used in this response
+          description: Records skipped.
 
     MasterSearchAction:
       type: object
