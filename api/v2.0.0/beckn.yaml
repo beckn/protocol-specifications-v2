@@ -1278,7 +1278,7 @@ paths:
         '404':
           $ref: '#/components/responses/NackNotFound'
         '409':
-          description: Scope conflict — duplicate active subscription exists.
+          description: An active subscription with the same scope already exists for this subscriber.
           content:
             application/json:
               schema:
@@ -1303,13 +1303,6 @@ paths:
         catalog updates. Can be reactivated later via POST update.
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      - name: subscriberId
-        in: query
-        required: false
-        description: Subscriber identity (required when auth is disabled).
-        schema:
-          type: string
-        example: np.example.com
       - name: subscriptionId
         in: query
         required: true
@@ -1340,24 +1333,17 @@ paths:
     get:
       summary: List catalog subscriptions
       description: >-
-        Returns the caller's subscriptions, filtered by status
-        (defaults to ACTIVE). Supports pagination and lookup by ID.
+        Returns the caller's subscriptions, optionally filtered by status.
+        Returns all statuses when omitted. Supports pagination and lookup by ID.
       operationId: catalogSubscribeList
       tags:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      - name: subscriberId
+      - name: subscriptionId
         in: query
         required: false
-        description: Subscriber identity (required when auth is disabled).
-        schema:
-          type: string
-        example: np.example.com
-      - name: id
-        in: query
-        required: false
-        description: Filter to a single subscription by UUID.
+        description: Return a single subscription by its subscription ID.
         schema:
           type: string
           format: uuid
@@ -1365,13 +1351,12 @@ paths:
       - name: status
         in: query
         required: false
-        description: Filter by subscription status (default ACTIVE).
+        description: Filter by subscription status. Returns all statuses when omitted.
         schema:
           type: string
           enum:
           - ACTIVE
           - INACTIVE
-          default: ACTIVE
       - name: limit
         in: query
         required: false
@@ -3403,8 +3388,8 @@ components:
       type: object
       description: >-
         Subscription request payload. At least one of `networkIds` or
-        `schemaTypes` is required when creating. All fields optional
-        when updating.
+        `schemaTypes` is required for both creating and updating a subscription.
+        Updating an inactive subscription reactivates it.
       required:
       - subscription
       properties:
