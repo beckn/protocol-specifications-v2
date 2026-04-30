@@ -30,8 +30,8 @@ This RFC defines the architectural philosophy and derived principles that guide 
 - [3. Table of Contents](#3-table-of-contents)
 - [4. Introduction](#4-introduction)
 - [5. Specification](#5-specification)
-  - [5.1 Philosophical Baseline](#51-philosophical-baseline)
-  - [5.2 Architecture and Actor Topology](#52-architecture-and-actor-topology)
+  - [5.1 Design Principles](#51-design-principles)
+  - [5.2 Network Actors](#52-network-actors)
   - [5.3 API Surface and Interaction Model](#53-api-surface-and-interaction-model)
   - [5.4 Conformance Requirements and Alignment Notes](#54-conformance-requirements-and-alignment-notes)
   - [5.5 Security, Migration, and Evolution Notes](#55-security-migration-and-evolution-notes)
@@ -52,15 +52,13 @@ The key words MUST, SHOULD, and MAY in this document are to be interpreted as de
 
 ## 5.1 Design Principles
 
-1. **Fabric-first design:** All features of the protocol MUST _first_ leverage first-class primitives on the Universal Value-Exchange Fabric before adding any features to ensure long-term stability.
-2. **Agent-first design:** The protocol MUST first leverage AI for its evolution _and_ also empower AI Agents to participate in trusted value-exchange transactions via unstructure
-3. **Minimalism:** Beckn architecture SHOULD keep its features as minimal as possible and only use handles and pointers to services offered by Fabric
-4. **Future-readiness:** Protocol design MUST accommodate new actors and value-exchange patterns without core structural redesign.
-5. **Pragmatism:** Architecture decisions SHOULD prioritize implementability and developer friendliness with current ecosystem tooling.
-6. **Optimal ignorance:** Each layer MUST avoid embedding concerns owned by other layers.
-7. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations.
-8. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
-9. **Trust by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
+1. **Decentralization**: Any evolution in the protocol MUST enable decentralization of the associated ecosystem. In the context of value-exchange, the further we move towards the edges of a value-exchange transaction, the more choice, optionality, and agency MUST emerge as a consequence. 
+2. **Fabric-driven:** Any evolution in the protocol MUST emerge as a consequence of evolution in the NFH Fabric. That means, any feature request MUST be a fabric feature request and not a protocol feature request. Based on the discussions following the feature request, a decision whether to support that feature as a run-time fabric feature, or a protocol feature will be taken. 
+3. **Agent-first:** The protocol MUST first leverage AI for its evolution _and_ also empower AI Agents to participate in trusted, value-exchange transactions via unstructure. Any evolution in the protocol MUST primarily be enabled for AI Agents while keeping the human-enablement secondary. However this principle does NOT mean that all features are ONLY usable by AI. It should first be usable by AI, and then be usable by humans. But BOTH are required for the time being.  
+4. **Pragmatism:** Not ALL systems today are AI-native. While Beckn requires an AI-first approach to its evolution, it does NOT eliminate the need for humans altogether. Therefore, architecture decisions SHOULD also keep in mind the practical implications on non-AI-native systems, current ecosystem tooling, and developer friendliness.
+5. **Semantic interoperability:** Protocol concepts MUST be interpreted consistently across domains, regions, and implementations. 
+6. **Reusability via abstraction:** Core concepts MUST remain abstract enough to be reused across diverse domains and regional deployments.
+7. **Trust by design:** Mandatory signatures and `CounterSignature` acknowledgements MUST remain baseline transport behavior.
 
 ## 5.2 Network Actors
 
@@ -115,8 +113,7 @@ No protocol wire migration is introduced by this RFC. This update is editorial a
 The following evolution questions remain open and inform future work:
 
 1. Slash and underscore action aliasing may need formal deprecation over a defined release window.
-2. `context.try` may need to become explicitly normative in the base `Context` schema semantics.
-3. Actor capability profiles for BAP, BPP, CS, and DS may need publication as a separate normative RFC.
+2. Actor capability profiles for Fabric Nodes, BPP, CS, and DS may need publication as a separate normative RFC.
 
 ## 5.6 Examples
 
