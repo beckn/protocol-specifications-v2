@@ -75,13 +75,32 @@ paths:
   /discover:
     post:
       summary: Discover catalogs on a network
-      description: 'Search and discover catalogs on an open network. Supports text search (textSearch),
-
-        JSONPath-based filtering (RFC 9535), spatial (geo) constraints, and media search.
-
-        Returns an **ACK** confirming receipt; actual catalogs arrive via `/beckn/on_discover`.
-
-        Can be implemented by Catalog Discovery Services (CDS) and BPPs.'
+      description: "The BAP sends a discovery request that the CDS (Catalog Discovery Service)\
+        \ or BPP implements, searching indexed catalogs for resources and offers matching\
+        \ the supplied intent.\n\nPreconditions: The BAP MUST be registered on the Beckn\
+        \ Registry and MUST carry a valid Beckn HTTP Signature in the Authorization header.\
+        \ No prior API exchange is required before this endpoint may be called.\n\n\
+        Fabric context: When implemented by a CDS, this endpoint interacts with the\
+        \ Catalog Discovery Service, which evaluates the intent against its indexed\
+        \ catalog store. When implemented directly by a BPP, no Fabric service is involved.\n\
+        \nMessage envelope: The request MUST carry a Context with action set to \"discover\"\
+        \ and a message containing an Intent object. The Intent carries textSearch,\
+        \ JSONPath filter expressions per RFC 9535, spatial constraints, and media\
+        \ search inputs that the implementer evaluates against available catalogs.\n\
+        \nResponse semantics: A 200 Ack indicates the implementer has authenticated\
+        \ the request and accepted it for asynchronous processing; matching catalogs\
+        \ will arrive via the /on_discover callback. A 409 AckNoCallback indicates\
+        \ the implementer received the request but cannot produce a callback because\
+        \ no matching catalog was found. A 400 NackBadRequest indicates the request\
+        \ body is structurally invalid or fails semantic validation; the implementer\
+        \ MUST NOT process further. A 401 NackUnauthorized indicates the Beckn HTTP\
+        \ Signature is absent, expired, or fails verification; the implementer MUST\
+        \ NOT process further. A 500 ServerError indicates an unexpected internal failure;\
+        \ the caller SHOULD treat this as transient and MAY retry after a backoff interval.\n\
+        \nCallback relationship: When matching catalogs are found, the BPP or CDS\
+        \ MUST send an /on_discover callback to the BAP carrying an OnDiscoverAction\
+        \ with the matching catalogs. The BAP MUST correlate the callback using the\
+        \ messageId from Context."
       operationId: discover
       tags:
       - Discovery
@@ -123,9 +142,24 @@ paths:
   /on_discover:
     post:
       summary: Callback — return catalogs to the BAP
-      description: 'Callback from a BPP or CDS containing catalogs matching the discovery request.
-
-        Returns an **ACK** confirming receipt of the catalog payload.'
+      description: "The BPP or CDS calls this endpoint on the BAP, delivering catalogs\
+        \ that match the intent submitted in a prior /discover request.\n\nPreconditions:\
+        \ A /discover request MUST have been sent by the BAP and accepted (200 Ack)\
+        \ by the implementer before this callback is triggered. The callback MUST\
+        \ carry a valid Beckn HTTP Signature.\n\nMessage envelope: The request MUST\
+        \ carry a Context with action set to \"on_discover\" and a message containing\
+        \ an OnDiscoverAction with one or more Catalog objects matching the original\
+        \ intent.\n\nResponse semantics: A 200 Ack confirms the BAP has authenticated\
+        \ the callback and accepted the catalog payload for processing. A 400 NackBadRequest\
+        \ indicates the callback body is structurally invalid or fails semantic validation;\
+        \ the caller MUST NOT assume the catalogs were processed. A 401 NackUnauthorized\
+        \ indicates the Beckn HTTP Signature on the callback is absent, expired, or\
+        \ fails verification. A 500 ServerError indicates an unexpected internal failure\
+        \ on the BAP; the caller SHOULD treat this as transient and MAY retry.\n\n\
+        Callback relationship: This endpoint is triggered by the BPP or CDS after\
+        \ processing the original /discover request and finding matching catalogs.\
+        \ The BAP MUST use the messageId in Context to correlate this callback with\
+        \ the originating /discover call."
       operationId: onDiscover
       tags:
       - Discovery
@@ -164,11 +198,27 @@ paths:
   /select:
     post:
       summary: BAP selects items/resources and requests a quote
-      description: 'The BAP selects catalog items, item quantities, associated offers, and requests
-
-        the BPP to provide a priced quote. No PII is shared at this stage.
-
-        Uses the contract model.'
+      description: "The BAP sends a selection to the BPP, identifying specific resources\
+        \ and offers from a previously discovered catalog and requesting a priced quote.\n\
+        \nPreconditions: A /discover request MUST have completed and the BAP MUST\
+        \ have received at least one /on_discover callback containing the catalog from\
+        \ which the selected items are drawn. No personal identifiable information\
+        \ (PII) is shared at this stage. The BAP MUST carry a valid Beckn HTTP Signature.\n\
+        \nMessage envelope: The request MUST carry a Context with action set to \"select\"\
+        \ and a message containing a SelectAction with a Contract object specifying\
+        \ the selected commitments, resources, and offers. The Contract MUST NOT include\
+        \ billing or fulfillment personal details at this stage.\n\nResponse semantics:\
+        \ A 200 Ack indicates the BPP has accepted the selection for asynchronous\
+        \ processing and will respond via /on_select. A 409 AckNoCallback indicates\
+        \ the BPP received the selection but cannot produce a quote, for example because\
+        \ the selected items are no longer available. A 400 NackBadRequest indicates\
+        \ the request body is structurally invalid or fails semantic validation. A\
+        \ 401 NackUnauthorized indicates the Beckn HTTP Signature is absent, expired,\
+        \ or fails verification. A 500 ServerError indicates an unexpected internal\
+        \ failure; the caller SHOULD treat this as transient and MAY retry.\n\nCallback\
+        \ relationship: After computing the priced quote, the BPP MUST send an /on_select\
+        \ callback to the BAP carrying the updated Contract with offer-linked considerations.\
+        \ The BAP MUST correlate the callback using the messageId from Context."
       operationId: select
       tags:
       - Transaction
@@ -209,9 +259,24 @@ paths:
   /on_select:
     post:
       summary: BPP returns a priced quote
-      description: 'The BPP calculates the total cost, evaluates offers, and returns a priced quote.
-
-        Uses the contract model.'
+      description: "The BPP calls this endpoint on the BAP, delivering a priced quote\
+        \ computed from the resources and offers submitted in the preceding /select\
+        \ request.\n\nPreconditions: A /select request MUST have been sent by the\
+        \ BAP and accepted (200 Ack) by the BPP before this callback is triggered.\
+        \ The callback MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope:\
+        \ The request MUST carry a Context with action set to \"on_select\" and a\
+        \ message containing an OnSelectAction with a Contract object updated to include\
+        \ offer-level considerations and a total priced quote. The BAP uses this quote\
+        \ to decide whether to proceed to /init.\n\nResponse semantics: A 200 Ack\
+        \ confirms the BAP has authenticated the callback and accepted the priced quote\
+        \ for review. A 400 NackBadRequest indicates the callback body is structurally\
+        \ invalid. A 401 NackUnauthorized indicates the Beckn HTTP Signature fails\
+        \ verification. A 500 ServerError indicates an unexpected internal failure\
+        \ on the BAP.\n\nCallback relationship: This endpoint is triggered by the\
+        \ BPP after evaluating the selection and computing a priced quote. The BAP\
+        \ MUST use the messageId in Context to correlate this callback with the originating\
+        \ /select call and SHOULD present the returned quote to the consumer before\
+        \ proceeding."
       operationId: onSelect
       tags:
       - Transaction
@@ -250,11 +315,27 @@ paths:
   /init:
     post:
       summary: BAP initiates final contract — submits billing, fulfillment and payment intent
-      description: 'BAP provides billing, fulfillment, and payment information for the BPP to generate
-
-        final contract terms. The BPP responds via `on_init` with the final draft including
-
-        payment terms. Uses the contract model.'
+      description: "The BAP sends billing, fulfillment, and payment intent details\
+        \ to the BPP so that the BPP can generate a final draft contract including\
+        \ personalized payment terms.\n\nPreconditions: A /select request MUST have\
+        \ completed and the BAP MUST have received an /on_select callback with a priced\
+        \ quote before this endpoint may be called. The BAP MUST carry a valid Beckn\
+        \ HTTP Signature.\n\nMessage envelope: The request MUST carry a Context with\
+        \ action set to \"init\" and a message containing an InitAction with a Contract\
+        \ object that includes participant billing details, performance (fulfillment)\
+        \ preferences, and initial payment intent. The BPP uses this information to\
+        \ finalize payment terms.\n\nResponse semantics: A 200 Ack indicates the BPP\
+        \ has accepted the init request for asynchronous processing and will respond\
+        \ via /on_init. A 409 AckNoCallback indicates the BPP cannot produce a draft\
+        \ contract, for example because the items are no longer available at the quoted\
+        \ price. A 400 NackBadRequest indicates the request body is structurally invalid\
+        \ or fails semantic validation. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature is absent, expired, or fails verification. A 500 ServerError\
+        \ indicates an unexpected internal failure; the caller SHOULD treat this as\
+        \ transient and MAY retry.\n\nCallback relationship: After generating the\
+        \ final draft contract with payment terms, the BPP MUST send an /on_init callback\
+        \ to the BAP. The BPP MUST NOT request payment before the /on_init stage.\
+        \ The BAP MUST correlate the callback using the messageId from Context."
       operationId: init
       tags:
       - Transaction
@@ -295,9 +376,25 @@ paths:
   /on_init:
     post:
       summary: BPP returns final draft contract with payment terms
-      description: 'BPP returns the final draft contract with personalized payment terms.
-
-        The BPP MUST NOT request payment before this stage.'
+      description: "The BPP calls this endpoint on the BAP, delivering the final draft\
+        \ contract that includes personalized payment terms, billing confirmation,\
+        \ and any settlement conditions.\n\nPreconditions: A /init request MUST have\
+        \ been sent by the BAP and accepted (200 Ack) by the BPP before this callback\
+        \ is triggered. The BPP MUST NOT request or collect payment before this stage.\
+        \ The callback MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope:\
+        \ The request MUST carry a Context with action set to \"on_init\" and a message\
+        \ containing an OnInitAction with a Contract object that reflects the finalized\
+        \ draft state including payment terms, billing confirmation, and settlement\
+        \ placeholders. The BAP reviews these terms before proceeding to /confirm.\n\
+        \nResponse semantics: A 200 Ack confirms the BAP has authenticated the callback\
+        \ and accepted the draft contract for consumer review. A 400 NackBadRequest\
+        \ indicates the callback body is structurally invalid. A 401 NackUnauthorized\
+        \ indicates the Beckn HTTP Signature fails verification. A 500 ServerError\
+        \ indicates an unexpected internal failure on the BAP.\n\nCallback relationship:\
+        \ This endpoint is triggered by the BPP after generating the final draft contract\
+        \ in response to /init. The BAP MUST use the messageId in Context to correlate\
+        \ this callback and SHOULD present the payment terms to the consumer for acceptance\
+        \ before calling /confirm."
       operationId: onInit
       tags:
       - Transaction
@@ -336,9 +433,29 @@ paths:
   /confirm:
     post:
       summary: BAP confirms the contract
-      description: 'BAP accepts all terms and provides payment proof/reference, then requests the BPP
-
-        to confirm the contract into a binding commitment.'
+      description: "The BAP signals unconditional acceptance of all negotiated terms\
+        \ and provides payment proof or a payment reference to the BPP, requesting\
+        \ that the BPP convert the draft contract into a binding commitment.\n\nPreconditions:\
+        \ An /on_init callback MUST have been received by the BAP carrying the final\
+        \ draft contract with payment terms. The consumer MUST have accepted those\
+        \ terms before this endpoint may be called. The BAP MUST carry a valid Beckn\
+        \ HTTP Signature.\n\nMessage envelope: The request MUST carry a Context with\
+        \ action set to \"confirm\" and a message containing a ConfirmAction with\
+        \ the full Contract object including payment proof or reference in the settlements\
+        \ array. The BPP uses this evidence to verify payment and activate the contract.\n\
+        \nResponse semantics: A 200 Ack indicates the BPP has accepted the confirmation\
+        \ request for asynchronous processing and will respond via /on_confirm. A\
+        \ 409 AckNoCallback indicates the BPP received the request but cannot confirm,\
+        \ for example because inventory was exhausted between /on_init and /confirm.\
+        \ A 400 NackBadRequest indicates the request body is structurally invalid\
+        \ or payment proof is missing. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature is absent, expired, or fails verification. A 500 ServerError\
+        \ indicates an unexpected internal failure; the caller SHOULD treat this as\
+        \ transient and MAY retry.\n\nCallback relationship: After verifying payment\
+        \ and activating the contract, the BPP MUST send an /on_confirm callback to\
+        \ the BAP carrying the confirmed Contract with its assigned ID and initial\
+        \ fulfillment state. The BAP MUST correlate the callback using the messageId\
+        \ from Context."
       operationId: confirm
       tags:
       - Transaction
@@ -379,9 +496,25 @@ paths:
   /on_confirm:
     post:
       summary: BPP returns the confirmed contract
-      description: 'BPP validates all terms, payment, and returns a confirmed contract with
-
-        its assigned ID and the initial fulfillment/performance state.'
+      description: "The BPP calls this endpoint on the BAP, delivering the confirmed\
+        \ contract with its BPP-assigned identifier and the initial performance state\
+        \ after verifying payment and activating the commitment.\n\nPreconditions:\
+        \ A /confirm request MUST have been sent by the BAP and accepted (200 Ack)\
+        \ by the BPP. The BPP MUST have verified payment proof before triggering this\
+        \ callback. The callback MUST carry a valid Beckn HTTP Signature.\n\nMessage\
+        \ envelope: The request MUST carry a Context with action set to \"on_confirm\"\
+        \ and a message containing an OnConfirmAction with the Contract object whose\
+        \ status is set to ACTIVE, whose id field carries the BPP-assigned contract\
+        \ identifier, and whose performance array reflects the initial fulfillment\
+        \ state.\n\nResponse semantics: A 200 Ack confirms the BAP has authenticated\
+        \ the callback and accepted the confirmed contract. A 400 NackBadRequest indicates\
+        \ the callback body is structurally invalid. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature fails verification. A 500 ServerError indicates\
+        \ an unexpected internal failure on the BAP.\n\nCallback relationship: This\
+        \ endpoint is triggered by the BPP after verifying payment and activating\
+        \ the contract in response to /confirm. The BAP MUST use the messageId in\
+        \ Context to correlate this callback and MUST store the contract id for subsequent\
+        \ status, track, update, cancel, rate, and support interactions."
       operationId: onConfirm
       tags:
       - Transaction
@@ -420,11 +553,29 @@ paths:
   /status:
     post:
       summary: BAP requests the current state of an contract
-      description: 'BAP requests the latest state of an active contract by providing its ID.
-
-        The BPP responds via `on_status`. BAPs SHOULD NOT long-poll with `status` —
-
-        use `on_status` push notifications for significant state changes.'
+      description: "The BAP requests the current state of an active contract from\
+        \ the BPP by providing the contract identifier received in the /on_confirm\
+        \ callback.\n\nPreconditions: A /confirm request MUST have completed and the\
+        \ BAP MUST have received an /on_confirm callback with a confirmed Contract\
+        \ carrying a valid id before this endpoint may be called. The BAP MUST carry\
+        \ a valid Beckn HTTP Signature. BAPs SHOULD NOT long-poll using repeated /status\
+        \ calls; the BPP MAY push significant state changes proactively via /on_status.\n\
+        \nMessage envelope: The request MUST carry a Context with action set to \"\
+        status\" and a message containing a StatusAction with a Contract object whose\
+        \ id field identifies the contract being queried.\n\nResponse semantics: A\
+        \ 200 Ack indicates the BPP has accepted the status request and will deliver\
+        \ the current contract state asynchronously via /on_status. A 409 AckNoCallback\
+        \ indicates the BPP received the request but cannot produce a status update,\
+        \ for example because the contract is in a terminal state. A 400 NackBadRequest\
+        \ indicates the request body is structurally invalid or the contract id is\
+        \ missing. A 401 NackUnauthorized indicates the Beckn HTTP Signature is absent,\
+        \ expired, or fails verification. A 500 ServerError indicates an unexpected\
+        \ internal failure; the caller SHOULD treat this as transient and MAY retry.\n\
+        \nCallback relationship: After retrieving the contract state, the BPP MUST\
+        \ send an /on_status callback carrying the full Contract object with the current\
+        \ performance and status fields. The BPP MAY also send /on_status callbacks\
+        \ proactively for significant state changes without a prior /status request.\
+        \ The BAP MUST correlate solicited callbacks using the messageId from Context."
       operationId: status
       tags:
       - Fulfillment
@@ -465,15 +616,27 @@ paths:
   /on_status:
     post:
       summary: BPP returns the current state of the contract
-      description: 'BPP returns the latest state of the contract including fulfillment/performance
-
-        updates. The BPP MAY call this endpoint proactively without the BAP requesting it,
-
-        but MUST have received at least one `status` request first to initiate the push stream.
-
-        This endpoint is for significant state changes worth a notification — NOT for
-
-        real-time location tracking (use `track`/`on_track` for that).'
+      description: "The BPP calls this endpoint on the BAP, delivering the current\
+        \ state of an active contract including performance and fulfillment updates.\
+        \ This endpoint covers significant state changes; it is not intended for real-time\
+        \ position or progress tracking, for which the BAP MUST use /track and /on_track.\n\
+        \nPreconditions: Either a /status request MUST have been accepted (200 Ack)\
+        \ by the BPP, or the BPP is sending a proactive push for a significant state\
+        \ change on an already-confirmed contract. The callback MUST carry a valid\
+        \ Beckn HTTP Signature. The BPP MAY send proactive /on_status callbacks without\
+        \ a preceding /status request for significant contract state transitions.\n\
+        \nMessage envelope: The request MUST carry a Context with action set to \"\
+        on_status\" and a message containing an OnStatusAction with the full Contract\
+        \ object reflecting the current status and performance state.\n\nResponse\
+        \ semantics: A 200 Ack confirms the BAP has authenticated the callback and\
+        \ accepted the state update. A 400 NackBadRequest indicates the callback body\
+        \ is structurally invalid. A 401 NackUnauthorized indicates the Beckn HTTP\
+        \ Signature fails verification. A 500 ServerError indicates an unexpected\
+        \ internal failure on the BAP.\n\nCallback relationship: This endpoint is\
+        \ triggered by the BPP either in response to a /status request or proactively\
+        \ when a significant contract state change occurs. The BAP MUST use the messageId\
+        \ in Context to correlate solicited callbacks and MUST handle unsolicited callbacks\
+        \ by updating the locally held contract state."
       operationId: onStatus
       tags:
       - Fulfillment
@@ -512,11 +675,30 @@ paths:
   /track:
     post:
       summary: BAP requests a real-time tracking handle for an active contract
-      description: 'BAP requests a tracking handle (URL, WebSocket endpoint, or webhook) for real-time
-
-        tracking of an active fulfillment or performance stage. This is for real-time
-
-        position/progress updates — NOT for contract state change notifications (use `status`).'
+      description: "The BAP requests a real-time tracking handle from the BPP for\
+        \ an active fulfillment or performance stage of a confirmed contract. This\
+        \ endpoint provides a URL or WebSocket endpoint for continuous position and\
+        \ progress updates; it is not intended for contract state change notifications,\
+        \ for which the BAP MUST use /status and /on_status.\n\nPreconditions: A /confirm\
+        \ request MUST have completed and the BAP MUST have received an /on_confirm\
+        \ callback with a confirmed Contract before this endpoint may be called. The\
+        \ BAP MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope: The request\
+        \ MUST carry a Context with action set to \"track\" and a message containing\
+        \ a TrackAction with a Tracking object whose contract.id identifies the contract\
+        \ whose performance stage is to be tracked.\n\nResponse semantics: A 200 Ack\
+        \ indicates the BPP has accepted the tracking request and will deliver the\
+        \ tracking handle asynchronously via /on_track. A 409 AckNoCallback indicates\
+        \ the BPP received the request but cannot provide a tracking handle, for example\
+        \ because the performance stage does not support real-time tracking. A 400\
+        \ NackBadRequest indicates the request body is structurally invalid or the\
+        \ contract id is missing. A 401 NackUnauthorized indicates the Beckn HTTP\
+        \ Signature is absent, expired, or fails verification. A 500 ServerError indicates\
+        \ an unexpected internal failure; the caller SHOULD treat this as transient\
+        \ and MAY retry.\n\nCallback relationship: After preparing the tracking handle,\
+        \ the BPP MUST send an /on_track callback to the BAP carrying a Tracking object\
+        \ with the URL or WebSocket endpoint. The BAP MUST correlate the callback\
+        \ using the messageId from Context and MAY open the tracking connection immediately\
+        \ upon receipt."
       operationId: track
       tags:
       - Fulfillment
@@ -557,6 +739,24 @@ paths:
   /on_track:
     post:
       summary: BPP returns real-time tracking handle and status
+      description: "The BPP calls this endpoint on the BAP, delivering a Tracking\
+        \ handle containing the URL or WebSocket endpoint through which the BAP may\
+        \ subscribe to real-time fulfillment position and progress updates.\n\nPreconditions:\
+        \ A /track request MUST have been sent by the BAP and accepted (200 Ack) by\
+        \ the BPP before this callback is triggered. The callback MUST carry a valid\
+        \ Beckn HTTP Signature.\n\nMessage envelope: The request MUST carry a Context\
+        \ with action set to \"on_track\" and a message containing an OnTrackAction\
+        \ with a Tracking object that includes a url for the real-time data stream\
+        \ and a status field indicating whether tracking is ACTIVE or INACTIVE.\n\n\
+        Response semantics: A 200 Ack confirms the BAP has authenticated the callback\
+        \ and accepted the tracking handle. A 400 NackBadRequest indicates the callback\
+        \ body is structurally invalid. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature fails verification. A 500 ServerError indicates an unexpected\
+        \ internal failure on the BAP.\n\nCallback relationship: This endpoint is\
+        \ triggered by the BPP in response to a /track request. The BAP MUST use\
+        \ the messageId in Context to correlate this callback with the originating\
+        \ /track call and SHOULD connect to the provided tracking URL or WebSocket\
+        \ endpoint to receive real-time updates."
       operationId: onTrack
       tags:
       - Fulfillment
@@ -595,7 +795,33 @@ paths:
   /update:
     post:
       summary: BAP requests a mutation to an active contract
-      description: "BAP requests the BPP to update an active contract. Updates may involve\nchange of items, quantities, billing, fulfillment/performance, or payment.\n\nUses the `context.try` two-phase pattern (defined in `Context` schema):\n- `context.try: true` — BAP requests updated terms before committing (preview mode).\n BPP responds with recalculated quote and terms via `on_update` without changing state.\n- `context.try: false` (default) — BAP commits the update.\n BPP responds with the confirmed updated contract."
+      description: "The BAP requests the BPP to mutate an active contract, which may\
+        \ involve changes to committed resources, quantities, billing details, performance\
+        \ preferences, or payment arrangements.\n\nPreconditions: A /confirm request\
+        \ MUST have completed and the BAP MUST hold a confirmed Contract with a valid\
+        \ id before this endpoint may be called. The BAP MUST carry a valid Beckn\
+        \ HTTP Signature.\n\nMessage envelope: The request MUST carry a Context with\
+        \ action set to \"update\" and a message containing an UpdateAction with the\
+        \ Contract object reflecting the desired mutation. When context.try is set\
+        \ to true, the BAP is requesting a preview of the updated terms without committing\
+        \ state; the BPP MUST respond via /on_update with recalculated terms but MUST\
+        \ NOT change any persistent state. When context.try is false (the default),\
+        \ the BAP commits the update and the BPP MUST apply the change and respond\
+        \ with the confirmed updated contract.\n\nResponse semantics: A 200 Ack indicates\
+        \ the BPP has accepted the update request for asynchronous processing and\
+        \ will respond via /on_update. A 409 AckNoCallback indicates the BPP received\
+        \ the request but cannot process the update and will not send a callback. A\
+        \ 400 NackBadRequest indicates the request body is structurally invalid or\
+        \ the requested change is semantically invalid. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature is absent, expired, or fails verification. A 500\
+        \ ServerError indicates an unexpected internal failure; the caller SHOULD treat\
+        \ this as transient and MAY retry.\n\nCallback relationship: After processing\
+        \ the update request, the BPP MUST send an /on_update callback to the BAP.\
+        \ When context.try was true, the callback carries updated terms without state\
+        \ change. When context.try was false, the callback carries the confirmed updated\
+        \ contract. The BPP MAY also send unsolicited /on_update callbacks for provider-initiated\
+        \ contract mutations. The BAP MUST correlate solicited callbacks using the\
+        \ messageId from Context."
       operationId: update
       tags:
       - Fulfillment
@@ -636,13 +862,28 @@ paths:
   /on_update:
     post:
       summary: BPP returns the updated contract
-      description: 'BPP returns the updated contract with recalculated terms. Can be called
-
-        proactively by the BPP without the BAP requesting it.
-
-        - If `context.try: true` — returns updated terms (preview; state not changed).
-
-        - If `context.try: false` — returns committed updated contract.'
+      description: "The BPP calls this endpoint on the BAP, delivering the updated\
+        \ contract state. When responding to a preview request (context.try was true),\
+        \ the BPP returns recalculated terms without having changed any state. When\
+        \ responding to a committed update (context.try was false) or sending a proactive\
+        \ provider-initiated mutation, the BPP returns the confirmed updated contract.\n\
+        \nPreconditions: Either an /update request MUST have been sent by the BAP\
+        \ and accepted (200 Ack) by the BPP, or the BPP is sending a proactive update\
+        \ for a provider-initiated contract mutation on an already-confirmed contract.\
+        \ The callback MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope:\
+        \ The request MUST carry a Context with action set to \"on_update\" and a\
+        \ message containing an OnUpdateAction with the Contract object. The context.try\
+        \ field echoes the value from the originating /update request to allow the\
+        \ BAP to interpret whether this is a preview or a committed change.\n\nResponse\
+        \ semantics: A 200 Ack confirms the BAP has authenticated the callback and\
+        \ accepted the updated contract. A 400 NackBadRequest indicates the callback\
+        \ body is structurally invalid. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature fails verification. A 500 ServerError indicates an unexpected\
+        \ internal failure on the BAP.\n\nCallback relationship: This endpoint is\
+        \ triggered by the BPP either in response to an /update request or proactively\
+        \ for provider-initiated mutations. The BAP MUST use the messageId in Context\
+        \ to correlate solicited callbacks and MUST handle unsolicited callbacks by\
+        \ updating the locally held contract state."
       operationId: onUpdate
       tags:
       - Fulfillment
@@ -681,7 +922,33 @@ paths:
   /cancel:
     post:
       summary: BAP requests cancellation of an contract
-      description: "BAP requests full or partial cancellation. Uses the `context.try` two-phase pattern:\n- `context.try: true` — BAP requests cancellation terms (e.g., refund policy, penalty)\n without committing to cancellation. BPP responds with applicable policy via `on_cancel`.\n- `context.try: false` (default) — BAP commits the cancellation.\n BPP confirms cancellation and returns cancelled contract."
+      description: "The BAP requests full or partial cancellation of an active contract\
+        \ from the BPP, using the context.try two-phase pattern to either preview\
+        \ cancellation terms or commit the cancellation.\n\nPreconditions: A /confirm\
+        \ request MUST have completed and the BAP MUST hold a confirmed Contract with\
+        \ a valid id before this endpoint may be called. The BAP MUST carry a valid\
+        \ Beckn HTTP Signature.\n\nMessage envelope: The request MUST carry a Context\
+        \ with action set to \"cancel\" and a message containing a CancelAction with\
+        \ the Contract object whose id identifies the contract to be cancelled. When\
+        \ context.try is set to true, the BAP is requesting applicable cancellation\
+        \ terms (such as refund policy and penalties) without committing to cancellation;\
+        \ the BPP MUST respond via /on_cancel with the applicable policy without changing\
+        \ state. When context.try is false (the default), the BAP commits the cancellation\
+        \ and the BPP MUST cancel the contract and respond with the cancelled contract.\n\
+        \nResponse semantics: A 200 Ack indicates the BPP has accepted the cancellation\
+        \ request for asynchronous processing and will respond via /on_cancel. A 409\
+        \ AckNoCallback indicates the BPP received the request but cannot process\
+        \ cancellation, for example because the contract is already in a terminal state.\
+        \ A 400 NackBadRequest indicates the request body is structurally invalid\
+        \ or the contract id is missing. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature is absent, expired, or fails verification. A 500 ServerError\
+        \ indicates an unexpected internal failure; the caller SHOULD treat this as\
+        \ transient and MAY retry.\n\nCallback relationship: After processing the\
+        \ cancellation request, the BPP MUST send an /on_cancel callback to the BAP.\
+        \ When context.try was true, the callback carries the applicable cancellation\
+        \ policy without state change. When context.try was false, the callback carries\
+        \ the cancelled contract with updated settlement information. The BAP MUST\
+        \ correlate the callback using the messageId from Context."
       operationId: cancel
       tags:
       - Fulfillment
@@ -722,7 +989,27 @@ paths:
   /on_cancel:
     post:
       summary: BPP returns cancellation terms or confirms cancellation
-      description: "- If `context.try: true` — returns applicable cancellation policy, fees, refund timeline\n (state not changed).\n- If `context.try: false` — returns confirmed cancelled contract with refund/payment update."
+      description: "The BPP calls this endpoint on the BAP, delivering either the\
+        \ applicable cancellation policy (when responding to a preview request) or\
+        \ the confirmed cancelled contract (when responding to a committed cancellation).\n\
+        \nPreconditions: A /cancel request MUST have been sent by the BAP and accepted\
+        \ (200 Ack) by the BPP before this callback is triggered. The callback MUST\
+        \ carry a valid Beckn HTTP Signature.\n\nMessage envelope: The request MUST\
+        \ carry a Context with action set to \"on_cancel\" and a message containing\
+        \ an OnCancelAction with the Contract object. When context.try was true in\
+        \ the originating /cancel request, the Contract carries cancellation policy,\
+        \ fees, and refund timeline without state change. When context.try was false,\
+        \ the Contract carries status CANCELLED and updated settlement information\
+        \ reflecting any refunds or penalties.\n\nResponse semantics: A 200 Ack confirms\
+        \ the BAP has authenticated the callback and accepted the response. A 400\
+        \ NackBadRequest indicates the callback body is structurally invalid. A 401\
+        \ NackUnauthorized indicates the Beckn HTTP Signature fails verification. A\
+        \ 500 ServerError indicates an unexpected internal failure on the BAP.\n\n\
+        Callback relationship: This endpoint is triggered by the BPP in response to\
+        \ a /cancel request. The BAP MUST use the messageId in Context to correlate\
+        \ this callback. When this is a preview response, the BAP SHOULD present the\
+        \ cancellation terms to the consumer before calling /cancel with context.try\
+        \ set to false."
       operationId: onCancel
       tags:
       - Fulfillment
@@ -761,15 +1048,32 @@ paths:
   /rate:
     post:
       summary: BAP submits ratings for one or more entities
-      description: 'BAP submits ratings for any ratable entity (contract, contract, fulfillment,
-
-        item, provider, agent, support interaction). Supports the `context.try` pattern:
-
-        - `context.try: true` — Preview: BPP returns the rating form/criteria without recording.
-
-        - `context.try: false` (default) — Submit: BPP records the rating and returns confirmation.
-
-        The BPP acknowledges via `on_rate` with an optional aggregate snapshot.'
+      description: "The BAP submits one or more rating inputs to the BPP for ratable\
+        \ entities associated with a completed contract, including the contract itself,\
+        \ fulfillment stages, individual resources, the provider, agents, and support\
+        \ interactions.\n\nPreconditions: The contract for which ratings are being\
+        \ submitted MUST have reached a terminal state (COMPLETE or CANCELLED) and\
+        \ the BAP MUST hold the confirmed Contract id. The BAP MUST carry a valid\
+        \ Beckn HTTP Signature.\n\nMessage envelope: The request MUST carry a Context\
+        \ with action set to \"rate\" and a message containing a RateAction with a\
+        \ ratingInputs array. Each RatingInput MUST identify the target entity being\
+        \ rated. When context.try is set to true, the BAP is requesting a preview\
+        \ of the rating form and criteria without recording any rating; the BPP MUST\
+        \ NOT persist any rating data. When context.try is false (the default), the\
+        \ BPP MUST record the submitted ratings.\n\nResponse semantics: A 200 Ack\
+        \ indicates the BPP has accepted the rating request for asynchronous processing\
+        \ and will respond via /on_rate. A 409 AckNoCallback indicates the BPP received\
+        \ the request but cannot process the rating and will not send a callback. A\
+        \ 400 NackBadRequest indicates the request body is structurally invalid or\
+        \ required rating fields are missing. A 401 NackUnauthorized indicates the\
+        \ Beckn HTTP Signature is absent, expired, or fails verification. A 500 ServerError\
+        \ indicates an unexpected internal failure; the caller SHOULD treat this as\
+        \ transient and MAY retry.\n\nCallback relationship: After processing the\
+        \ rating, the BPP MUST send an /on_rate callback to the BAP. When context.try\
+        \ was true, the callback returns the rating form and criteria without recording.\
+        \ When context.try was false, the callback confirms the ratings were recorded\
+        \ and optionally returns an aggregate rating snapshot. The BAP MUST correlate\
+        \ the callback using the messageId from Context."
       operationId: rate
       tags:
       - Post-Fulfillment
@@ -810,9 +1114,25 @@ paths:
   /on_rate:
     post:
       summary: BPP acknowledges rating and optionally returns aggregate
-      description: '- If `context.try: true` — returns rating form/criteria (preview mode).
-
-        - If `context.try: false` — confirms rating was recorded; optionally returns aggregate.'
+      description: "The BPP calls this endpoint on the BAP, either returning the rating\
+        \ form and criteria (when responding to a preview request) or confirming that\
+        \ the submitted ratings have been recorded and optionally returning aggregate\
+        \ rating data.\n\nPreconditions: A /rate request MUST have been sent by the\
+        \ BAP and accepted (200 Ack) by the BPP before this callback is triggered.\
+        \ The callback MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope:\
+        \ The request MUST carry a Context with action set to \"on_rate\" and a message\
+        \ containing an OnRateAction with a ratings array. When context.try was true\
+        \ in the originating /rate request, the array carries rating form structures\
+        \ and criteria without any recorded data. When context.try was false, the\
+        \ array carries confirmation of the recorded ratings and MAY include aggregate\
+        \ rating snapshots for the rated entities.\n\nResponse semantics: A 200 Ack\
+        \ confirms the BAP has authenticated the callback and accepted the rating response.\
+        \ A 400 NackBadRequest indicates the callback body is structurally invalid.\
+        \ A 401 NackUnauthorized indicates the Beckn HTTP Signature fails verification.\
+        \ A 500 ServerError indicates an unexpected internal failure on the BAP.\n\
+        \nCallback relationship: This endpoint is triggered by the BPP in response\
+        \ to a /rate request. The BAP MUST use the messageId in Context to correlate\
+        \ this callback with the originating /rate call."
       operationId: onRate
       tags:
       - Post-Fulfillment
@@ -851,17 +1171,34 @@ paths:
   /support:
     post:
       summary: BAP requests support information for an entity
-      description: 'BAP requests support channels and/or raises a support ticket for any entity.
-
-        Uses the `context.try` pattern:
-
-        - `context.try: true` — Preview: BPP returns available support channels without creating a ticket.
-
-        - `context.try: false` (default) — BAP submits a support request; BPP creates/links a ticket.
-
-        The `refType` field abstracts over domain-specific entity types (works for contracts,
-
-        resources, providers, agents — not just contracts).'
+      description: "The BAP requests support channel information or raises a support\
+        \ ticket from the BPP for any entity associated with a contract, using the\
+        \ context.try two-phase pattern to either preview available channels or submit\
+        \ a support request.\n\nPreconditions: The BAP MUST hold a confirmed Contract\
+        \ id or a reference to another supported entity before this endpoint may be\
+        \ called. The BAP MUST carry a valid Beckn HTTP Signature.\n\nMessage envelope:\
+        \ The request MUST carry a Context with action set to \"support\" and a message\
+        \ containing a SupportAction with a Support object that describes the nature\
+        \ of support needed and the reference to the entity requiring support. The\
+        \ Support object is not limited to contracts and MAY reference resources,\
+        \ providers, or agents. When context.try is set to true, the BAP is requesting\
+        \ available support channels without creating a ticket; the BPP MUST NOT create\
+        \ or link any ticket. When context.try is false (the default), the BPP MUST\
+        \ create or link a support ticket and return the details.\n\nResponse semantics:\
+        \ A 200 Ack indicates the BPP has accepted the support request for asynchronous\
+        \ processing and will respond via /on_support. A 409 AckNoCallback indicates\
+        \ the BPP received the request but cannot provide support for the referenced\
+        \ entity and will not send a callback. A 400 NackBadRequest indicates the\
+        \ request body is structurally invalid or the entity reference is missing.\
+        \ A 401 NackUnauthorized indicates the Beckn HTTP Signature is absent, expired,\
+        \ or fails verification. A 500 ServerError indicates an unexpected internal\
+        \ failure; the caller SHOULD treat this as transient and MAY retry.\n\nCallback\
+        \ relationship: After processing the support request, the BPP MUST send an\
+        \ /on_support callback to the BAP. When context.try was true, the callback\
+        \ returns available support channels without any ticket. When context.try was\
+        \ false, the callback returns support contact details and the created or linked\
+        \ ticket information. The BAP MUST correlate the callback using the messageId\
+        \ from Context."
       operationId: support
       tags:
       - Post-Fulfillment
@@ -902,9 +1239,26 @@ paths:
   /on_support:
     post:
       summary: BPP returns support details
-      description: '- If `context.try: true` — returns available support channels (preview mode).
-
-        - If `context.try: false` — returns support details with ticket(s).'
+      description: "The BPP calls this endpoint on the BAP, delivering either the\
+        \ available support channels (when responding to a preview request) or the\
+        \ full support contact details including created or linked ticket information\
+        \ (when responding to a committed support request).\n\nPreconditions: A /support\
+        \ request MUST have been sent by the BAP and accepted (200 Ack) by the BPP\
+        \ before this callback is triggered. The callback MUST carry a valid Beckn\
+        \ HTTP Signature.\n\nMessage envelope: The request MUST carry a Context with\
+        \ action set to \"on_support\" and a message containing an OnSupportAction\
+        \ with a Support object. When context.try was true in the originating /support\
+        \ request, the Support object carries available channels without any ticket.\
+        \ When context.try was false, the Support object carries support contact details\
+        \ and the created or linked ticket reference.\n\nResponse semantics: A 200\
+        \ Ack confirms the BAP has authenticated the callback and accepted the support\
+        \ response. A 400 NackBadRequest indicates the callback body is structurally\
+        \ invalid. A 401 NackUnauthorized indicates the Beckn HTTP Signature fails\
+        \ verification. A 500 ServerError indicates an unexpected internal failure\
+        \ on the BAP.\n\nCallback relationship: This endpoint is triggered by the\
+        \ BPP in response to a /support request. The BAP MUST use the messageId in\
+        \ Context to correlate this callback with the originating /support call and\
+        \ SHOULD present the support information to the consumer."
       operationId: onSupport
       tags:
       - Post-Fulfillment
@@ -943,11 +1297,30 @@ paths:
   /catalog/publish:
     post:
       summary: BPP publishes catalogs for indexing by a CDS
-      description: 'BPP submits one or more catalogs to be indexed by a Catalog Discovery Service (CDS).
-
-        Returns an **ACK** immediately if accepted for processing. The per-catalog processing
-
-        result arrives asynchronously via `/beckn/catalog/on_publish`.'
+      description: "The BPP submits one or more Catalog objects to the Catalog Discovery\
+        \ Service (CDS) for indexing so that BAPs may discover them via /discover.\n\
+        \nPreconditions: The BPP MUST be registered on the Beckn Registry and MUST\
+        \ carry a valid Beckn HTTP Signature. At least one Catalog object MUST be\
+        \ present in the message.\n\nFabric context: This endpoint interacts with\
+        \ the Catalog Discovery Service, which receives, validates, and indexes the\
+        \ submitted catalogs into its catalog store. The CDS responds asynchronously\
+        \ with per-catalog processing results.\n\nMessage envelope: The request MUST\
+        \ carry a Context with action set to \"catalog/publish\" or \"catalog_publish\"\
+        \ and a message containing a CatalogPublishAction with a non-empty catalogs\
+        \ array. Each Catalog MUST include an id, descriptor, and provider.\n\nResponse\
+        \ semantics: A 200 Ack indicates the CDS has authenticated the request and\
+        \ accepted the catalogs for asynchronous indexing; per-catalog processing results\
+        \ will arrive via /catalog/on_publish. A 409 AckNoCallback indicates the CDS\
+        \ received the request but will not index the catalogs and will not send a\
+        \ callback. A 400 NackBadRequest indicates the request body is structurally\
+        \ invalid or a catalog fails semantic validation. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature is absent, expired, or fails verification. A 500\
+        \ ServerError indicates an unexpected internal failure; the caller SHOULD treat\
+        \ this as transient and MAY retry.\n\nCallback relationship: After processing\
+        \ each submitted catalog, the CDS MUST send a /catalog/on_publish callback\
+        \ to the BPP carrying a CatalogOnPublishAction with per-catalog processing\
+        \ results (ACCEPTED, REJECTED, or PARTIAL). The BPP MUST correlate the callback\
+        \ using the messageId from Context."
       operationId: catalogPublish
       tags:
       - Catalog Publishing
@@ -990,6 +1363,26 @@ paths:
   /catalog/on_publish:
     post:
       summary: CDS returns per-catalog processing results to the BPP
+      description: "The Catalog Discovery Service calls this endpoint on the BPP,\
+        \ delivering per-catalog processing results for each catalog submitted in a\
+        \ prior /catalog/publish request.\n\nPreconditions: A /catalog/publish request\
+        \ MUST have been sent by the BPP and accepted (200 Ack) by the CDS before\
+        \ this callback is triggered. The callback MUST carry a valid Beckn HTTP Signature.\n\
+        \nFabric context: This callback is sent by the Catalog Discovery Service after\
+        \ completing its indexing processing for each submitted catalog.\n\nMessage\
+        \ envelope: The request MUST carry a Context with action set to \"on_catalog_publish\"\
+        \ or \"catalog/on_publish\" and a message containing a CatalogOnPublishAction\
+        \ with a results array. Each result carries the catalogId and a processing\
+        \ status of ACCEPTED, REJECTED, or PARTIAL, along with any per-item errors.\n\
+        \nResponse semantics: A 200 Ack confirms the BPP has authenticated the callback\
+        \ and accepted the processing results. A 400 NackBadRequest indicates the\
+        \ callback body is structurally invalid. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature fails verification. A 500 ServerError indicates\
+        \ an unexpected internal failure on the BPP.\n\nCallback relationship: This\
+        \ endpoint is triggered by the CDS after indexing each catalog submitted in\
+        \ /catalog/publish. The BPP MUST use the messageId in Context to correlate\
+        \ this callback with the originating publish request and MUST handle REJECTED\
+        \ or PARTIAL results by correcting and resubmitting affected catalogs."
       operationId: catalogOnPublish
       tags:
       - Catalog Publishing
@@ -1035,22 +1428,28 @@ paths:
       - Subscription
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
-      description: 'Creates a new catalog subscription using the Beckn v2.0 envelope
-
-        (`action: "catalog/subscription"`). The subscriber identity is derived
-
-        from `context.bapId` / `context.bapUri`; the callback URL defaults
-
-        to `bapUri`.
-
-
-        At least one of `networkIds` or `schemaTypes` must be non-empty.
-
-        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
-
-        matching all schema types for the specified networks.
-
-        '
+      description: "The BAP creates a new catalog subscription on the Catalog Discovery\
+        \ Service, declaring which networks and schema types it wishes to receive ongoing\
+        \ on_discover callbacks for when matching catalogs are indexed.\n\nPreconditions:\
+        \ The BAP MUST be registered on the Beckn Registry and MUST carry a valid\
+        \ Beckn HTTP Signature. At least one networkId MUST be provided. An empty\
+        \ schemaTypes array is treated as a wildcard matching all schema types for\
+        \ the specified networks.\n\nFabric context: This endpoint interacts with\
+        \ the Catalog Discovery Service, which persists the subscription and evaluates\
+        \ it against newly indexed catalogs to determine which on_discover callbacks\
+        \ the BAP receives. Only subscriptions with ACTIVE status are matched during\
+        \ evaluation.\n\nMessage envelope: The request MUST carry a Context with action\
+        \ set to \"catalog/subscription\" and bapId and bapUri identifying the subscriber.\
+        \ The message MUST contain a CatalogSubscribeAction with a subscription object\
+        \ specifying networkIds, optional schemaTypes, optional callback URL override,\
+        \ and an optional delivery policy. The subscriber identity is derived from\
+        \ context.bapId and context.bapUri; the callback URL defaults to context.bapUri\
+        \ if not overridden.\n\nResponse semantics: A 200 response contains a Beckn\
+        \ envelope with the created CatalogSubscription record including the assigned\
+        \ subscription id and ACTIVE status. A 400 NackBadRequest indicates the request\
+        \ body is invalid or networkIds is empty. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature fails verification. A 500 ServerError indicates\
+        \ an unexpected internal failure."
       requestBody:
         required: true
         content:
@@ -1128,6 +1527,16 @@ paths:
   /catalog/subscriptions:
     get:
       summary: List subscriptions for a subscriber
+      description: "The BAP retrieves all catalog subscriptions associated with a\
+        \ given subscriber identifier from the Catalog Discovery Service, with optional\
+        \ pagination.\n\nPreconditions: The caller MUST carry a valid Beckn HTTP Signature\
+        \ and MUST supply the subscriberId query parameter.\n\nFabric context: This\
+        \ endpoint interacts with the Catalog Discovery Service, which returns subscription\
+        \ records for the identified subscriber.\n\nResponse semantics: A 200 response\
+        \ contains a Beckn envelope with the subscriptions array and optional pagination\
+        \ metadata. A 400 NackBadRequest indicates the subscriberId parameter is missing\
+        \ or invalid. A 500 ServerError indicates an unexpected internal failure; the\
+        \ caller SHOULD treat this as transient and MAY retry."
       operationId: catalogSubscribeList
       tags:
       - Subscription
@@ -1178,6 +1587,16 @@ paths:
   /catalog/subscription/{subscriptionId}:
     get:
       summary: Get subscription by ID
+      description: "The BAP retrieves a single catalog subscription record by its\
+        \ UUID from the Catalog Discovery Service.\n\nPreconditions: The caller MUST\
+        \ carry a valid Beckn HTTP Signature and MUST supply a valid UUID as the subscriptionId\
+        \ path parameter.\n\nFabric context: This endpoint interacts with the Catalog\
+        \ Discovery Service, which returns the full subscription record for the identified\
+        \ subscription.\n\nResponse semantics: A 200 response contains a Beckn envelope\
+        \ with the CatalogSubscription record. A 400 NackBadRequest indicates the\
+        \ subscriptionId is invalid. A 401 NackUnauthorized indicates the Beckn HTTP\
+        \ Signature fails verification. A 404 response indicates the subscription\
+        \ was not found. A 500 ServerError indicates an unexpected internal failure."
       operationId: catalogSubscribeGet
       tags:
       - Subscription
@@ -1209,7 +1628,7 @@ paths:
                       properties:
                         action:
                           type: string
-                          const: catalog/on_subscription
+                          const: catalog/subscription
                   message:
                     type: object
                     required:
@@ -1232,13 +1651,20 @@ paths:
       operationId: catalogSubscribeDelete
       tags:
       - Subscription
-      description: 'Soft-deletes a subscription by setting its status to `DELETED`.
-
-        The subscription record is retained in the database; it will no longer
-
-        receive catalog delivery callbacks.
-
-        '
+      description: "The BAP deactivates an existing catalog subscription by setting\
+        \ its status to DELETED on the Catalog Discovery Service. The subscription\
+        \ record is retained in the datastore but MUST NOT receive further catalog\
+        \ delivery callbacks.\n\nPreconditions: The subscription identified by subscriptionId\
+        \ MUST exist and MUST belong to the authenticated BAP. The BAP MUST carry\
+        \ a valid Beckn HTTP Signature.\n\nFabric context: This endpoint interacts\
+        \ with the Catalog Discovery Service, which updates the subscription lifecycle\
+        \ status and excludes the subscription from future catalog matching and delivery.\n\
+        \nResponse semantics: A 200 response contains a Beckn envelope with the updated\
+        \ CatalogSubscription record showing status DELETED. A 400 NackBadRequest\
+        \ indicates the subscriptionId is invalid. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature fails verification. A 404 response indicates the\
+        \ subscription was not found. A 500 ServerError indicates an unexpected internal\
+        \ failure."
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       - name: subscriptionId
@@ -1294,7 +1720,30 @@ paths:
       parameters:
       - $ref: '#/components/parameters/AuthorizationHeader'
       summary: Submit async catalog pull request
-      description: "Accepts a pull request and returns an immediate HTTP 200 ACK with a\ngenerated `requestId`. Processing runs asynchronously on the\n`pullExecutor` thread pool.\n\nWhen processing completes, the Catalog Indexer Job POSTs to\n`{context.bapUri}/on_catalog_pull` with a `PullCallbackPayload`.\n\n**Required fields:** `context.version`, `context.action`, `context.bapUri`,\n`message.mode`.\n\n**FULL mode:** returns the latest version of each catalog matching the filters.\n\n**INCREMENTAL mode:** returns all catalog versions indexed between\n`message.fromDate` and `message.toDate` (ISO-8601, inclusive).\n\n**Payload size:**\n- Small (< inline threshold): catalogs returned inline in the callback body.\n- Large (≥ inline threshold): callback contains an `objectUrl` pointing to\n  `GET /catalog/pull/result/{requestId}/catalogs.json`.\n"
+      description: "The BAP submits an asynchronous catalog pull request to the Catalog\
+        \ Indexer Job, specifying a retrieval mode and optional filters to select which\
+        \ catalogs to return.\n\nPreconditions: The BAP MUST be registered on the\
+        \ Beckn Registry, MUST carry a valid Beckn HTTP Signature, and MUST supply\
+        \ context.version, context.action, context.bapUri, and message.mode. No prior\
+        \ API exchange is required before this endpoint may be called.\n\nFabric context:\
+        \ This endpoint interacts with the Catalog Indexer Job, which processes the\
+        \ pull request asynchronously on its pull executor thread pool and delivers\
+        \ results to the BAP via a POST to context.bapUri/on_catalog_pull.\n\nMessage\
+        \ envelope: The request MUST carry a Context with action set to \"catalog/pull\"\
+        \ and a message containing a CatalogPullAction. The mode field MUST be either\
+        \ FULL (returns the latest version of each matching catalog) or INCREMENTAL\
+        \ (returns all catalog versions indexed between fromDate and toDate inclusive).\
+        \ Optional filters narrow the result by networkIds or schemaTypes.\n\nResponse\
+        \ semantics: A 200 response contains a status of ACK and a generated requestId\
+        \ UUID that the BAP MUST retain to correlate the asynchronous callback and\
+        \ to construct the result download URL when the payload is large. When the\
+        \ catalog payload is small, it is returned inline in the callback body. When\
+        \ it exceeds the configured inline threshold, the callback carries an objectUrl\
+        \ pointing to GET /catalog/pull/result/{requestId}/catalogs.json for download.\
+        \ A 400 NackBadRequest indicates the request body is structurally invalid\
+        \ or required fields are missing. A 401 NackUnauthorized indicates the Beckn\
+        \ HTTP Signature fails verification. A 500 ServerError indicates an unexpected\
+        \ internal failure; the caller SHOULD treat this as transient and MAY retry."
       requestBody:
         required: true
         content:
@@ -1365,7 +1814,23 @@ paths:
           - catalogs.json
         example: catalogs.json
       summary: Download large pull result file
-      description: "Serves the result file written to disk when the pull payload exceeds the\nconfigured inline threshold. Called by the BAP after receiving a callback\nwith a non-null `message.objectUrl`.\n\n**Path traversal protection:**\n- `requestId` must match the UUID v4 pattern\n  (`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).\n- `filename` is validated against an allowlist; only `catalogs.json` is permitted.\n\nRequests failing either check return HTTP 400 without a body.\n"
+      description: "The BAP downloads the full catalog result file from the Catalog\
+        \ Indexer Job when the catalog pull payload exceeds the configured inline threshold\
+        \ and was written to disk rather than delivered inline in the callback body.\n\
+        \nPreconditions: The BAP MUST have received a pull callback with a non-null\
+        \ objectUrl pointing to this endpoint. The BAP MUST carry a valid Beckn HTTP\
+        \ Signature. The requestId path parameter MUST match the UUID v4 pattern generated\
+        \ in the pull ACK response.\n\nFabric context: This endpoint is served by\
+        \ the Catalog Indexer Job, which writes large pull result payloads to disk\
+        \ and makes them available for retrieval via this path.\n\nPath traversal protection:\
+        \ The requestId MUST match the UUID v4 pattern ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}).\
+        \ The filename parameter is validated against an allowlist; only catalogs.json\
+        \ is permitted. Requests failing either check MUST receive HTTP 400 without\
+        \ a body.\n\nResponse semantics: A 200 response contains the PullResultFile\
+        \ JSON body with the full catalogs array. A 400 response indicates an invalid\
+        \ requestId format or a disallowed filename. A 401 NackUnauthorized indicates\
+        \ the Beckn HTTP Signature fails verification. A 404 response indicates the\
+        \ result file was not found, which may mean processing is still in progress."
       responses:
         '200':
           description: Pull result as JSON
@@ -1383,6 +1848,23 @@ paths:
   /catalog/master/search:
     post:
       summary: Search master catalog items
+      description: "The BAP or BPP queries the Catalog Indexer Job for master catalog\
+        \ items stored in the canonical catalog repository, filtering by network identifiers\
+        \ and schema type URIs with paginated results.\n\nPreconditions: The caller\
+        \ MUST carry a valid Beckn HTTP Signature. No prior API exchange is required\
+        \ before this endpoint may be called.\n\nFabric context: This endpoint interacts\
+        \ with the Catalog Indexer Job, which serves master catalog items from the\
+        \ canonical git repository. All responses are wrapped in a Beckn envelope\
+        \ with action set to \"on_catalog_master_search\".\n\nMessage envelope: The\
+        \ request MUST carry a Context with action set to \"catalog/master/search\"\
+        \ and a message containing a MasterSearchAction with optional filters for\
+        \ networkIds and schemaTypes, and optional pagination parameters.\n\nResponse\
+        \ semantics: A 200 response contains a Beckn envelope with the matched master\
+        \ catalog items and pagination metadata. A 400 NackBadRequest indicates the\
+        \ request body is structurally invalid. A 401 NackUnauthorized indicates the\
+        \ Beckn HTTP Signature fails verification. A 500 ServerError indicates an\
+        \ unexpected internal failure; the caller SHOULD treat this as transient and\
+        \ MAY retry."
       operationId: masterSearch
       tags:
       - Master Resource Search
@@ -1405,7 +1887,7 @@ paths:
                     properties:
                       action:
                         type: string
-                        const: catalog/master_search
+                        const: catalog/master/search
                 message:
                   $ref: '#/components/schemas/MasterSearchAction'
       responses:
@@ -1450,6 +1932,17 @@ paths:
   /catalog/master/schemaTypes:
     get:
       summary: List distinct schema types
+      description: "The BAP or BPP retrieves the distinct set of schema type URIs\
+        \ present in the Catalog Indexer Job's master catalog repository, for use\
+        \ in constructing subscription filters or search queries.\n\nPreconditions:\
+        \ The caller MUST carry a valid Beckn HTTP Signature. No prior API exchange\
+        \ is required.\n\nFabric context: This endpoint is served by the Catalog Indexer\
+        \ Job and reflects the schema types present in its canonical catalog store.\n\
+        \nResponse semantics: A 200 response contains a Beckn envelope with a schemaTypes\
+        \ array listing all distinct schema type URI strings indexed in the master\
+        \ catalog. A 401 NackUnauthorized indicates the Beckn HTTP Signature fails\
+        \ verification. A 500 ServerError indicates an unexpected internal failure;\
+        \ the caller SHOULD treat this as transient and MAY retry."
       operationId: listMasterSchemaTypes
       tags:
       - Master Resource Search
@@ -1491,6 +1984,18 @@ paths:
   /catalog/master/{masterItemId}:
     get:
       summary: Get single master item
+      description: "The BAP or BPP retrieves a single master catalog item by its\
+        \ identifier from the Catalog Indexer Job's canonical repository, returned\
+        \ in a standard Beckn catalog envelope.\n\nPreconditions: The caller MUST\
+        \ carry a valid Beckn HTTP Signature and MUST supply a masterItemId matching\
+        \ the allowed character pattern.\n\nFabric context: This endpoint is served\
+        \ by the Catalog Indexer Job and retrieves the item from its canonical git\
+        \ repository.\n\nResponse semantics: A 200 response contains a Beckn envelope\
+        \ with a catalogs array containing exactly one catalog object wrapping the\
+        \ requested master item. A 400 NackBadRequest indicates the masterItemId fails\
+        \ pattern validation. A 404 response indicates the master item was not found.\
+        \ A 500 ServerError indicates an unexpected internal failure; the caller SHOULD\
+        \ treat this as transient and MAY retry."
       operationId: getMasterItem
       tags:
       - Master Resource Search
@@ -1553,13 +2058,15 @@ components:
   schemas:
     CancelAction:
       title: Cancel Action
-      description: 'Beckn /beckn/cancel message payload. Sent by a BAP to a BPP to request
-
-        cancellation of an active contract. Set context.try to true to first
-
-        retrieve cancellation terms and fees before committing.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP expresses the consumer's\
+        \ intent to cancel an active contract, optionally entering a preview phase\
+        \ to retrieve applicable cancellation terms before committing to the cancellation.\n\
+        \nThis schema appears in the fulfillment and post-fulfillment phases of the\
+        \ value-exchange lifecycle. The BAP produces it as the message payload of a\
+        \ /cancel request; the BPP consumes it to determine whether to preview cancellation\
+        \ terms (context.try true) or execute the cancellation (context.try false).\n\
+        \nRelationship: Composes the Contract schema as its primary carrier. The Contract\
+        \ MUST include an id identifying the active contract to be cancelled."
       properties:
         contract:
           allOf:
@@ -1567,10 +2074,19 @@ components:
           - required:
             - id
       required:
-      - contract
+        - contract
 
     CatalogPublishAction:
-      description: Catalog publish request payload.
+      description: "The real-world act by which a BPP submits one or more catalogs\
+        \ to the Catalog Discovery Service for indexing so that BAPs may subsequently\
+        \ discover them.\n\nThis schema appears in the Catalog Publishing phase of\
+        \ the value-exchange lifecycle. The BPP produces it as the message payload\
+        \ of a /catalog/publish request; the CDS consumes it to index the provided\
+        \ catalogs into its catalog store.\n\nFabric context: This schema is processed\
+        \ by the Catalog Discovery Service, which validates and indexes each submitted\
+        \ Catalog object.\n\nRelationship: Composes one or more Catalog schemas in\
+        \ the catalogs array. The optional publishDirectives field carries deprecated\
+        \ publisher-side routing directives for master and regular catalog flows."
       required:
       - catalogs
       type: object
@@ -1580,16 +2096,95 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/Catalog'
+        publishDirectives:
+          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
+          type: object
+          additionalProperties: false
+          required:
+          - catalogType
+          properties:
+            catalogId:
+              description: ID of the catalog for which this resource is valid
+              type: string
+            catalogType:
+              type: string
+              enum:
+                - master
+                - regular
+              description: master = canonical source catalog; regular = seller/provider extension catalog
+            updateMode:
+              type: string
+              enum:
+                - FULL
+                - MERGE
+              default: FULL
+              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
+            resourceDirectives:
+              description: Optional per-resource extension mapping for regular catalogs
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  - resourceId
+                  - extends
+                properties:
+                  resourceId:
+                    type: string
+                    description: Seller/provider resource identifier in this catalog
+                  extends:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - masterResourceId
+                    properties:
+                      masterResourceId:
+                        type: string
+                        description: Canonical master resource identifier being extended
+            offerDirectives:
+              type: array
+              items:
+                type: object
+                properties:
+                  availableTo:
+                    type: array
+                    description: 'Optional visibility constraint indicating which network participants(by participantId / networkId / role) are allowed to discover or transact on this entity. If omitted, the entity is assumed to be visible to all participants in the addressed network(s).'
+                    items:
+                      type: object
+                      required:
+                      - offerId
+                      - resourceId
+                      - type
+                      - id
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                          - NETWORK
+                          - PARTICIPANT
+                          - ROLE
+                          description: Scope of visibility constraint.
+                        id:
+                          type: string
+                          description: Identifier of the network, participant, or role.
+                        offerId:
+                          description: ID of the offer for which this directive is applied
+                        resourceId:
+                          description: ID of the resource for which this offer published
 
     ConfirmAction:
       title: Confirm Action
-      description: 'Beckn /beckn/confirm message payload. Sent by a BAP to a BPP to confirm
-
-        a contract, finalising the transaction terms agreed during the
-
-        select-init negotiation cycle.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP expresses the consumer's\
+        \ unconditional acceptance of all previously negotiated terms and commits to\
+        \ the contract by providing payment proof or a payment reference, requesting\
+        \ the BPP to convert the draft contract into a binding commitment.\n\nThis\
+        \ schema appears at the culmination of the negotiation phase of the value-exchange\
+        \ lifecycle (after discover, select, and init). The BAP produces it as the\
+        \ message payload of a /confirm request; the BPP consumes it to verify payment\
+        \ and activate the contract.\n\nRelationship: Composes the Contract schema\
+        \ as its primary carrier. The Contract MUST include populated commitments,\
+        \ participant billing details, and at least one Settlement entry carrying\
+        \ the payment proof or reference."
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
@@ -1598,13 +2193,18 @@ components:
 
     DiscoverAction:
       title: Discover Action (External)
-      description: 'Beckn /beckn/discover message payload as published at schema.beckn.io.
-
-        Requires all discover qualifiers to be nested inside an `intent`
-
-        container object.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP expresses a consumer's intent\
+        \ to discover products, services, or resources across a Beckn network, encapsulating\
+        \ all search qualifiers within a structured intent container.\n\nThis schema\
+        \ appears at the start of the value-exchange lifecycle. The BAP produces it\
+        \ as the message payload of a /discover request; the CDS or BPP consumes\
+        \ it to evaluate the intent against indexed catalogs and return matching results.\n\
+        \nFabric context: When the implementing actor is a CDS, this schema is evaluated\
+        \ against the Catalog Discovery Service's index.\n\nRelationship: Composes\
+        \ the Intent schema as its primary carrier. The intent property is required\
+        \ and contains all structured search qualifiers including textSearch, JSONPath\
+        \ filters, spatial constraints, and media search inputs. The legacy text_search\
+        \ property is retained for backward compatibility."
       type: object
       properties:
         intent:
@@ -1621,11 +2221,16 @@ components:
 
     InitAction:
       title: Init Action
-      description: 'Beckn /beckn/init message payload. Sent by a BAP to a BPP to initialise
-
-        a contract with consumer details (billing address, fulfillment preferences, etc.).
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP provides the consumer's billing\
+        \ details, fulfillment preferences, and initial payment intent to the BPP,\
+        \ enabling the BPP to generate a final draft contract with personalized payment\
+        \ terms.\n\nThis schema appears in the negotiation phase of the value-exchange\
+        \ lifecycle, between the select and confirm steps. The BAP produces it as\
+        \ the message payload of an /init request; the BPP consumes it to finalize\
+        \ contract terms and payment conditions.\n\nRelationship: Composes the Contract\
+        \ schema as its primary carrier. The Contract MUST include participant billing\
+        \ details and performance preferences reflecting the consumer's fulfillment\
+        \ requirements."
       additionalProperties: false
       properties:
         contract:
@@ -1635,13 +2240,17 @@ components:
 
     OnCancelAction:
       title: On Cancel Action
-      description: 'Beckn /beckn/on_cancel message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/cancel call, returning the contract with status
-
-        set to CANCELLED and any applicable cancellation outcome.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP returns the outcome of a\
+        \ cancellation request to the BAP, either presenting the applicable cancellation\
+        \ policy when in preview mode or confirming the executed cancellation with\
+        \ the terminal contract state.\n\nThis schema appears in the fulfillment and\
+        \ post-fulfillment phases of the value-exchange lifecycle. The BPP produces\
+        \ it as the message payload of an /on_cancel callback; the BAP consumes it\
+        \ to inform the consumer of cancellation terms or to update the locally held\
+        \ contract state to CANCELLED.\n\nRelationship: Composes the Contract schema\
+        \ as its primary carrier. When cancellation has been executed, the Contract\
+        \ status code MUST be CANCELLED and the settlements array MUST reflect any\
+        \ applicable refunds or penalties."
       additionalProperties: false
       properties:
         contract:
@@ -1651,13 +2260,17 @@ components:
 
     OnConfirmAction:
       title: OnConfirmAction
-      description: 'Beckn /beckn/on_confirm message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/confirm call, returning the confirmed contract
-
-        with status set to CONFIRMED.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP delivers the confirmed and\
+        \ active contract to the BAP, including the BPP-assigned contract identifier\
+        \ and initial performance state, after verifying the consumer's payment and\
+        \ activating the commitment.\n\nThis schema appears at the conclusion of the\
+        \ negotiation phase of the value-exchange lifecycle. The BPP produces it as\
+        \ the message payload of an /on_confirm callback; the BAP consumes it to inform\
+        \ the consumer that the transaction is confirmed and to store the contract\
+        \ id for subsequent lifecycle interactions.\n\nRelationship: Composes the\
+        \ Contract schema as its primary carrier. The Contract status code MUST be\
+        \ ACTIVE, the id field MUST carry the BPP-assigned contract identifier, and\
+        \ the performance array MUST reflect the initial fulfillment state."
       additionalProperties: false
       properties:
         contract:
@@ -1666,7 +2279,16 @@ components:
       - contract
 
     OnDiscoverAction:
-      description: The on_discover response payload containing matching catalogs.
+      description: "The real-world act by which the BPP or CDS returns catalogs matching\
+        \ the consumer's discovery intent to the BAP, completing the discovery exchange.\n\
+        \nThis schema appears at the start of the value-exchange lifecycle, immediately\
+        \ following the discovery request. The BPP or CDS produces it as the message\
+        \ payload of an /on_discover callback; the BAP consumes it to present discovered\
+        \ providers and their offerings to the consumer.\n\nFabric context: When produced\
+        \ by a CDS, the catalogs array is assembled from the Catalog Discovery Service's\
+        \ indexed store.\n\nRelationship: Composes one or more Catalog schemas in\
+        \ the required catalogs array. Each Catalog carries a provider, resources,\
+        \ and offers matching the original intent."
       type: object
       required:
       - catalogs
@@ -1682,13 +2304,16 @@ components:
 
     OnInitAction:
       title: On Init Action
-      description: 'Beckn /beckn/on_init message payload. Sent by a BPP to a BAP in response
-
-        to a /beckn/init call, with the updated contract including payment terms
-
-        and billing confirmation.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP delivers the final draft contract\
+        \ to the BAP, including personalized payment terms, billing confirmation, and\
+        \ settlement conditions that the consumer must accept before confirming the\
+        \ transaction.\n\nThis schema appears in the negotiation phase of the value-exchange\
+        \ lifecycle, between init and confirm. The BPP produces it as the message\
+        \ payload of an /on_init callback; the BAP consumes it to present the final\
+        \ terms to the consumer for acceptance.\n\nRelationship: Composes the Contract\
+        \ schema as its primary carrier. The Contract MUST include finalized consideration\
+        \ amounts, payment terms in the settlements array, and billing details reflecting\
+        \ the consumer's submission."
       additionalProperties: false
       properties:
         contract:
@@ -1698,13 +2323,16 @@ components:
 
     OnRateAction:
       title: On Rate Action
-      description: 'Beckn /beckn/on_rate message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/rate call, optionally returning rating forms
-
-        to collect structured feedback from the consumer.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP returns the outcome of a\
+        \ rating request to the BAP, either delivering rating form definitions and\
+        \ criteria when in preview mode or confirming that the submitted ratings have\
+        \ been recorded.\n\nThis schema appears in the post-fulfillment phase of the\
+        \ value-exchange lifecycle. The BPP produces it as the message payload of\
+        \ an /on_rate callback; the BAP consumes it to confirm to the consumer that\
+        \ ratings were accepted or to render the rating form when in preview mode.\n\
+        \nRelationship: Composes zero or more RatingInput schemas in the required\
+        \ ratings array. Each RatingInput identifies a rated target entity and carries\
+        \ the range and optional aggregate data."
       type: object
       additionalProperties: false
       properties:
@@ -1717,11 +2345,15 @@ components:
 
     OnSelectAction:
       title: On Select Action
-      description: 'Beckn /beckn/on_select message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/select call, with updated contract terms.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP delivers a priced quote to\
+        \ the BAP, reflecting the total cost, applicable offers, and terms for the\
+        \ resources and commitments selected by the consumer.\n\nThis schema appears\
+        \ in the negotiation phase of the value-exchange lifecycle, between select\
+        \ and init. The BPP produces it as the message payload of an /on_select callback;\
+        \ the BAP consumes it to present the priced quote to the consumer before proceeding\
+        \ to initiation.\n\nRelationship: Composes the Contract schema as its primary\
+        \ carrier. The Contract MUST include updated consideration amounts and offer-linked\
+        \ pricing reflecting the selected resources and quantities."
       additionalProperties: false
       properties:
         contract:
@@ -1731,13 +2363,17 @@ components:
 
     OnStatusAction:
       title: On Status Action
-      description: 'Beckn /beckn/on_status message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/status call (or as an unsolicited status push),
-
-        returning the current state of the contract.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP communicates the current\
+        \ state of an active contract to the BAP, either in response to a status query\
+        \ or as a proactive push notification for a significant state transition.\n\
+        \nThis schema appears in the fulfillment phase of the value-exchange lifecycle.\
+        \ The BPP produces it as the message payload of an /on_status callback; the\
+        \ BAP consumes it to update the displayed contract state for the consumer.\
+        \ This schema covers significant lifecycle state changes only; real-time position\
+        \ tracking uses Tracking via OnTrackAction.\n\nRelationship: Composes the\
+        \ Contract schema as its primary carrier. The Contract MUST include the current\
+        \ status descriptor and updated performance array reflecting the latest fulfillment\
+        \ state."
       additionalProperties: false
       properties:
         contract:
@@ -1747,13 +2383,16 @@ components:
 
     OnSupportAction:
       title: On Support Action
-      description: 'Beckn /beckn/on_support message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/support call, returning support contact details
-
-        and available channels.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP returns support information\
+        \ to the BAP, either delivering a list of available support channels when in\
+        \ preview mode or providing full support contact details and a created or linked\
+        \ ticket when a support request has been submitted.\n\nThis schema appears\
+        \ in the post-fulfillment phase of the value-exchange lifecycle. The BPP produces\
+        \ it as the message payload of an /on_support callback; the BAP consumes it\
+        \ to connect the consumer with the appropriate support channel or ticket.\n\
+        \nRelationship: Composes the Support schema as its primary carrier. The Support\
+        \ object carries the referenced entity, available channels, and, when a ticket\
+        \ has been created, the ticket details."
       additionalProperties: false
       properties:
         support:
@@ -1763,13 +2402,16 @@ components:
 
     OnTrackAction:
       title: On Track Action
-      description: 'Beckn /beckn/on_track message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/track call, returning a Tracking handle with
-
-        the URL and/or WebSocket endpoint for real-time fulfillment tracking.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP delivers a real-time tracking\
+        \ handle to the BAP, providing the URL or WebSocket endpoint through which\
+        \ the consumer may monitor live position and progress updates for an active\
+        \ fulfillment stage.\n\nThis schema appears in the fulfillment phase of the\
+        \ value-exchange lifecycle. The BPP produces it as the message payload of\
+        \ an /on_track callback; the BAP consumes it to open the tracking connection\
+        \ and expose real-time progress to the consumer.\n\nRelationship: Composes\
+        \ the Tracking schema as its primary carrier. The Tracking object MUST include\
+        \ a url for the tracking data source and a status field indicating whether\
+        \ tracking is ACTIVE or INACTIVE."
       type: object
       additionalProperties: false
       properties:
@@ -1780,13 +2422,17 @@ components:
 
     OnUpdateAction:
       title: On Update Action
-      description: 'Beckn /beckn/on_update message payload. Sent by a BPP to a BAP in
-
-        response to a /beckn/update call (or as an unsolicited update push),
-
-        returning the updated contract state.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BPP delivers the outcome of a\
+        \ contract mutation to the BAP, either returning recalculated terms without\
+        \ state change (preview mode) or confirming the committed updated contract\
+        \ state, which may also be sent proactively for provider-initiated mutations.\n\
+        \nThis schema appears in the fulfillment phase of the value-exchange lifecycle.\
+        \ The BPP produces it as the message payload of an /on_update callback; the\
+        \ BAP consumes it to update the locally held contract state or to present\
+        \ revised terms to the consumer before committing.\n\nRelationship: Composes\
+        \ the Contract schema as its primary carrier. The Contract reflects the updated\
+        \ state including any changes to commitments, consideration amounts, or performance\
+        \ details."
       additionalProperties: false
       properties:
         contract:
@@ -1796,13 +2442,15 @@ components:
 
     RateAction:
       title: RateAction
-      description: 'Beckn /beckn/rate message payload. Sent by a BAP to a BPP to submit
-
-        one or more rating inputs for entities in a completed contract
-
-        (order, fulfillment, item, provider, agent, support).
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP submits one or more consumer\
+        \ ratings for entities associated with a completed contract, including the\
+        \ contract itself, fulfillment stages, individual resources, the provider,\
+        \ agents, and support interactions.\n\nThis schema appears in the post-fulfillment\
+        \ phase of the value-exchange lifecycle. The BAP produces it as the message\
+        \ payload of a /rate request; the BPP consumes it to record or preview the\
+        \ ratings depending on the context.try flag.\n\nRelationship: Composes one\
+        \ or more RatingInput schemas in the required ratingInputs array. Each RatingInput\
+        \ MUST identify the target entity being rated and MUST include a scoring range."
       type: object
       additionalProperties: false
       properties:
@@ -1815,11 +2463,16 @@ components:
 
     SelectAction:
       title: Select Action
-      description: 'Beckn /beckn/select message payload. Sent by a BAP to a BPP to select
-
-        items and offers from a catalog, initiating the negotiation cycle.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP identifies specific resources\
+        \ and offers from a discovered catalog and requests the BPP to compute a priced\
+        \ quote, thereby initiating the negotiation cycle.\n\nThis schema appears\
+        \ in the negotiation phase of the value-exchange lifecycle, immediately following\
+        \ discovery. The BAP produces it as the message payload of a /select request;\
+        \ the BPP consumes it to evaluate availability, compute pricing, and return\
+        \ a quote via /on_select.\n\nRelationship: Composes the Contract schema as\
+        \ its primary carrier. The Contract MUST include commitments referencing the\
+        \ selected resources and associated offers. No PII or billing information\
+        \ MUST be included at this stage."
       additionalProperties: false
       properties:
         contract:
@@ -1829,11 +2482,16 @@ components:
 
     StatusAction:
       title: Status Action
-      description: 'Beckn /beckn/status message payload. Sent by a BAP to a BPP to query
-
-        the current state of a contract/order by its identifier.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP polls the BPP for the current\
+        \ state of an active contract by providing its identifier, triggering the\
+        \ BPP to return the latest fulfillment and lifecycle state.\n\nThis schema\
+        \ appears in the fulfillment phase of the value-exchange lifecycle. The BAP\
+        \ produces it as the message payload of a /status request; the BPP consumes\
+        \ it to locate the contract and return its current state via /on_status. BAPs\
+        \ SHOULD NOT use repeated status calls for continuous monitoring; the BPP\
+        \ MAY push proactive /on_status callbacks for significant state changes.\n\
+        \nRelationship: Composes the Contract schema as its primary carrier. The Contract\
+        \ MUST include an id identifying the active contract to be queried."
       properties:
         contract:
           allOf:
@@ -1845,13 +2503,17 @@ components:
 
     SupportAction:
       title: Support Action
-      description: 'Beckn /beckn/support message payload. Sent by a BAP to a BPP to request
-
-        support contact information or to open a support ticket for an existing
-
-        order/contract.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP requests support channel\
+        \ information or initiates a support ticket from the BPP for any entity associated\
+        \ with a contract, using the context.try pattern to either preview available\
+        \ channels or submit a support request.\n\nThis schema appears in the post-fulfillment\
+        \ phase of the value-exchange lifecycle. The BAP produces it as the message\
+        \ payload of a /support request; the BPP consumes it to determine whether\
+        \ to preview support channels (context.try true) or to create or link a ticket\
+        \ (context.try false).\n\nRelationship: Composes the Support schema as its\
+        \ primary carrier. The Support object MUST carry a descriptor describing the\
+        \ nature of the support needed and at least one channel entry when responding\
+        \ to a preview request."
       type: object
       additionalProperties: false
       properties:
@@ -1862,7 +2524,16 @@ components:
 
     TrackAction:
       type: object
-      description: Details required to initiate real-time tracking (if relevant) for an ongoing transaction
+      description: "The real-world act by which the BAP requests a real-time tracking\
+        \ handle from the BPP for an active fulfillment or performance stage of a\
+        \ confirmed contract, enabling the consumer to monitor live position and progress\
+        \ updates.\n\nThis schema appears in the fulfillment phase of the value-exchange\
+        \ lifecycle. The BAP produces it as the message payload of a /track request;\
+        \ the BPP consumes it to identify the performance stage and return an appropriate\
+        \ tracking handle via /on_track.\n\nRelationship: Composes the Tracking schema\
+        \ as its primary carrier. The Tracking object MUST include a contract reference\
+        \ with an id identifying the active contract whose performance stage is to\
+        \ be tracked."
       additionalProperties: false
       properties:
         tracking:
@@ -1872,13 +2543,17 @@ components:
 
     UpdateAction:
       title: Update Action
-      description: 'Beckn /beckn/update message payload. Sent by a BAP to a BPP to request
-
-        changes to an active contract (e.g., update fulfillment address, add items,
-
-        change quantities). The context.try flag must be true during negotiation.
-
-        (Context wrapper stripped; only the message-content portion is inlined.)'
+      description: "The real-world act by which the BAP requests a mutation to an\
+        \ active contract, which may include changes to committed resources, quantities,\
+        \ billing details, performance preferences, or payment arrangements, using\
+        \ the context.try pattern to preview or commit the change.\n\nThis schema\
+        \ appears in the fulfillment phase of the value-exchange lifecycle. The BAP\
+        \ produces it as the message payload of an /update request; the BPP consumes\
+        \ it to compute revised terms (when context.try is true) or to apply and confirm\
+        \ the mutation (when context.try is false).\n\nRelationship: Composes the\
+        \ Contract schema as its primary carrier. The Contract MUST include the id\
+        \ of the active contract being mutated and MUST reflect the desired post-mutation\
+        \ state of the relevant fields."
       additionalProperties: false
       properties:
         contract:
@@ -1887,13 +2562,34 @@ components:
       - contract
 
     AddOn:
-      description: Add-on to a catalog resource
+      description: "An optional supplementary resource or offer that the consumer\
+        \ may elect to include alongside a primary committed resource, carrying its\
+        \ own independent pricing and terms that contribute to the overall contract\
+        \ consideration.\n\nAdd-ons appear in the negotiation and selection phases\
+        \ of the value-exchange lifecycle. The BPP produces them as part of an Offer\
+        \ in a Catalog; the BAP includes selected add-ons in the commitments of a\
+        \ Contract during the select and init steps. Add-ons may represent cross-sell\
+        \ or up-sell items, monetary contributions such as donations, or domain-specific\
+        \ supplements such as travel insurance, accessibility assistance, or supplementary\
+        \ services that have no independent existence outside the context of the primary\
+        \ resource.\n\nRelationship: Defined as a oneOf composed of either a Resource\
+        \ or an Offer schema, allowing add-ons to model both tangible supplementary\
+        \ goods and structured offer terms."
       oneOf:
-      - $ref: '#/components/schemas/Resource'
-      - $ref: '#/components/schemas/Offer'
+        - $ref: '#/components/schemas/Resource'
+        - $ref: '#/components/schemas/Offer'
 
     Address:
-      description: '**Postal address** aligned with schema.org `PostalAddress`. Use for human-readable addresses. Geometry lives in `Location.geo` as GeoJSON.'
+      description: "A structured postal address representing the civic location of\
+        \ a participant, provider, or delivery point, aligned with the schema.org\
+        \ PostalAddress vocabulary for human-readable addressing.\n\nThis schema appears\
+        \ wherever a civic address is required across the value-exchange lifecycle,\
+        \ including participant billing details in InitAction, provider locations in\
+        \ a Catalog, and delivery destinations in Performance. Both the BAP and BPP\
+        \ produce and consume it depending on context.\n\nRelationship: Used as a\
+        \ component within the Location schema, which also carries geometric coordinates\
+        \ via the GeoJSONGeometry schema. Geometry MUST be expressed in Location.geo\
+        \ rather than embedded in Address."
       title: Address
       type: object
       properties:
@@ -1925,7 +2621,16 @@ components:
 
     AsyncError:
       title: Asynchronous Error
-      description: Error returned asynchronously during a callback. Wraps the base `Error` schema with JSON-LD type annotations to allow linked-data processing.
+      description: "An error condition reported asynchronously within a Beckn callback\
+        \ when the implementing actor encounters a failure during processing that cannot\
+        \ be communicated in the synchronous response.\n\nThis schema appears in the\
+        \ callback phase of any Beckn interaction where an error must be conveyed after\
+        \ an initial ACK has already been returned. Both the BPP and BAP MAY produce\
+        \ it when reporting failures in asynchronous processing to their counterpart.\n\
+        \nRelationship: Extends the base Error schema with JSON-LD type annotations,\
+        \ allowing linked-data consumers to interpret error codes using the Beckn error\
+        \ vocabulary. Additional properties are permitted to carry domain-specific\
+        \ error context."
       allOf:
       - $ref: '#/components/schemas/Error'
       - type: object
@@ -1933,7 +2638,17 @@ components:
         additionalProperties: true
 
     Attributes:
-      description: JSON-LD aware container for domain-specific attributes of an Item. MUST include @context (URI) and @type (compact or full IRI). Any additional properties are allowed and interpreted per the provided JSON-LD context.
+      description: "A JSON-LD aware extensibility container that carries domain-specific\
+        \ attributes for any Beckn schema that supports it, enabling domain packs to\
+        \ add structured, semantically typed fields without modifying the core schema.\n\
+        \nThis schema appears throughout the value-exchange lifecycle wherever a Beckn\
+        \ core schema requires domain-specific extension, including Resource.resourceAttributes,\
+        \ Offer.offerAttributes, Performance.performanceAttributes, Contract.contractAttributes,\
+        \ and Commitment.commitmentAttributes. Both BAPs and BPPs produce and consume\
+        \ it depending on the context in which it appears.\n\nRelationship: Used by\
+        \ composition throughout the schema hierarchy as the standard extension point.\
+        \ The @context property MUST reference a valid JSON-LD context URI and the\
+        \ @type property MUST identify the domain type being expressed."
       title: Attributes
       type: object
       properties:
@@ -1949,61 +2664,21 @@ components:
       additionalProperties: true
 
     Catalog:
-      description: Catalog schema for Beckn Protocol v2.0.0
+      description: "A structured representation of the resources, offers, and provider\
+        \ information that a BPP makes available on the network for discovery, selection,\
+        \ and commitment by BAPs.\n\nCatalogs appear in the discovery phase of the\
+        \ value-exchange lifecycle. The BPP produces them and publishes them to the\
+        \ Catalog Discovery Service via CatalogPublishAction; the CDS indexes them\
+        \ and serves them to BAPs in OnDiscoverAction responses.\n\nFabric context:\
+        \ Catalogs are managed by the Catalog Discovery Service, which indexes them\
+        \ for discovery and delivers them to subscribing BAPs. The Catalog Indexer\
+        \ Job also stores and serves canonical master catalog items.\n\nRelationship:\
+        \ Composes Provider, Resource, and Offer schemas. MUST include at least one\
+        \ of a resources array or an offers array. The validity field constrains the\
+        \ temporal window during which the catalog is active, expressed as a TimePeriod."
       title: Catalog
       type: object
       properties:
-        bppId:
-          description: BPP (Beckn Protocol Provider) identifier that publishes this catalog
-          type: string
-          example: bpp.example.com
-        bppUri:
-          description: Beckn Protocol API base URL of the BPP
-          type: string
-          format: uri
-        publishDirectives:
-          deprecated: true
-          description: Directives controlling publish behavior for master/regular catalog flow. Deprecated and planned for removal in a future release.
-          type: object
-          additionalProperties: false
-          required:
-          - catalogType
-          properties:
-            catalogType:
-              type: string
-              enum:
-              - master
-              - regular
-              description: master = canonical source catalog; regular = seller/provider extension catalog
-            updateMode:
-              type: string
-              enum:
-              - FULL
-              - MERGE
-              default: FULL
-              description: Used for regular updates. FULL replaces overlay; MERGE applies JSON Merge Patch semantics.
-            resourceDirectives:
-              description: Optional per-resource extension mapping for regular catalogs
-              type: array
-              items:
-                type: object
-                additionalProperties: false
-                required:
-                - resourceId
-                - extends
-                properties:
-                  resourceId:
-                    type: string
-                    description: Seller/provider resource identifier in this catalog
-                  extends:
-                    type: object
-                    additionalProperties: false
-                    required:
-                    - masterResourceId
-                    properties:
-                      masterResourceId:
-                        type: string
-                        description: Canonical master resource identifier being extended
         descriptor:
           description: Human / Agent-readable description of this catalog
           allOf:
@@ -2043,7 +2718,16 @@ components:
       additionalProperties: false
 
     CatalogOnPublishAction:
-      description: Catalog publish processing results from CDS to BPP.
+      description: "The real-world act by which the Catalog Discovery Service communicates\
+        \ per-catalog processing outcomes to the BPP after completing indexing for\
+        \ each catalog submitted in a publish request.\n\nThis schema appears in the\
+        \ Catalog Publishing phase of the value-exchange lifecycle. The CDS produces\
+        \ it as the message payload of a /catalog/on_publish callback; the BPP consumes\
+        \ it to determine which submitted catalogs were successfully indexed and which\
+        \ require correction and resubmission.\n\nFabric context: Produced exclusively\
+        \ by the Catalog Discovery Service as the outcome of its indexing pipeline.\n\
+        \nRelationship: Composes one or more CatalogProcessingResult schemas in the\
+        \ required results array, one per submitted catalog."
       type: object
       required:
       - results
@@ -2055,7 +2739,16 @@ components:
             $ref: '#/components/schemas/CatalogProcessingResult'
 
     CatalogProcessingResult:
-      description: Processing result for a single catalog submission.
+      description: "The outcome record produced by the Catalog Discovery Service for\
+        \ a single catalog submission, indicating whether the catalog was accepted,\
+        \ rejected, or partially indexed, along with any per-item or per-catalog errors.\n\
+        \nThis schema appears in the CatalogOnPublishAction and is produced by the\
+        \ CDS. The BPP consumes it to identify catalogues that require correction.\n\
+        \nFabric context: Produced exclusively by the Catalog Discovery Service as\
+        \ part of its indexing result reporting.\n\nRelationship: Composes zero or\
+        \ more Error schemas in the errors array when status is REJECTED or PARTIAL.\
+        \ An optional stats object provides counts of accepted items, providers, and\
+        \ categories."
       type: object
       required:
       - catalogId
@@ -2094,20 +2787,17 @@ components:
 
     Consideration:
       type: object
-      description: 'Generalized representation of value exchanged under a Contract.
-
-
-        Consideration is domain-neutral and may represent:
-
-        - Monetary value
-
-        - Credits / tokens
-
-        - Asset transfer
-
-        - Service exchange
-
-        - Compliance artifact'
+      description: "A domain-neutral representation of the value agreed to be exchanged\
+        \ under a contract, which may take the form of monetary payment, credits or\
+        \ tokens, asset transfer, service exchange, or a compliance artifact depending\
+        \ on the domain.\n\nConsideration appears across the negotiation phase of\
+        \ the value-exchange lifecycle, from select through confirm. The BPP assigns\
+        \ consideration amounts in OnSelectAction and OnInitAction; the BAP acknowledges\
+        \ them in ConfirmAction. Both actors produce and consume consideration records\
+        \ to track value commitment and discharge.\n\nRelationship: Composes the Descriptor\
+        \ schema for the status field and the Attributes schema for domain-specific\
+        \ consideration attributes. For monetary considerations, the PriceSpecification\
+        \ domain schema SHOULD be used within considerationAttributes."
       required:
       - id
       - status
@@ -2127,84 +2817,118 @@ components:
           $ref: '#/components/schemas/Attributes'
 
     Context:
-      description: 'Base context schema for all Beckn API calls. Contains addressing information
-
-        (BAP/BPP identifiers and API URLs), protocol version, the action being called,
-
-        transaction and message IDs, timestamp, TTL, and optional encryption key.
-
-        This schema defines all possible properties but imposes NO required-field
-
-        constraints. Endpoint-specific validation is defined inline in operation request schemas.'
+      description: "The message envelope header that accompanies every Beckn API\
+        \ call, carrying network addressing, protocol version, action identification,\
+        \ transaction correlation identifiers, timing constraints, and optional cryptographic\
+        \ metadata required to route, authenticate, and correlate messages across the\
+        \ asynchronous Beckn communication pattern.\n\nContext appears in every request\
+        \ and callback across all phases of the value-exchange lifecycle. The BAP\
+        \ assigns bapId, bapUri, transactionId, messageId, and timestamp when originating\
+        \ a request; the BPP assigns bppId and bppUri when it is the receiving actor.\
+        \ Fabric services such as the Catalog Discovery Service and Catalog Indexer\
+        \ Job validate the version, action, and signature fields as part of request\
+        \ authentication.\n\nRelationship: Composes the RequestDigest schema via the\
+        \ requestDigest property, which carries the BLAKE2b-512 hash of the originating\
+        \ request body for non-repudiation of the asynchronous callback leg."
       type: object
       title: Context
       properties:
-        domain:
-          description: Domain code that is relevant to this transaction context
-          type: string
-        location:
-          description: The location where the transaction is intended to be fulfilled.
-          type: object
-          properties:
-            city:
-              description: The city code where this transaction is restricted to
-              type: object
-              properties:
-                code:
-                  type: string
-            country:
-              description: The country code this transaction is restricted to
-              type: object
-              properties:
-                code:
-                  type: string
         action:
-          description: The Beckn protocol method being called by the sender and executed at the receiver.
+          description: The Beckn protocol method name being invoked by the sender,
+            which the receiving actor MUST use to route and execute the corresponding
+            operation. The value MUST match the action value defined in the path schema
+            for the endpoint being called.
           type: string
         version:
           type: string
-          description: Version of transaction protocol being used by the sender.
+          description: The Beckn protocol version in use for this transaction, assigned
+            by the BAP when constructing the request. MUST be the const value 2.0.0
+            for all requests conforming to this specification.
           const: 2.0.0
         bapId:
-          description: Subscriber ID of the BAP as registered on dedi.global
+          description: The globally unique subscriber identifier of the BAP, assigned
+            by the Beckn Registry and used by receiving actors to look up the BAP's
+            registered public key for signature verification.
+          type: string
+        senderId:
+          description: The globally unique decentralized identifier (DID) of the
+            message sender, pointing to a DID document from which the sender's verification
+            keys can be resolved for cryptographic verification.
           type: string
         bapUri:
-          description: 'The callback URL of the BAP.
-
-
-            REQUIRED: This should necessarily contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global'
+          description: The callback base URL of the BAP to which the BPP or Fabric
+            service MUST deliver asynchronous callbacks. This MUST match the URL registered
+            for the BAP in the Beckn Registry and MUST use the same domain name verified
+            in the BAP's namespace on the registry.
           type: string
           format: uri
         bppId:
-          description: Subscriber ID of the BPP as registered on dedi.global
+          description: The globally unique subscriber identifier of the BPP, assigned
+            by the Beckn Registry and used by the BAP to look up the BPP's registered
+            public key for signature verification of callbacks.
           type: string
         bppUri:
-          description: 'The request URL of the BPP.
-
-
-            REQUIRED: This MUST contain the same domain name as verified in its namespace under dedi.global, and MUST have the same URL as registered in its subscriber registry on dedi.global'
+          description: The request base URL of the BPP to which the BAP MUST send
+            request API calls. This MUST match the URL registered for the BPP in the
+            Beckn Registry and MUST use the same domain name verified in the BPP's
+            namespace on the registry.
           type: string
           format: uri
+        receiverId:
+          description: The globally unique decentralized identifier (DID) of the
+            message receiver, pointing to a DID document from which the receiver's
+            verification keys can be resolved for encrypted delivery or targeted routing.
+          type: string
         transactionId:
-          description: This is a unique value which persists across all API calls from `search` through `confirm`. This is done to indicate an active user session across multiple requests. The BPPs can use this value to push personalized recommendations, and dynamic offerings related to an ongoing transaction despite being unaware of the user active on the BAP.
+          description: A UUID assigned by the BAP that persists across all API calls
+            within a single transaction session from discover through confirm. The
+            BPP MAY use this value to correlate related requests, push personalized
+            recommendations, and maintain dynamic offerings across the multi-step negotiation
+            cycle without requiring knowledge of the specific consumer identity on
+            the BAP.
           type: string
           format: uuid
         messageId:
-          description: This is a unique value which persists during a request / callback cycle. Since beckn protocol APIs are asynchronous, BAPs need a common value to match an incoming callback from a BPP to an earlier call. This value can also be used to ignore duplicate messages coming from the BPP. It is recommended to generate a fresh message_id for every new interaction. When sending unsolicited callbacks, BPPs must generate a new message_id.
+          description: A UUID that persists across a single request and its corresponding
+            callback, assigned by the BAP for request messages and generated fresh
+            by the BPP for unsolicited callbacks. The BAP MUST use this value to correlate
+            incoming callbacks with the originating request and MAY use it to detect
+            and discard duplicate messages from the BPP. A new messageId MUST be generated
+            for every new interaction.
           type: string
           format: uuid
         networkId:
-          description: 'Unique identifier of a network. This identifier ALWAYS represents a specific beckn registry in a specific namespace on dedi.global. Format : `{namespace_id}/{registry_id}@{dedi-host}`. The `@{dedi-host}` suffix is optional. If it is not present, the network is assumed to be registered on dedi.glounique Example: Assuming acmenet.org is the namespace, and registry_name = charge-net, so networkId should be `acmenet.org/charge-net`'
+          description: "The unique identifier of the Beckn network within which this\
+            \ transaction is occurring, always representing a specific registry in\
+            \ a specific namespace on the Beckn Registry. The RECOMMENDED format is\
+            \ namespace_id followed by a slash followed by registry_id, for example\
+            \ acmenet.org/charge-net."
           type: string
         timestamp:
-          description: Time of request generation in RFC3339 format
+          description: The date and time at which this message was generated by the
+            sender, expressed in RFC 3339 date-time format. The receiving actor MAY
+            use this value together with ttl to assess whether the message has expired
+            before processing.
           type: string
           format: date-time
         key:
-          description: The encryption public key of the sender
+          description: The encryption public key of the sender, provided when the
+            sender intends for the receiver to use it for encrypting response payloads
+            or establishing a secure channel. Assignment is by the BAP or BPP depending
+            on message direction.
           type: string
+        try:
+          description: 'A boolean flag set by the BAP to activate the two-phase preview
+            pattern: when true, the BPP MUST compute and return the outcome of the
+            requested action without persisting any state change; when false (the default),
+            the BPP MUST execute and commit the action. Applicable to the update, cancel,
+            rate, and support actions.'
+          type: boolean
         ttl:
-          description: The duration in ISO8601 format after timestamp for which this message holds valid
+          description: The duration, expressed in ISO 8601 duration format, after
+            the timestamp value during which this message remains valid. The receiving
+            actor SHOULD reject messages whose timestamp plus ttl has elapsed before
+            processing.
           type: string
         schemaContext:
           description: Array of JSON-LD context urls representing the schemas relevant to the request in which this context object is transported.
@@ -2217,8 +2941,22 @@ components:
 
     Contract:
       type: object
-      description: "This is a JSON-LD compliant, linked-data schema that specifies a generic multi-party, digitally signed Contract between a set of participants. based on the vocabulary defined in the @context. By default, it is the most generic form of contract i.e beckn:Contract. However, based on the mapping being used in @context, it could take values like retail:Order, mobility:Reservation, healthcare:Appointment, and so on, which will be defined as sub-classes of beckn:Contract.\nAlternate description A digitally agreed commitment between two or more participants\ngoverning the exchange of economic or non-economic value.\n\nContract is the canonical contract object in the generalized\nBeckn v2.1 protocol. It replaces the commerce-specific Order construct\nas the canonical transaction object at the API layer.\n\nA Contract binds:\n - Commitments (what is agreed)\n - Consideration (value promised)\n - Performance (how execution occurs)\n - Settlements (how consideration is discharged)\n\
-        \nThe model is domain-neutral and supports commerce, hiring,\nenergy markets, carbon exchanges, data access, mobility,\nsubscriptions, and other use cases."
+      description: "A domain-neutral, digitally agreed commitment between two or more\
+        \ participants that governs the exchange of economic or non-economic value,\
+        \ binding together what is promised (commitments), what value is exchanged\
+        \ (consideration), how execution occurs (performance), and how value is discharged\
+        \ (settlements).\n\nContract is the canonical transaction object across all\
+        \ phases of the Beckn value-exchange lifecycle from select through post-fulfillment.\
+        \ The BAP initially constructs the Contract in SelectAction and progressively\
+        \ enriches it through InitAction and ConfirmAction; the BPP updates and returns\
+        \ it in each corresponding callback carrying the authoritative state. It is\
+        \ domain-neutral and supports retail, mobility, healthcare, hiring, energy\
+        \ markets, carbon exchanges, data access, subscriptions, and other use cases.\n\
+        \nRelationship: Composes Commitment, Consideration, Participant, Performance,\
+        \ and Settlement schemas. The status field constrains values to the Descriptor\
+        \ schema with code restricted to DRAFT, ACTIVE, CANCELLED, and COMPLETE. The\
+        \ contractAttributes field extends the core schema with domain-specific attributes\
+        \ via the Attributes schema."
       title: Contract
       properties:
         id:
@@ -2283,6 +3021,17 @@ components:
 
     Commitment:
       type: object
+      description: "A structured record of a specific promise made within a Contract,\
+        \ binding together the exact resources being committed to, the offer terms\
+        \ under which they are being provided, and the current lifecycle status of\
+        \ that promise.\n\nCommitments appear from the select phase onward in the\
+        \ value-exchange lifecycle. The BAP includes draft commitments in SelectAction\
+        \ referencing the resources and offers chosen from the catalog; the BPP updates\
+        \ commitment status as the contract progresses through the DRAFT, ACTIVE, and\
+        \ CLOSED states.\n\nRelationship: Composes Resource schemas (with required\
+        \ id and quantity) in the resources array and an Offer schema (with required\
+        \ id and resourceIds) in the offer field. The commitmentAttributes field extends\
+        \ the core schema with domain-specific attributes via the Attributes schema."
       required:
       - status
       - resources
@@ -2322,43 +3071,37 @@ components:
 
     CounterSignature:
       title: Beckn HTTP Counter-Signature
-      description: 'A signed receipt transmitted in the synchronous `Ack` response body, proving that the
-
-        receiver authenticated, received, and processed the inbound request.
-
-
-        `CounterSignature` shares the same wire format as `Signature` but differs:
-
-        - **Signer**: the response receiver (not the request sender)
-
-        - **Location**: transmitted in the `Ack` response body (not in the `Authorization` header)
-
-        - **`digest`**: covers the Ack response body (not the inbound request body)
-
-        - **`(request-digest)`** and **`(message-id)`** MUST be included in the signing string
-
-
-        Signing string format:
-
-        ```
-
-        (created): {unixTimestamp}
-
-        (expires): {unixTimestamp}
-
-        digest: BLAKE-512={base64DigestOfAckBody}
-
-        (request-digest): BLAKE-512={base64DigestOfInboundRequestBody}
-
-        (message-id): {messageId}
-
-        ```'
+      description: "A digitally signed receipt transmitted in the synchronous Ack\
+        \ response body, proving that the receiving actor authenticated, received,\
+        \ and accepted the inbound request for processing, thereby establishing bilateral\
+        \ non-repudiation for the synchronous leg of a Beckn interaction.\n\nCounterSignature\
+        \ appears in every Ack response returned by a BPP or BAP across all phases\
+        \ of the value-exchange lifecycle. The implementer (BPP or BAP depending on\
+        \ direction) produces it; the sender verifies it to confirm authenticated\
+        \ receipt.\n\nCounterSignature shares the same wire format as Signature but\
+        \ differs in three respects: the signer is the response receiver rather than\
+        \ the request sender; it is transmitted in the Ack response body rather than\
+        \ the Authorization header; and the digest covers the Ack response body rather\
+        \ than the inbound request body. The signing string MUST include request-digest\
+        \ and message-id components in addition to the standard created, expires,\
+        \ and digest fields.\n\nRelationship: Extends the Signature schema, inheriting\
+        \ its wire format and signing string structure as defined in the Authentication\
+        \ and Trust document."
       allOf:
       - $ref: '#/components/schemas/Signature'
 
     Descriptor:
       $schema: https://json-schema.org/draft/2020-12/schema
-      description: Schema definition for Descriptor in the Beckn Protocol v2.0.1
+      description: "A structured label that provides machine-readable and human-readable\
+        \ identification for any Beckn entity, including its code, name, descriptions,\
+        \ and associated media and document references.\n\nDescriptor appears throughout\
+        \ the value-exchange lifecycle as the standard identification and display mechanism\
+        \ for entities including Contract status, Resource identity, Offer metadata,\
+        \ Provider information, and Commitment state. Both BAPs and BPPs produce and\
+        \ consume it depending on the entity being described.\n\nRelationship: Used\
+        \ by composition in Contract, Resource, Offer, Provider, Commitment, Consideration,\
+        \ Catalog, Performance, Tracking, and Support schemas. The docs field composes\
+        \ Document schemas; the mediaFile field composes MediaFile schemas."
       title: Descriptor
       type: object
       properties:
@@ -2394,7 +3137,16 @@ components:
       additionalProperties: false
 
     Document:
-      description: A document, that can be parsed, printed, download or displayed. This has intentionally been kept separate from MediaFile as they may contain additional attributes like signature, schema etc.
+      description: "A downloadable or displayable document artifact associated with\
+        \ a Beckn entity, such as a terms and conditions PDF, a verifiable credential,\
+        \ or a signed contract document, distinguished from media files by its support\
+        \ for cryptographic signature and schema metadata.\n\nDocuments appear wherever\
+        \ a Beckn entity requires supporting documentary evidence across the value-exchange\
+        \ lifecycle, including offer terms, contract documents, and post-fulfillment\
+        \ receipts. Both BAPs and BPPs produce and consume them via the Descriptor.docs\
+        \ field.\n\nRelationship: Used by composition within the Descriptor schema\
+        \ via the docs array. Intentionally kept separate from MediaFile to accommodate\
+        \ signature, checksum, and schema metadata fields not applicable to media assets."
       title: Document
       x-tags:
       - common
@@ -2439,13 +3191,16 @@ components:
 
     Error:
       title: Error
-      description: 'Base error container returned in NACK responses and async error callbacks.
-
-        Domain-specific error codes SHOULD follow the Beckn error code registry
-
-        (see response definitions in this specification). Custom error objects may be expressed as
-
-        `oneOf [string, object]` payloads via the `errorDetails` field.'
+      description: "A structured error container returned in NACK responses and asynchronous\
+        \ error callbacks, carrying a machine-readable error code and a human-readable\
+        \ error message to enable callers to diagnose and handle failures.\n\nError\
+        \ appears in NackBadRequest (400), NackUnauthorized (401), AckNoCallback (409),\
+        \ and AsyncError across all phases of the value-exchange lifecycle. Both BPPs\
+        \ and BAPs produce errors depending on the direction of the failing call; the\
+        \ counterpart consumes them to determine corrective action.\n\nRelationship:\
+        \ Extended by the AsyncError schema with JSON-LD type annotations. Composed\
+        \ within the NackBadRequest, NackUnauthorized, AckNoCallback, and ServerError\
+        \ schemas."
       type: object
       properties:
         errorCode:
@@ -2457,7 +3212,14 @@ components:
       title: FormSubmission
       x-tags:
       - common
-      description: A user's submitted response to a Beckn form. Captures the filled-in field values keyed by form field names. Typically attached to a RatingInput to convey feedback form answers alongside a rating.
+      description: "A consumer's submitted response to a structured feedback form,\
+        \ capturing the filled-in field values keyed by form field identifiers as\
+        \ defined in the form schema.\n\nFormSubmission appears in the post-fulfillment\
+        \ phase of the value-exchange lifecycle. The BAP produces it as part of a\
+        \ RatingInput when the consumer has completed a structured feedback form returned\
+        \ by the BPP in a prior on_rate preview response; the BPP consumes it to record\
+        \ structured qualitative feedback alongside the numeric rating.\n\nRelationship:\
+        \ Composed within the RatingInput schema via the feedbackFormSubmission field."
       type: object
       properties:
         id:
@@ -2483,23 +3245,41 @@ components:
 
     Participant:
       type: object
+      description: "An identified party that plays a specific role in the creation,\
+        \ fulfillment, or post-fulfillment of a Contract, which may represent a consumer,\
+        \ provider, agent, or any other actor bound by the contract's terms.\n\nParticipants\
+        \ appear in the negotiation and fulfillment phases of the value-exchange lifecycle.\
+        \ The BAP introduces consumer participant details in InitAction; the BPP may\
+        \ add provider or agent participant records in the corresponding callback.\
+        \ Both actors consume participant records to understand the parties bound by\
+        \ the contract.\n\nRelationship: Composed within the Contract schema's participants\
+        \ array. The participantAttributes field extends the core schema with domain-specific\
+        \ actor attributes via the Attributes schema."
       properties:
         id:
           type: string
         descriptor:
           $ref: '#/components/schemas/Descriptor'
         participantAttributes:
-          description: 'Domain-specific extension attributes for this contract.
-
-            Use beckn:LogisticsContract for hyperlocal physical delivery. Use the generic Attributes schema for
-
-            other fulfillment types where no well-known domain schema exists.'
-          allOf:
-          - $ref: '#/components/schemas/Attributes'
-          - properties: {}
+          description: 'Domain-specific extension attributes for this participant.'
+          $ref: '#/components/schemas/Attributes'
 
     GeoJSONGeometry:
-      description: "**GeoJSON geometry** per RFC 7946. Coordinates are in **EPSG:4326 (WGS-84)** and MUST follow **[longitude, latitude, (altitude?)]** order.\nSupported types: - Point, LineString, Polygon - MultiPoint, MultiLineString, MultiPolygon - GeometryCollection (uses `geometries` instead of `coordinates`)\nNotes: - For rectangles, use a Polygon with a single linear ring where the first\n and last positions are identical.\n- Circles are **not native** to GeoJSON. For circular searches, use\n `SpatialConstraint` with `op: s_dwithin` and a Point + `distanceMeters`,\n or approximate the circle as a Polygon.\n- Optional `bbox` is `[west, south, east, north]` in degrees."
+      description: "A GeoJSON geometry object per RFC 7946, representing the spatial\
+        \ shape of a geographic feature such as a point location, a route, a service\
+        \ area polygon, or a collection of geometric shapes.\n\nGeoJSONGeometry appears\
+        \ wherever spatial coordinates are needed in the value-exchange lifecycle,\
+        \ including provider and resource locations in Catalog, delivery locations\
+        \ in Performance, and spatial constraint reference geometries in SpatialConstraint\
+        \ within DiscoverAction. Both BAPs and BPPs produce and consume it depending\
+        \ on context.\n\nCoordinates MUST be in EPSG:4326 (WGS-84) and MUST follow\
+        \ longitude, latitude, optional altitude order as specified in RFC 7946. Supported\
+        \ geometry types are Point, LineString, Polygon, MultiPoint, MultiLineString,\
+        \ MultiPolygon, and GeometryCollection. For circular search areas, callers\
+        \ MUST use SpatialConstraint with op S_DWITHIN and a Point plus distanceMeters\
+        \ rather than attempting to express a circle as a geometry type.\n\nRelationship:\
+        \ Used by composition within the Location schema for geographic positioning\
+        \ and within SpatialConstraint as the reference geometry for spatial predicates."
       title: GeoJSONGeometry
       type: object
       properties:
@@ -2534,32 +3314,24 @@ components:
       additionalProperties: true
 
     Performance:
-      description: 'Generalized execution/performance unit. This is where downstream objects bind:
-
-        - Fulfillment-like details (where/when/how)
-
-        - Tracking handles
-
-        - Support touchpoints
-
-        - Status updates
-
-
-        A minimal envelope that carries identity, status, and a performanceAttributes
-
-        bag that holds the concrete domain-specific delivery schema.
-
-
-        Domain specification authors can attach rich context and types via `performanceAttributes`.
-
-
-        For example, Hyperlocal delivery details (pickup/delivery locations, items shipped, agent, etc.)
-
-        are placed inside performanceAttributes using a well-known domain schema such as
-
-        HyperlocalDelivery. Use the generic Attributes schema when no well-known
-
-        domain schema exists.'
+      description: "A domain-neutral execution unit within a Contract that describes\
+        \ how a specific commitment will be fulfilled, including when and where delivery\
+        \ or service provisioning occurs, the current execution status, and linkage\
+        \ to tracking and support interactions.\n\nPerformance appears in the fulfillment\
+        \ phase of the value-exchange lifecycle, introduced by the BPP in OnConfirmAction\
+        \ and updated in OnStatusAction and OnUpdateAction callbacks. The BAP consumes\
+        \ performance records to present fulfillment progress to the consumer; the\
+        \ BPP updates them as execution proceeds.\n\nPerformance is domain-neutral\
+        \ and can represent physical delivery, service provisioning, API access activation,\
+        \ subscription activation, carbon credit transfer, capacity allocation, or\
+        \ workforce onboarding. Domain-specific delivery details MUST be placed inside\
+        \ performanceAttributes using a well-known domain schema such as HyperlocalDelivery\
+        \ for hyperlocal physical delivery, or the generic Attributes schema when no\
+        \ well-known domain schema exists.\n\nRelationship: Composed within the Contract\
+        \ schema's performance array. The performanceAttributes field extends the core\
+        \ schema with domain-specific fulfillment details via the Attributes schema.\
+        \ The commitmentIds field references one or more Commitment identifiers that\
+        \ this performance unit satisfies."
       title: Fulfillment
       x-tags:
       - common
@@ -2583,21 +3355,18 @@ components:
 
     RequestDigest:
       title: Request Payload Digest
-      description: 'A cryptographic binding that explicitly ties a callback to the
-
-        specific inbound request that triggered it. Establishes bilateral non-repudiation
-
-        for the asynchronous leg of a Beckn interaction.
-
-
-        Use `lineage` (on `Context`) for cross-transaction causality.
-
-
-        Verification steps:
-
-        1. Recompute BLAKE2b-512 digest of the original request body; compare to `digest`.
-
-        2. Confirm `messageId` matches the `messageId` from the original request `Context`.'
+      description: "A cryptographic binding that ties an asynchronous callback to\
+        \ the specific inbound request that triggered it, establishing bilateral non-repudiation\
+        \ for the asynchronous leg of a Beckn interaction.\n\nRequestDigest appears\
+        \ in the Context of callback requests across all phases of the value-exchange\
+        \ lifecycle. The implementing actor (BPP or BAP) produces it by hashing the\
+        \ original inbound request body and including that hash in the callback Context;\
+        \ the receiving actor verifies it to confirm that the callback corresponds\
+        \ to the claimed original request.\n\nVerification requires two steps: recomputing\
+        \ the BLAKE2b-512 digest of the original request body and comparing it to\
+        \ the digest field, then confirming that the messageId matches the messageId\
+        \ from the original request Context.\n\nRelationship: Composed within the\
+        \ Context schema via the requestDigest property."
       type: object
       required:
       - digest
@@ -2610,7 +3379,18 @@ components:
             Format: `BLAKE-512={base64EncodedHash}`'
 
     Intent:
-      description: A declaration of an intent to transact
+      description: "A structured expression of a consumer's desire to discover resources,\
+        \ services, or providers matching specific criteria, combining free-text search,\
+        \ structured filter expressions, spatial constraints, and media-based search\
+        \ inputs.\n\nIntent appears exclusively at the start of the value-exchange\
+        \ lifecycle, within DiscoverAction. The BAP constructs it based on the consumer's\
+        \ search inputs; the CDS or BPP evaluates it against available catalog items\
+        \ to identify matching resources and offers.\n\nFabric context: When evaluated\
+        \ by the Catalog Discovery Service, the Intent is applied against the CDS's\
+        \ indexed catalog store.\n\nRelationship: Composed within the DiscoverAction\
+        \ schema as the required intent property. The spatial field composes one or\
+        \ more SpatialConstraint schemas; the mediaSearch field composes the MediaSearch\
+        \ schema."
       title: Intent
       type: object
       properties:
@@ -2645,9 +3425,16 @@ components:
       additionalProperties: false
 
     Location:
-      description: 'A place represented by GeoJSON geometry and optional address.
-
-        Source: main/schema/core/v2/attributes.yaml#Location'
+      description: "A geographic place combining a precise GeoJSON geometry with an\
+        \ optional human-readable postal address, used to express physical positions,\
+        \ service areas, delivery points, and provider operating locations.\n\nLocation\
+        \ appears throughout the value-exchange lifecycle wherever a physical place\
+        \ must be specified, including provider operating locations in Catalog, delivery\
+        \ and pickup points in Performance, and spatial constraint reference points\
+        \ in SpatialConstraint. Both BAPs and BPPs produce and consume it.\n\nRelationship:\
+        \ Composes the GeoJSONGeometry schema in the required geo field and the Address\
+        \ schema in the optional address field. Geometry is the authoritative spatial\
+        \ representation; Address is the human-readable supplement."
       type: object
       required:
       - geo
@@ -2659,7 +3446,16 @@ components:
           $ref: '#/components/schemas/Address'
 
     MediaFile:
-      description: A image, audio, or video typically intended for display purposes
+      description: "A visual or audio-visual asset associated with a Beckn entity,\
+        \ such as a product image, promotional video, or audio description, intended\
+        \ primarily for display or playback within a consumer-facing application.\n\
+        \nMediaFile appears wherever a Beckn entity requires associated visual or\
+        \ multimedia presentation across the value-exchange lifecycle, including resource\
+        \ images in Catalog and offer illustration assets. Both BAPs and BPPs produce\
+        \ and consume them via the Descriptor.mediaFile field.\n\nRelationship: Used\
+        \ by composition within the Descriptor schema via the mediaFile array. Intentionally\
+        \ kept separate from Document, which supports cryptographic metadata such as\
+        \ signatures and checksums not applicable to media assets."
       title: MediaFile
       x-tags:
       - common
@@ -2680,6 +3476,15 @@ components:
 
     MediaInput:
       type: object
+      description: "A single media asset submitted by the BAP as part of a media-based\
+        \ discovery query, enabling the CDS or BPP to find catalog items that are\
+        \ visually similar to, semantically related to, or described by the provided\
+        \ image, audio, or video.\n\nMediaInput appears exclusively within the DiscoverAction\
+        \ during the discovery phase of the value-exchange lifecycle. The BAP constructs\
+        \ it based on the consumer's media input; the CDS or BPP uses it as a search\
+        \ signal alongside textual and spatial constraints.\n\nRelationship: Composed\
+        \ within the MediaSearch schema's media array, which is itself composed within\
+        \ the Intent schema."
       required:
       - type
       - url
@@ -2709,6 +3514,15 @@ components:
 
     MediaSearch:
       type: object
+      description: "A container grouping one or more media assets and associated search\
+        \ options that the BAP submits as part of a media-based discovery query, allowing\
+        \ the CDS or BPP to perform similarity or content-extraction searches across\
+        \ indexed catalog items.\n\nMediaSearch appears exclusively within the Intent\
+        \ schema during the discovery phase of the value-exchange lifecycle. The BAP\
+        \ constructs it when the consumer initiates a discovery using a visual or audio\
+        \ reference rather than text.\n\nRelationship: Composed within the Intent\
+        \ schema via the mediaSearch field. Composes MediaInput schemas in the media\
+        \ array and MediaSearchOptions in the options field."
       properties:
         media:
           type: array
@@ -2720,6 +3534,15 @@ components:
 
     MediaSearchOptions:
       type: object
+      description: "Configuration options that govern how the CDS or BPP interprets\
+        \ and processes the media assets supplied in a MediaSearch, specifying the\
+        \ search goals and whether media signals should be combined with text search\
+        \ or used as the sole relevance criterion.\n\nMediaSearchOptions appears exclusively\
+        \ within the MediaSearch schema during the discovery phase of the value-exchange\
+        \ lifecycle. The BAP sets these options based on the consumer's search intent;\
+        \ the CDS or BPP applies them when evaluating media inputs against indexed\
+        \ catalog items.\n\nRelationship: Composed within the MediaSearch schema via\
+        \ the options field."
       properties:
         goals:
           type: array
@@ -2742,7 +3565,18 @@ components:
 
     Offer:
       type: object
-      description: "A generalized, cross-domain Offer that captures the terms under which\none or more Resources may be committed.\n\nCore intent:\n- Support multiple terms/eligibility/constraints/price points for the same Resource(s)\n- Support dynamic / on-the-fly offers (e.g., bundling, combinational discounts,\n eligibility changes, capacity-aware pricing)\n\nThis mirrors the role of Offer in current Beckn (and schema.org patterns),\nbut keeps the shape minimal and composable via `beckn:offerAttributes`."
+      description: "A domain-neutral, cross-domain structure that captures the commercial\
+        \ or transactional terms under which one or more Resources may be committed\
+        \ within a Contract, including eligibility conditions, pricing, add-ons, and\
+        \ validity constraints.\n\nOffers appear in the discovery and negotiation phases\
+        \ of the value-exchange lifecycle. The BPP produces them as part of a Catalog\
+        \ to describe how resources may be transacted; the BAP references offer identifiers\
+        \ when constructing Commitments in SelectAction, and the BPP returns updated\
+        \ offers with confirmed considerations in subsequent callbacks.\n\nRelationship:\
+        \ Composed within Catalog, Commitment, and AddOn schemas. Composes Provider,\
+        \ Consideration, and Attributes schemas. The resourceIds field references Resource\
+        \ identifiers covered by the offer. The addOns field composes AddOn schemas\
+        \ for optional supplementary items."
       required:
       - id
       properties:
@@ -2761,7 +3595,7 @@ components:
             $ref: '#/components/schemas/Resource/properties/id'
         addOns:
           type: array
-          description: IDs of optional extra Offers or Resources that can be attached.
+          description: A list of add-ons that may be included with this offer. 
           items:
             $ref: '#/components/schemas/AddOn'
         considerations:
@@ -2771,40 +3605,22 @@ components:
             $ref: '#/components/schemas/Consideration'
         validity:
           $ref: '#/components/schemas/TimePeriod'
-        availableTo:
-          type: array
-          description: 'Optional visibility constraint indicating which network participants
-
-            (by participantId / networkId / role) are allowed to discover or
-
-            transact on this entity.
-
-
-            If omitted, the entity is assumed to be visible to all participants
-
-            in the addressed network(s).'
-          items:
-            type: object
-            required:
-            - type
-            - id
-            properties:
-              type:
-                type: string
-                enum:
-                - NETWORK
-                - PARTICIPANT
-                - ROLE
-                description: Scope of visibility constraint.
-              id:
-                type: string
-                description: Identifier of the network, participant, or role.
         offerAttributes:
           $ref: '#/components/schemas/Attributes'
 
     Provider:
       type: object
-      description: Schema definition for Provider in the Beckn Protocol v2.0.1
+      description: "A registered entity on the Beckn network that makes resources\
+        \ and offers available through one or more catalogs, operating from one or\
+        \ more physical or virtual locations.\n\nProviders appear in the discovery\
+        \ phase of the value-exchange lifecycle as part of a Catalog, and persist\
+        \ through the negotiation phase as the counterparty identified in Offers. The\
+        \ BPP produces provider records; the BAP consumes them to identify and display\
+        \ the source of the resources and offers being considered.\n\nRelationship:\
+        \ Composed within the Catalog and Offer schemas. The availableAt field composes\
+        \ one or more Location schemas representing the provider's physical operating\
+        \ sites. The providerAttributes field extends the core schema with domain-specific\
+        \ attributes via the Attributes schema."
       title: Provider
       properties:
         id:
@@ -2827,7 +3643,18 @@ components:
 
     RatingInput:
       $schema: https://json-schema.org/draft/2020-12/schema
-      description: A form designed to capture rating and feedback from a user. This can be used by both BAP and BPP to fetch ratings and feedback of their respective users.
+      description: "A structured rating record that captures a consumer's numeric\
+        \ assessment and optional qualitative feedback for a specific entity associated\
+        \ with a completed contract, including the contract itself, individual resources,\
+        \ fulfillment stages, providers, agents, or support interactions.\n\nRatingInput\
+        \ appears in the post-fulfillment phase of the value-exchange lifecycle, within\
+        \ RateAction (produced by the BAP) and OnRateAction (produced by the BPP).\
+        \ The BAP submits rating inputs to record consumer feedback; the BPP may also\
+        \ return rating form definitions as RatingInput structures in preview mode\
+        \ to guide the consumer's rating submission.\n\nRelationship: Composed within\
+        \ the RateAction.ratingInputs and OnRateAction.ratings arrays. The feedbackFormSubmission\
+        \ field composes a FormSubmission schema to carry structured qualitative feedback\
+        \ alongside the numeric rating."
       title: RatingInput
       x-tags:
       - common
@@ -2856,7 +3683,19 @@ components:
 
     Resource:
       type: object
-      description: "A minimal, domain-neutral abstraction representing any discoverable,\nreferenceable, or committable unit of value, capability, service,\nentitlement, or asset within the network.\n\nExamples:\n- A retail product SKU, a mobility ride, a job role, a carbon credit unit,\n a dataset/API entitlement, a training course, a clinic service slot.\n\nDesigned for composability through `resourceAttributes` where\ndomain packs can plug in their specific fields without changing the core."
+      description: "A domain-neutral, referenceable unit of value, capability, service,\
+        \ entitlement, or asset that a provider makes available on the network and\
+        \ that a consumer may select and commit to within a Contract.\n\nResources\
+        \ appear across all phases of the value-exchange lifecycle. The BPP defines\
+        \ them in a Catalog during the discovery phase; the BAP references them in\
+        \ Commitments during the selection phase; and the BPP confirms their provisioning\
+        \ in the performance array during fulfillment. Examples include a retail product\
+        \ SKU, a mobility ride, a job role, a carbon credit unit, a dataset or API\
+        \ entitlement, a training course slot, and a clinic appointment.\n\nRelationship:\
+        \ Composed within Catalog, Commitment, and AddOn schemas. The resourceAttributes\
+        \ field extends the core schema with domain-specific resource characteristics\
+        \ via the Attributes schema, enabling domain packs to attach structured fields\
+        \ without modifying the core schema."
       required:
       - id
       properties:
@@ -2871,6 +3710,18 @@ components:
 
     Settlement:
       type: object
+      description: "A record representing the discharge of an agreed consideration\
+        \ within a Contract, tracking the progression from a draft payment intent\
+        \ through a committed payment instruction to a completed settlement.\n\nSettlements\
+        \ appear across the negotiation and fulfillment phases of the value-exchange\
+        \ lifecycle. The BAP introduces draft settlement records in ConfirmAction to\
+        \ carry payment proof or reference; the BPP updates settlement status through\
+        \ COMMITTED and COMPLETE as payment is processed and discharged.\n\nRelationship:\
+        \ Composed within the Contract schema's settlements array. The considerationId\
+        \ field references a Consideration identifier within the same Contract, linking\
+        \ the settlement to the specific value obligation being discharged. The settlementAttributes\
+        \ field extends the core schema with domain-specific payment details via the\
+        \ Attributes schema."
       properties:
         id:
           type: string
@@ -2887,13 +3738,38 @@ components:
 
     Signature:
       title: Beckn HTTP Signature
-      description: "A digitally signed authentication credential in the HTTP `Authorization` header.\nFollows draft-cavage-http-signatures-12 as profiled by BECKN-006.\n\nformat:\n```\nSignature keyId=\"{subscriberId}|{uniqueKeyId}|{algorithm}\",\n algorithm=\"{algorithm}\",created=\"{unixTimestamp}\",expires=\"{unixTimestamp}\",\n headers=\"{signedHeaders}\",signature=\"{base64Signature}\"\n```\n\n| Attribute | Description |\n|-----------|-------------|\n| `keyId` | `{subscriberId}|{uniqueKeyId}|{algorithm}` — FQDN, registry UUID, algorithm |\n| `algorithm` | MUST be `ed25519` |\n| `created` | Unix timestamp when the signature was created |\n| `expires` | Unix timestamp when the signature expires |\n| `headers` | Space-separated signed headers. MUST include `(created)`, `(expires)`, `digest` |\n| `signature` | Base64-encoded Ed25519 signature over the signing string |\n\nSigning string:\n`(created): {value}\\n(expires): {value}\\ndigest: BLAKE-512={digest}`\nwhere `digest` is a BLAKE2b-512\
-        \ hash of the request body, Base64-encoded."
+      description: "A digitally signed authentication credential transmitted in the\
+        \ HTTP Authorization header of every Beckn request, proving the identity of\
+        \ the sending network participant and ensuring the integrity of the request\
+        \ body.\n\nSignature appears in every Beckn request across all phases of the\
+        \ value-exchange lifecycle. The sending actor (BAP or BPP) produces it by\
+        \ signing a canonical signing string with its Ed25519 private key registered\
+        \ in the Beckn Registry; the receiving actor verifies it against the sender's\
+        \ registered public key to authenticate the request. Requests carrying an\
+        \ absent, expired, or unverifiable Signature MUST be rejected with a 401 NackUnauthorized\
+        \ response.\n\nThe format follows draft-cavage-http-signatures-12 as profiled\
+        \ by the Beckn authentication specification. The keyId field MUST follow the\
+        \ format subscriberId followed by uniqueKeyId followed by algorithm, separated\
+        \ by pipe characters. The algorithm MUST be ed25519. The signing string MUST\
+        \ include the created timestamp, the expires timestamp, and the BLAKE2b-512\
+        \ digest of the request body.\n\nRelationship: Extended by the CounterSignature\
+        \ schema, which applies the same wire format to the response body rather than\
+        \ the request Authorization header."
       type: string
       pattern: ^Signature keyId="[^|"]+\|[^|"]+\|[^"]+",algorithm="[^"]+",created="\d+",expires="\d+",headers="[^"]+",signature="[A-Za-z0-9+/]+=*"$
 
     Support:
-      description: Describes a support session info
+      description: "A structured record representing a consumer's request for assistance\
+        \ related to an entity associated with a contract, carrying the entity reference,\
+        \ a description of the support need, and the available or assigned support\
+        \ channels.\n\nSupport appears in the post-fulfillment phase of the value-exchange\
+        \ lifecycle, within SupportAction (produced by the BAP) and OnSupportAction\
+        \ (produced by the BPP). The BAP constructs it to describe the nature and\
+        \ target of the support request; the BPP returns it with populated channel\
+        \ details and, when a ticket has been created, the ticket reference.\n\nRelationship:\
+        \ Composed within the SupportAction and OnSupportAction schemas as the primary\
+        \ carrier. The channels field composes Attributes schemas to express domain-specific\
+        \ channel details such as phone, email, or chat endpoints."
       title: Support
       type: object
       properties:
@@ -2912,7 +3788,23 @@ components:
       additionalProperties: false
 
     SpatialConstraint:
-      description: "**Spatial predicate** using **OGC CQL2 (JSON semantics)** applied to one or more geometry targets in an item. This is where clients express spatial intent.\nKey ideas: - `targets`: one or more **JSONPath-like** pointers that locate geometry\n\n  fields within each item document (e.g., `$['availableAt'][*]['geo']`).\n- `op`: spatial operator (CQL2). Common ones:\n\n    • `S_WITHIN`     (A is completely inside B)\n    • `S_INTERSECTS` (A intersects B)\n    • `S_CONTAINS`   (A contains B)\n    • `S_DWITHIN`    (A within distance of B)\n- `geometry`: **GeoJSON** literal used as the predicate reference geometry. - `distanceMeters`: required for `S_DWITHIN` when using a GeoJSON Point/shape. - `quantifier`: if a target resolves to an array, choose whether **ANY** (default),\n\n  **ALL**, or **NONE** of elements must satisfy the predicate.\n\nCRS: unless otherwise stated, all coordinates are **EPSG:4326**.\n"
+      description: "An OGC CQL2 spatial predicate applied to one or more geometry\
+        \ fields within catalog items, expressing the spatial intent of a discovery\
+        \ request such as finding resources within a geographic area, along a route,\
+        \ or within a distance of a reference point.\n\nSpatialConstraint appears\
+        \ exclusively within the Intent schema during the discovery phase of the value-exchange\
+        \ lifecycle. The BAP constructs it to express the consumer's geographic search\
+        \ criteria; the CDS or BPP applies it as a spatial filter against catalog\
+        \ items' geometry fields.\n\nThe op field MUST be one of the standard OGC\
+        \ CQL2 spatial operators: S_WITHIN (catalog geometry is completely inside the\
+        \ constraint geometry), S_INTERSECTS (geometries overlap), S_CONTAINS (catalog\
+        \ geometry contains the constraint geometry), S_DISJOINT (geometries do not\
+        \ overlap), S_OVERLAPS, S_CROSSES, S_TOUCHES, S_EQUALS, or S_DWITHIN (catalog\
+        \ geometry is within distanceMeters of the constraint geometry). The distanceMeters\
+        \ field is required when op is S_DWITHIN. All coordinates MUST be in EPSG:4326\
+        \ unless overridden by the srid field.\n\nRelationship: Composed within the\
+        \ Intent schema's spatial array. Composes the GeoJSONGeometry schema in the\
+        \ geometry field as the reference geometry for the spatial predicate."
       title: SpatialConstraint
       type: object
       properties:
@@ -2966,7 +3858,15 @@ components:
       - common
 
     TimePeriod:
-      description: Time window with date-time precision for availability/validity
+      description: "A temporal window defined by start and end boundaries that constrains\
+        \ the period during which a catalog, offer, or resource is valid and available\
+        \ for discovery and commitment.\n\nTimePeriod appears in the discovery and\
+        \ negotiation phases of the value-exchange lifecycle, within Catalog.validity\
+        \ and Offer.validity. The BPP assigns validity windows to catalog and offer\
+        \ entries; the BAP consumes them to determine whether a catalog or offer is\
+        \ currently available. At least one of startDate, endDate, or a startTime\
+        \ and endTime pair MUST be provided.\n\nRelationship: Used by composition\
+        \ within the Catalog and Offer schemas via the validity field."
       title: TimePeriod
       x-tags:
       - common
@@ -3000,7 +3900,18 @@ components:
       additionalProperties: false
 
     Tracking:
-      description: Information regarding live tracking of the fufillment of a contract
+      description: "A handle that provides the BAP with the URL or WebSocket endpoint\
+        \ needed to subscribe to real-time position and progress updates for an active\
+        \ fulfillment stage of a confirmed contract.\n\nTracking appears in the fulfillment\
+        \ phase of the value-exchange lifecycle, within TrackAction (produced by the\
+        \ BAP) and OnTrackAction (produced by the BPP). The BPP produces it when a\
+        \ /track request is received, supplying the live data stream endpoint and\
+        \ indicating whether tracking is currently active or inactive; the BAP consumes\
+        \ it to connect to the real-time data stream.\n\nRelationship: Composed within\
+        \ the TrackAction and OnTrackAction schemas as the primary carrier. The contract\
+        \ field composes the Contract schema (with a required id) to identify the\
+        \ contract being tracked. The trackingAttributes field extends the core schema\
+        \ with domain-specific tracking metadata via the Attributes schema."
       title: Tracking
       type: object
       properties:
@@ -3027,7 +3938,16 @@ components:
       - status
 
     Ack:
-      description: New v2.0 Ack format carrying an HTTP Counter-Signature proving the receiver authenticated, received, and processed the inbound request.
+      description: "The synchronous acknowledgement body returned by the implementing\
+        \ actor (BPP or BAP) for every accepted Beckn request, carrying the processing\
+        \ status and a CounterSignature that proves authenticated receipt.\n\nAck appears\
+        \ as the response body for every 200 response across all phases of the value-exchange\
+        \ lifecycle. The implementing actor produces it synchronously upon accepting\
+        \ a request; the calling actor verifies the CounterSignature to confirm that\
+        \ its request was authenticated and accepted for asynchronous processing.\n\
+        \nRelationship: Extended by the AckNoCallback and NackBadRequest schemas for\
+        \ specific response conditions. Composes the CounterSignature schema in the\
+        \ required signature field."
       type: object
       properties:
         status:
@@ -3044,7 +3964,19 @@ components:
       - signature
 
     AckNoCallback:
-      description: Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider closed, context.try preview complete).
+      description: "The synchronous response body returned when the implementing actor\
+        \ has authenticated and received the request but has determined that no asynchronous\
+        \ callback will follow, for example because no matching catalog was found,\
+        \ inventory is unavailable, the provider is closed, or a context.try preview\
+        \ has been completed without committing state.\n\nAckNoCallback appears as\
+        \ the response body for 409 responses across all phases of the value-exchange\
+        \ lifecycle where the endpoint supports this response code. The implementing\
+        \ actor (BPP or CDS) produces it; the calling actor (BAP or BPP) consumes\
+        \ the error field to understand why no callback will follow and to decide\
+        \ whether to modify and resubmit the request.\n\nRelationship: Extends the\
+        \ Ack schema, inheriting status and signature fields and adding a required\
+        \ error field composed of an Error schema explaining why no callback will be\
+        \ sent."
       allOf:
       - $ref: '#/components/schemas/Ack'
       - type: object
@@ -3057,7 +3989,15 @@ components:
         - error
 
     NackBadRequest:
-      description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
+      description: "The synchronous rejection body returned when the request body\
+        \ is structurally invalid, missing required fields, or carries a value that\
+        \ fails semantic validation, indicating that the implementing actor has not\
+        \ processed the request.\n\nNackBadRequest appears as the response body for\
+        \ 400 responses across all phases of the value-exchange lifecycle. The implementing\
+        \ actor (BPP, BAP, or Fabric service) produces it; the calling actor MUST\
+        \ correct the request before retrying.\n\nRelationship: Extends the Ack schema\
+        \ with status constrained to NACK and adds an error field composed of an Error\
+        \ schema describing the validation failure."
       allOf:
       - $ref: '#/components/schemas/Ack'
       - type: object
@@ -3069,7 +4009,16 @@ components:
             $ref: '#/components/schemas/Error'
 
     NackUnauthorized:
-      description: Invalid or missing authentication credentials; signature could not be verified.
+      description: "The synchronous rejection body returned when the Beckn HTTP Signature\
+        \ on the request is absent, expired, or fails verification against the sender's\
+        \ registered public key in the Beckn Registry, indicating that the implementing\
+        \ actor has not authenticated or processed the request.\n\nNackUnauthorized\
+        \ appears as the response body for 401 responses across all phases of the\
+        \ value-exchange lifecycle. The implementing actor (BPP, BAP, or Fabric service)\
+        \ produces it; the calling actor MUST correct its signing credential or key\
+        \ registration before retrying.\n\nRelationship: Extends the Ack schema with\
+        \ status constrained to NACK and adds an error field composed of an Error\
+        \ schema describing the authentication failure."
       allOf:
       - $ref: '#/components/schemas/Ack'
       - type: object
@@ -3081,7 +4030,15 @@ components:
             $ref: '#/components/schemas/Error'
 
     ServerError:
-      description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
+      description: "The response body returned when an unexpected internal failure\
+        \ on the implementing actor's application prevented the request from being\
+        \ processed, indicating a transient server-side error rather than a client-side\
+        \ fault.\n\nServerError appears as the response body for 500 responses across\
+        \ all phases of the value-exchange lifecycle. The implementing actor produces\
+        \ it; the calling actor SHOULD treat it as a transient error and MAY retry\
+        \ the request after a suitable backoff interval.\n\nRelationship: Composes\
+        \ the optional Error schema via the error field to carry additional diagnostic\
+        \ detail when available."
       type: object
       properties:
         error:
@@ -3089,15 +4046,19 @@ components:
 
     CatalogSubscribeAction:
       type: object
-      description: 'Message payload for catalog/subscription.
-
-        At least one of `networkIds` or `schemaTypes` must be non-empty.
-
-        An empty `schemaTypes` array is treated as the wildcard sentinel `"*"`,
-
-        matching all schema types for the specified networks.
-
-        '
+      description: "The real-world act by which the BAP declares its subscription\
+        \ preferences to the Catalog Discovery Service, specifying which networks and\
+        \ schema types it wishes to receive ongoing catalog delivery callbacks for.\n\
+        \nThis schema appears in the Catalog Publishing phase of the value-exchange\
+        \ lifecycle. The BAP produces it as the message payload of a /catalog/subscription\
+        \ request; the CDS consumes it to create and persist a subscription record\
+        \ that governs future catalog delivery.\n\nFabric context: Processed by the\
+        \ Catalog Discovery Service, which persists the subscription and uses it to\
+        \ determine which newly indexed catalogs to deliver to the subscriber.\n\n\
+        At least one networkId MUST be provided. An empty schemaTypes array is treated\
+        \ as a wildcard matching all schema types for the specified networks.\n\nRelationship:\
+        \ The subscription object within this action composes a DeliveryPolicy schema\
+        \ for retry and timeout configuration."
       required:
       - subscription
       properties:
@@ -3125,7 +4086,20 @@ components:
 
     CatalogSubscription:
       type: object
-      description: Full subscription record
+      description: "The persisted subscription record held by the Catalog Discovery\
+        \ Service, representing a BAP's declared interest in receiving catalog delivery\
+        \ callbacks for specific networks and schema types, along with its current\
+        \ lifecycle status and delivery configuration.\n\nCatalogSubscription appears\
+        \ in the Catalog Publishing phase. The CDS produces it as a response to /catalog/subscription\
+        \ (creation), /catalog/subscriptions (listing), /catalog/subscription/{id}\
+        \ (retrieval), and DELETE /catalog/subscription/{id} (deactivation). The BAP\
+        \ consumes it to confirm subscription state and delivery configuration.\n\n\
+        Fabric context: Managed exclusively by the Catalog Discovery Service, which\
+        \ evaluates ACTIVE subscriptions against newly indexed catalogs to determine\
+        \ delivery targets.\n\nRelationship: Composes a DeliveryPolicy schema for\
+        \ retry and timeout configuration. The status field MUST be one of ACTIVE\
+        \ (subscription is matched during evaluation), INACTIVE (temporarily paused),\
+        \ or DELETED (soft-deleted; no longer matched)."
       required:
       - id
       - status
@@ -3166,7 +4140,16 @@ components:
 
     DeliveryPolicy:
       type: object
-      description: Callback delivery retry configuration
+      description: "The retry and timeout configuration governing how the Catalog\
+        \ Discovery Service attempts to deliver catalog callbacks to a subscriber's\
+        \ callback URL, including per-request timeout, maximum payload size, and exponential\
+        \ backoff parameters.\n\nDeliveryPolicy appears in the Catalog Publishing\
+        \ phase. The BAP provides it within a CatalogSubscribeAction to configure\
+        \ delivery behavior; the CDS persists it as part of the CatalogSubscription\
+        \ record and applies it when delivering on_discover callbacks to the subscriber.\n\
+        \nFabric context: Applied exclusively by the Catalog Discovery Service when\
+        \ delivering catalog payloads to subscribers.\n\nRelationship: Composed within\
+        \ CatalogSubscribeAction and CatalogSubscription schemas."
       properties:
         timeoutSeconds:
           type: integer
@@ -3197,7 +4180,14 @@ components:
 
     Pagination:
       type: object
-      description: Pagination metadata returned with list responses
+      description: "Metadata accompanying a paginated list response that describes\
+        \ the size, position, and count of the returned result set, enabling callers\
+        \ to navigate through large result sets using offset-based pagination.\n\n\
+        Pagination appears in list responses such as /catalog/subscriptions and /catalog/master/search.\
+        \ The Catalog Discovery Service and Catalog Indexer Job produce it; the BAP\
+        \ or BPP consumes it to determine whether additional pages are available and\
+        \ to construct subsequent requests.\n\nRelationship: Composed within the response\
+        \ message objects of /catalog/subscriptions and /catalog/master/search endpoints."
       properties:
         count:
           type: integer
@@ -3211,7 +4201,16 @@ components:
 
     MasterSearchAction:
       type: object
-      description: Message payload for catalog/master_search
+      description: "The real-world act by which a caller queries the Catalog Indexer\
+        \ Job for canonical master catalog items stored in the git repository, applying\
+        \ optional network and schema type filters with pagination control.\n\nThis\
+        \ schema appears in the Master Resource Search phase. The BAP or BPP produces\
+        \ it as the message payload of a /catalog/master/search request; the Catalog\
+        \ Indexer Job consumes it to filter and return matching master items with pagination\
+        \ metadata.\n\nFabric context: Processed by the Catalog Indexer Job, which\
+        \ queries its canonical git repository for matching master catalog items.\n\
+        \nRelationship: Composed as the message payload of the /catalog/master/search\
+        \ request body."
       properties:
         filters:
           type: object
@@ -3244,7 +4243,17 @@ components:
 
     CatalogPullAction:
       type: object
-      description: Message payload for catalog/pull
+      description: "The real-world act by which the BAP initiates an asynchronous\
+        \ bulk catalog retrieval from the Catalog Indexer Job, specifying whether\
+        \ to retrieve the latest version of each matching catalog (FULL mode) or all\
+        \ catalog versions within a date range (INCREMENTAL mode).\n\nThis schema\
+        \ appears in the Catalog Pull phase. The BAP produces it as the message payload\
+        \ of a /catalog/pull request; the Catalog Indexer Job consumes it to process\
+        \ the pull request asynchronously and deliver results via a callback to the\
+        \ BAP's on_catalog_pull endpoint.\n\nFabric context: Processed by the Catalog\
+        \ Indexer Job, which retrieves matching catalogs from its store and delivers\
+        \ them asynchronously.\n\nRelationship: Composed as the message payload of\
+        \ the /catalog/pull request body."
       required:
       - mode
       properties:
@@ -3290,13 +4299,17 @@ components:
 
     PullResultFile:
       type: object
-      description: 'JSON body of `GET /catalog/pull/result/{requestId}/catalogs.json`.
-
-        Same structure as the inline `catalog` array in the callback payload —
-
-        a list of distribution-envelope catalog objects.
-
-        '
+      description: "The JSON body served at GET /catalog/pull/result/{requestId}/catalogs.json\
+        \ when the catalog pull payload exceeds the configured inline threshold and\
+        \ was written to disk by the Catalog Indexer Job rather than delivered inline\
+        \ in the callback body.\n\nPullResultFile appears in the Catalog Pull phase.\
+        \ The Catalog Indexer Job produces it and writes it to disk when the result\
+        \ exceeds the inline threshold; the BAP retrieves it by constructing the download\
+        \ URL from the requestId echoed in the pull ACK response and the objectUrl\
+        \ field in the callback.\n\nFabric context: Produced and served exclusively\
+        \ by the Catalog Indexer Job.\n\nRelationship: The catalogs array carries\
+        \ the same structure as the inline catalog array in the callback payload,\
+        \ consisting of distribution-envelope catalog objects."
       properties:
         catalogs:
           type: array
@@ -3306,31 +4319,46 @@ components:
             additionalProperties: true
   responses:
     Ack:
-      description: Synchronous receipt acknowledgement returned for every accepted Beckn request.
+      description: "The implementer has authenticated the request, accepted it for\
+        \ processing, and MUST deliver the business outcome asynchronously via the\
+        \ corresponding callback endpoint. The response body carries a CounterSignature\
+        \ proving authenticated receipt."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Ack'
     AckNoCallback:
-      description: Request received but no callback will follow (e.g. agents not found, inventory unavailable, provider closed, context.try preview complete).
+      description: "The implementer has received and authenticated the request but\
+        \ cannot produce a callback — for example, no matching catalog was found,\
+        \ inventory is unavailable, the provider is closed, or context.try preview\
+        \ has been completed without committing state. The response body carries an\
+        \ Error explaining why no callback will follow."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AckNoCallback'
     NackBadRequest:
-      description: 'NACK — Bad Request: Malformed or invalid request; the server could not parse or validate the payload.'
+      description: "The request body is structurally invalid, missing required fields,\
+        \ or carries a value that fails semantic validation. The implementer MUST NOT\
+        \ process the request further. The caller MUST correct the request before retrying."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NackBadRequest'
     NackUnauthorized:
-      description: Invalid or missing authentication credentials; signature could not be verified.
+      description: "The Beckn HTTP Signature on the request is absent, expired, or\
+        \ fails verification against the sender's registered public key in the Beckn\
+        \ Registry. The implementer MUST NOT process the request further. The caller\
+        \ MUST correct its signing credential or key registration before retrying."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/NackUnauthorized'
     ServerError:
-      description: Internal failure on the network participant's application; the request could not be processed. The response body MAY contain an `error` object with additional details.
+      description: "An unexpected internal failure prevented the implementer from\
+        \ processing the request. The caller SHOULD treat this as a transient error\
+        \ and MAY retry after a backoff interval. The response body MAY contain an\
+        \ error object with additional diagnostic detail."
       content:
         application/json:
           schema:
