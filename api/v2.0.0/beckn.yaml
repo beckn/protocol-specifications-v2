@@ -1238,6 +1238,233 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /dispute:
+    post:
+      summary: An NP raises a dispute against a contract
+      description: "STUB — DRAFT. Either network participant — the CN or the PN —\
+        \ MAY raise a dispute against a confirmed contract or one of its associated\
+        \ entities (a settlement, a fulfillment stage, or a commitment). The initiating\
+        \ NP submits a dispute record to the counterparty NP, which opens or links a\
+        \ dispute case.\n\nAdditional preconditions: The initiating NP MUST hold a\
+        \ confirmed Contract id before this endpoint may be called.\n\nThe message\
+        \ MUST contain a DisputeAction carrying a Dispute object that describes the\
+        \ nature of the grievance and the reference to the disputed entity.\n\nCallback\
+        \ relationship: After processing the dispute, the receiving NP MUST send an\
+        \ /on_dispute callback to the initiating NP returning the opened or linked\
+        \ dispute case details. The initiating NP MUST correlate the callback using\
+        \ the messageId from Context.\n\nResponse codes: Ack, AckNoCallback, NackBadRequest,\
+        \ NackUnauthorized, ServerError.\n\nThis endpoint is a draft stub introduced\
+        \ under NFH-014 (Resolving Disputes) and is subject to change before release."
+      operationId: dispute
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: dispute
+                message:
+                  $ref: '#/components/schemas/DisputeAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '403':
+          $ref: '#/components/responses/NackDiscretionary'
+        '202':
+          $ref: '#/components/responses/AckNoCallback'
+        '429':
+          $ref: '#/components/responses/NackTooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_dispute:
+    post:
+      summary: The receiving NP returns dispute case details
+      description: "STUB — DRAFT. The NP that received the dispute calls this endpoint\
+        \ on the initiating NP, delivering the opened or linked dispute case including\
+        \ its current status and any resolution details.\n\nAdditional preconditions:\
+        \ A /dispute request MUST have been sent by the initiating NP and accepted\
+        \ (200 Ack) by the receiving NP before this callback is triggered. The receiving\
+        \ NP MAY also send proactive /on_dispute callbacks when a dispute case changes\
+        \ state.\n\nThe message MUST contain an OnDisputeAction carrying a Dispute\
+        \ object with the case reference and current status.\n\nCallback relationship:\
+        \ This endpoint is triggered by the receiving NP in response to a /dispute\
+        \ request. The initiating NP MUST use the messageId in Context to correlate\
+        \ this callback with the originating /dispute call.\n\nResponse codes: Ack,\
+        \ NackBadRequest, NackUnauthorized, ServerError.\n\nThis endpoint is a draft\
+        \ stub introduced under NFH-014 (Resolving Disputes) and is subject to change\
+        \ before release."
+      operationId: onDispute
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/CallbackAuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_dispute
+                message:
+                  $ref: '#/components/schemas/OnDisputeAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '429':
+          $ref: '#/components/responses/NackTooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /invoice:
+    post:
+      summary: An NP raises an invoice to a counterparty
+      description: "STUB — DRAFT. Either network participant — the CN or the PN —\
+        \ MAY, acting as issuer, raise an invoice to a counterparty NP by submitting\
+        \ a statement of the incoming and outgoing amounts owed between them against\
+        \ one or more orders and the resulting net outstanding amount, which the counterparty\
+        \ NP uses to acknowledge, commit, settle, dispute, or cancel the account.\n\n\
+        Additional preconditions: The issuing NP MUST reference at least one confirmed\
+        \ Contract id in the invoice statement before this endpoint may be called.\n\
+        \nThe message MUST contain an InvoiceAction carrying the Invoice whose statement\
+        \ reflects the stated account. The same invoice MAY be re-raised any number\
+        \ of times to reflect a running account, including periodic (for example T+x\
+        \ or end-of-month) net settlement.\n\nCallback relationship: After processing\
+        \ the invoice, the counterparty NP MUST send an /on_invoice callback to the\
+        \ issuing NP returning the updated invoice with its status and remaining outstanding\
+        \ amount. The issuing NP MUST correlate the callback using the messageId from\
+        \ Context.\n\nResponse codes: Ack, AckNoCallback, NackBadRequest, NackUnauthorized,\
+        \ ServerError.\n\nThis endpoint is a draft stub introduced under NFH-015 (Invoicing\
+        \ and Settlements) and is subject to change before release."
+      operationId: invoice
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: invoice
+                message:
+                  $ref: '#/components/schemas/InvoiceAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '403':
+          $ref: '#/components/responses/NackDiscretionary'
+        '202':
+          $ref: '#/components/responses/AckNoCallback'
+        '429':
+          $ref: '#/components/responses/NackTooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /on_invoice:
+    post:
+      summary: The counterparty NP returns the updated invoice
+      description: "STUB — DRAFT. The NP that received the invoice calls this endpoint\
+        \ on the issuing NP, delivering the updated invoice whose status and outstanding\
+        \ amount reflect its acknowledgement, commitment, settlement, dispute, or cancellation\
+        \ of the stated account.\n\nAdditional preconditions: An /invoice request MUST\
+        \ have been sent by the issuing NP and accepted (200 Ack) by the counterparty\
+        \ NP before this callback is triggered. The counterparty NP MAY also send proactive\
+        \ /on_invoice callbacks when the invoice status changes asynchronously.\n\nThe\
+        \ message MUST contain an OnInvoiceAction carrying the Invoice with its updated\
+        \ status and outstanding amount.\n\nCallback relationship: This endpoint is\
+        \ triggered by the counterparty NP in response to an /invoice request. The issuing\
+        \ NP MUST use the messageId in Context to correlate this callback with the originating\
+        \ /invoice call.\n\nResponse codes: Ack, NackBadRequest, NackUnauthorized, ServerError.\n\
+        \nThis endpoint is a draft stub introduced under NFH-015 (Invoicing and Settlements)\
+        \ and is subject to change before release."
+      operationId: onInvoice
+      tags:
+      - Post-Fulfillment
+      parameters:
+      - $ref: '#/components/parameters/CallbackAuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - context
+              - message
+              properties:
+                context:
+                  allOf:
+                  - $ref: '#/components/schemas/Context'
+                  - type: object
+                    properties:
+                      action:
+                        type: string
+                        const: on_invoice
+                message:
+                  $ref: '#/components/schemas/OnInvoiceAction'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ack'
+        '400':
+          $ref: '#/components/responses/NackBadRequest'
+        '401':
+          $ref: '#/components/responses/NackUnauthorized'
+        '429':
+          $ref: '#/components/responses/NackTooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /catalog/publish:
     post:
       summary: PN publishes catalogs for indexing by the CS
@@ -2094,16 +2321,32 @@ components:
         \ value-exchange lifecycle. The CN produces it as the message payload of a\
         \ /cancel request; the PN consumes it to determine whether to preview cancellation\
         \ terms (context.try true) or execute the cancellation (context.try false).\n\
-        \nRelationship: Composes the Contract schema as its primary carrier. The Contract\
-        \ MUST include an id identifying the active contract to be cancelled."
+        \nRelationship: Composes the Contract, Invoice, or Dispute schema as its primary\
+        \ carrier; at least one MUST be present, and each carried object MUST include\
+        \ an id identifying the entity to be cancelled."
       properties:
         contract:
           allOf:
           - $ref: '#/components/schemas/Contract'
           - required:
             - id
-      required:
+        invoice:
+          allOf:
+          - $ref: '#/components/schemas/Invoice'
+          - required:
+            - id
+        dispute:
+          allOf:
+          - $ref: '#/components/schemas/Dispute'
+          - required:
+            - id
+      anyOf:
+      - required:
         - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     CatalogPublishAction:
       description: "The real-world act by which a PN submits one or more catalogs\
@@ -2299,6 +2542,25 @@ components:
       required:
       - intent
 
+    DisputeAction:
+      title: Dispute Action
+      description: "STUB — DRAFT. The real-world act by which a network participant\
+        \ (the CN or the PN) raises a dispute against a confirmed contract or one of\
+        \ its associated entities, submitting a grievance that the counterparty uses\
+        \ to open or link a dispute case.\n\nThis schema appears in the post-performance\
+        \ phase of the value-exchange lifecycle. The initiating NP produces it as the\
+        \ message payload of a /dispute request; the receiving NP consumes it to open\
+        \ or link a dispute case and return the details.\n\nRelationship: Composes\
+        \ the Dispute schema as its primary carrier. This is a draft stub introduced\
+        \ under NFH-014 (Resolving Disputes) and is subject to change before release."
+      type: object
+      additionalProperties: false
+      properties:
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      required:
+      - dispute
+
     InitAction:
       title: Init Action
       description: "The real-world act by which the CN provides the consumer's billing\
@@ -2327,16 +2589,26 @@ components:
         \ post-performance phases of the value-exchange lifecycle. The PN produces\
         \ it as the message payload of an /on_cancel callback; the CN consumes it\
         \ to inform the consumer of cancellation terms or to update the locally held\
-        \ contract state to CANCELLED.\n\nRelationship: Composes the Contract schema\
-        \ as its primary carrier. When cancellation has been executed, the Contract\
-        \ status code MUST be CANCELLED and the settlements array MUST reflect any\
-        \ applicable refunds or penalties."
+        \ contract state to CANCELLED.\n\nRelationship: Composes the Contract, Invoice,\
+        \ or Dispute schema as its primary carrier; at least one MUST be present. When\
+        \ a Contract cancellation has been executed, the Contract status code MUST be\
+        \ CANCELLED and the settlements array MUST reflect any applicable refunds or\
+        \ penalties."
       additionalProperties: false
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
-      required:
-      - contract
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      anyOf:
+      - required:
+        - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     OnConfirmAction:
       title: OnConfirmAction
@@ -2381,6 +2653,25 @@ components:
           items:
             $ref: '#/components/schemas/Catalog'
       additionalProperties: false
+
+    OnDisputeAction:
+      title: On Dispute Action
+      description: "STUB — DRAFT. The real-world act by which the receiving NP returns\
+        \ the opened or linked dispute case to the initiating NP, carrying the case\
+        \ reference, current status, and any resolution details.\n\nThis schema appears\
+        \ in the post-performance phase of the value-exchange lifecycle. The receiving\
+        \ NP produces it as the message payload of an /on_dispute callback; the initiating\
+        \ NP consumes it to track the dispute case to resolution.\n\nRelationship:\
+        \ Composes the Dispute schema as its primary carrier. This is a draft stub\
+        \ introduced under NFH-014 (Resolving Disputes) and is subject to change before\
+        \ release."
+      type: object
+      additionalProperties: false
+      properties:
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      required:
+      - dispute
 
     OnInitAction:
       title: On Init Action
@@ -2441,6 +2732,25 @@ components:
       required:
       - contract
 
+    OnInvoiceAction:
+      title: On Invoice Action
+      description: "STUB — DRAFT. The real-world act by which the counterparty NP returns\
+        \ the updated invoice to the issuing NP, reflecting its acknowledgement, commitment,\
+        \ settlement, dispute, or cancellation of the stated account.\n\nThis schema\
+        \ appears in the post-performance phase of the value-exchange lifecycle. The\
+        \ counterparty NP produces it as the message payload of an /on_invoice callback;\
+        \ the issuing NP consumes it to record the agreed state of the account and the\
+        \ remaining outstanding amount.\n\nRelationship: Composes the Invoice schema\
+        \ as its primary carrier, whose status and outstanding fields reflect the updated\
+        \ settlement state. This is a draft stub introduced under NFH-015 (Invoicing\
+        \ and Settlements) and is subject to change before release."
+      additionalProperties: false
+      properties:
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+      required:
+      - invoice
+
     OnStatusAction:
       title: On Status Action
       description: "The real-world act by which the PN communicates the current\
@@ -2451,15 +2761,25 @@ components:
         \ CN consumes it to update the displayed contract state for the consumer.\
         \ This schema covers significant lifecycle state changes only; real-time position\
         \ tracking uses Tracking via OnTrackAction.\n\nRelationship: Composes the\
-        \ Contract schema as its primary carrier. The Contract MUST include the current\
-        \ status descriptor and updated performance array reflecting the latest fulfillment\
+        \ Contract, Invoice, or Dispute schema as its primary carrier; at least one\
+        \ MUST be present. When a Contract is carried it MUST include the current status\
+        \ descriptor and updated performance array reflecting the latest fulfillment\
         \ state."
       additionalProperties: false
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
-      required:
-      - contract
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      anyOf:
+      - required:
+        - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     OnSupportAction:
       title: On Support Action
@@ -2510,15 +2830,25 @@ components:
         \ The PN produces it as the message payload of an /on_update callback; the\
         \ CN consumes it to update the locally held contract state or to present\
         \ revised terms to the consumer before committing.\n\nRelationship: Composes\
-        \ the Contract schema as its primary carrier. The Contract reflects the updated\
-        \ state including any changes to commitments, consideration amounts, or performance\
+        \ the Contract, Invoice, or Dispute schema as its primary carrier; at least\
+        \ one MUST be present. The carried object reflects the updated state, for a\
+        \ Contract including any changes to commitments, consideration amounts, or performance\
         \ details."
       additionalProperties: false
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
-      required:
-      - contract
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      anyOf:
+      - required:
+        - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     RateAction:
       title: RateAction
@@ -2560,6 +2890,29 @@ components:
       required:
       - contract
 
+    InvoiceAction:
+      title: Invoice Action
+      description: "STUB — DRAFT. The real-world act by which a network participant\
+        \ (the CN or the PN), acting as issuer, raises an invoice to a counterparty\
+        \ NP, submitting the statement of incoming and outgoing amounts against one\
+        \ or more orders and the resulting net outstanding amount.\n\nThis schema appears\
+        \ in the post-performance phase of the value-exchange lifecycle. The issuing\
+        \ NP produces it as the message payload of an /invoice request; the counterparty\
+        \ NP consumes it to acknowledge, commit, settle, dispute, or cancel the invoice,\
+        \ returning the updated invoice via /on_invoice. The same invoice MAY be re-raised\
+        \ any number of times to reflect a running account.\n\nRelationship: Composes\
+        \ the Invoice schema as its primary carrier. The Invoice MUST include an id\
+        \ and at least one statement entry. This is a draft stub introduced under NFH-015\
+        \ (Invoicing and Settlements) and is subject to change before release."
+      properties:
+        invoice:
+          allOf:
+          - $ref: '#/components/schemas/Invoice'
+          - required:
+            - costBreakup
+      required:
+      - invoice
+
     StatusAction:
       title: Status Action
       description: "The real-world act by which the CN polls the PN for the current\
@@ -2570,16 +2923,32 @@ components:
         \ it to locate the contract and return its current state via /on_status. CNs\
         \ SHOULD NOT use repeated status calls for continuous monitoring; the PN\
         \ MAY push proactive /on_status callbacks for significant state changes.\n\
-        \nRelationship: Composes the Contract schema as its primary carrier. The Contract\
-        \ MUST include an id identifying the active contract to be queried."
+        \nRelationship: Composes the Contract, Invoice, or Dispute schema as its primary\
+        \ carrier; at least one MUST be present, and each carried object MUST include\
+        \ an id identifying the entity whose current state is to be queried."
       properties:
         contract:
           allOf:
           - $ref: '#/components/schemas/Contract'
           - required:
             - id
-      required:
-      - contract
+        invoice:
+          allOf:
+          - $ref: '#/components/schemas/Invoice'
+          - required:
+            - id
+        dispute:
+          allOf:
+          - $ref: '#/components/schemas/Dispute'
+          - required:
+            - id
+      anyOf:
+      - required:
+        - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     SupportAction:
       title: Support Action
@@ -2628,15 +2997,24 @@ components:
         \ produces it as the message payload of an /update request; the PN consumes\
         \ it to compute revised terms (when context.try is true) or to apply and confirm\
         \ the mutation (when context.try is false).\n\nRelationship: Composes the\
-        \ Contract schema as its primary carrier. The Contract MUST include the id\
-        \ of the active contract being mutated and MUST reflect the desired post-mutation\
-        \ state of the relevant fields."
+        \ Contract, Invoice, or Dispute schema as its primary carrier; at least one\
+        \ MUST be present. The carried object MUST include the id of the entity being\
+        \ mutated and MUST reflect the desired post-mutation state of the relevant fields."
       additionalProperties: false
       properties:
         contract:
           $ref: '#/components/schemas/Contract'
-      required:
-      - contract
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        dispute:
+          $ref: '#/components/schemas/Dispute'
+      anyOf:
+      - required:
+        - contract
+      - required:
+        - invoice
+      - required:
+        - dispute
 
     AddOn:
       description: "An optional supplementary resource or offer that the consumer\
@@ -3808,6 +4186,181 @@ components:
         resourceAttributes:
           description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
           $ref: '#/components/schemas/Attributes'
+
+    Dispute:
+      type: object
+      description: "STUB — DRAFT. A record representing a grievance raised by a network\
+        \ participant against a confirmed contract or one of its associated entities\
+        \ (a settlement, a fulfillment stage, a commitment, or the counterparty), tracking\
+        \ the case from when it is opened through to its resolution.\n\nDispute appears\
+        \ in the post-performance phase of the value-exchange lifecycle. Either NP\
+        \ (the CN or the PN) introduces a draft dispute record in DisputeAction; the\
+        \ receiving NP opens or links a case and updates its status through to resolution\
+        \ via OnDisputeAction.\n\nRelationship: Carried by the DisputeAction and OnDisputeAction\
+        \ schemas. The contractId field references the Contract under dispute. The\
+        \ disputeAttributes field extends the core schema with domain-specific dispute\
+        \ details via the Attributes schema. This is a draft stub introduced under\
+        \ NFH-014 (Resolving Disputes) and is subject to change before release."
+      properties:
+        id:
+          type: string
+          description: Globally unique identifier of the dispute case.
+        contractId:
+          $ref: '#/components/schemas/Contract/properties/id'
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        status:
+          type: string
+          enum:
+          - OPEN
+          - UNDER_REVIEW
+          - RESOLVED
+          - REJECTED
+        disputeAttributes:
+          $ref: '#/components/schemas/Attributes'
+
+    PriceSpecification:
+      type: object
+      title: PriceSpecification
+      description: "An itemized monetary specification carrying a net value, its currency,\
+        \ and an optional set of components that break the value down into typed parts\
+        \ such as units, taxes, fees, discounts, and surcharges. Mirrors the canonical\
+        \ Beckn PriceSpecification at https://schema.beckn.io/PriceSpecification/v2.1,\
+        \ extended with an optional contractId so that, within an Invoice cost breakup,\
+        \ a line item can reference the order it concerns.\n\nWithin an Invoice cost breakup,\
+        \ each PriceSpecification is one line item: its value is the total for that line\
+        \ and its contractId, when present, identifies the order. Values are signed —\
+        \ an amount owed to the payee is positive and an amount the payee owes is negative\
+        \ — so the invoice's net amount payable is the signed sum of its line items.\n\
+        \nRelationship: Composed by the Invoice schema within its costBreakup array, and\
+        \ RECOMMENDED for monetary considerations within Consideration.considerationAttributes."
+      additionalProperties: true
+      properties:
+        currency:
+          description: ISO 4217 currency code.
+          type: string
+        value:
+          description: The net value of this price specification. Within an Invoice
+            cost breakup this is the total for the line item, signed from the payee's
+            perspective.
+          type: number
+        contractId:
+          description: The order (Contract) this line item concerns. Omitted for a
+            charge not tied to a specific order, such as an agreed buyer-finder fee,
+            which MAY instead reference a separate contract between the parties.
+          $ref: '#/components/schemas/Contract/properties/id'
+        components:
+          description: Optional sub-components that break this line item's value down
+            into typed parts (unit price, tax, delivery, discount, fee, surcharge).
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - UNIT
+                - TAX
+                - DELIVERY
+                - DISCOUNT
+                - FEE
+                - SURCHARGE
+              value:
+                type: number
+              currency:
+                type: string
+              description:
+                type: string
+
+    Invoice:
+      type: object
+      title: Invoice
+      description: "STUB — DRAFT. A statement raised by one network participant to another\
+        \ recording, against one or more orders, the amounts owed between a payee and\
+        \ a payer and resolving to a net amount payable. Mirrors the canonical Beckn Invoice\
+        \ at https://schema.beckn.io/Invoice/v2.1, with a status field for the settlement\
+        \ lifecycle.\n\nInvoice appears in the post-performance phase of the value-exchange\
+        \ lifecycle. Any NP MAY raise an invoice against any other NP — what an invoice\
+        \ is raised for is not coupled to who raises it: a PN typically raises an invoice\
+        \ for the orders placed with it, while a CN MAY raise a separate invoice for an\
+        \ agreed buyer-finder fee. The issuing NP produces it in InvoiceAction; the counterparty\
+        \ NP commits, settles, disputes, or cancels it via OnInvoiceAction. The same invoice\
+        \ MAY be re-raised any number of times to reflect a running account, including\
+        \ periodic (for example T+x or end-of-month) net settlement.\n\nRelationship: Composes\
+        \ the Participant schema for payee and payer — rich Provider, Consumer, Person,\
+        \ or Organization identity is carried within Participant.participantAttributes —\
+        \ the Descriptor schema for status, and the PriceSpecification schema for each\
+        \ costBreakup line item. The net amount payable is the signed sum of the costBreakup\
+        \ line-item values from the payee's perspective. The current state of an Invoice\
+        \ MAY be queried via StatusAction/OnStatusAction. This is a draft stub introduced\
+        \ under NFH-015 (Invoicing and Settlements) and is subject to change before release."
+      properties:
+        id:
+          description: Stable invoice identifier (system id) assigned by the issuing
+            NP. The same id MUST be reused when an invoice is re-raised to update a
+            running account; a new id denotes a distinct invoice.
+          type: string
+        number:
+          description: Human-visible invoice number.
+          type: string
+        issueDate:
+          description: The date on which this invoice was issued.
+          type: string
+          format: date
+        dueDate:
+          description: The date by which the net amount is due, when applicable.
+          type:
+          - string
+          - 'null'
+          format: date
+        status:
+          description: The lifecycle state of this invoice, expressed as a Descriptor
+            whose code MUST be one of the standard invoice state values.
+          allOf:
+          - $ref: '#/components/schemas/Descriptor'
+          - type: object
+            properties:
+              code:
+                enum:
+                - PROFORMA
+                - COMMITTED
+                - SETTLED
+                - CANCELLED
+                - DISPUTED
+        payee:
+          description: The participant to be paid — the issuer of the account. Rich
+            identity (Provider, Consumer, Person, Organization) is carried within
+            its participantAttributes.
+          $ref: '#/components/schemas/Participant'
+        payer:
+          description: The participant that owes the net amount. Rich identity is
+            carried within its participantAttributes.
+          $ref: '#/components/schemas/Participant'
+        costBreakup:
+          description: The itemized statement. Each element is a PriceSpecification
+            line item — typically one per order (referenced by its contractId) carrying
+            that order's total, plus any line items not tied to a specific order such
+            as an agreed buyer-finder fee. The net amount payable is the signed sum of
+            the line-item values from the payee's perspective.
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceSpecification'
+        disputeId:
+          description: When status is DISPUTED, references the Dispute case raised
+            against this invoice. See NFH-014 (Resolving Disputes).
+          $ref: '#/components/schemas/Dispute/properties/id'
+        invoiceAttributes:
+          description: 'Attribute pack for tax regime (for example GST/VAT), e-invoice
+            references, settlement window (for example T+x or end-of-month), and legal
+            boilerplate.'
+          $ref: '#/components/schemas/Attributes'
+      required:
+      - id
+      - number
+      - issueDate
+      - payee
+      - payer
+      additionalProperties: false
 
     Settlement:
       type: object

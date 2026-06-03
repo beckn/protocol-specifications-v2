@@ -1,24 +1,39 @@
 # Title
 
 ## Document Details
-- **ID:** NFH-011
-- **Status:** Proposal | Draft | Candidate | Released | Deprecated.
-- **Authors:**
-  - [Ravi Prakash](https://github.com/ravi-prakash-v), [Networks for Humanity](https://networksforhumanity.org)
-- **Created:** YYYY-MM-DD
-- **Updated:** YYYY-MM-DD
-- **Version history:** Link to commit history of this document on GitHub
-- **Latest editor's draft:** Link to the document where the current working draft of this RFC can be seen
-- **Implementation report:** Not available. This document is at Initial Draft status; report will be linked in the next formal release of this RFC, following merge to main.
-- **Stress test report:** Not available. This document is at Initial Draft status; report will be linked in the next formal release of this RFC, following merge to main.
-- **Conformance impact:** Not determined. This document is at Initial Draft status; impact will be classified in the next formal release of this RFC, following merge to main.
-- **Security/privacy implications:** Document specific implications.
-- **Replaces / Relates to:** Link to previous or deprecated version of this document
-- **Feedback:** 
-  - Issues: Click [here](#)  (link to discussions page with this RFC's ID as label)
-  - Discussions: Click [here](#)  (link to discussions page with this RFC's ID as label)
-  - Pull Requests: Click [here](#)  (link to discussions page with this RFC's ID as label)
-- **Errata:** To be published.
+
+| Field | Value |
+|---|---|
+| **ID** | NFH-XXX |
+| **Publication Status** | Proposal \| Draft \| Candidate \| Released \| Deprecated |
+| **Authors** | [Ravi Prakash](https://github.com/ravi-prakash-v), [Networks for Humanity](https://networksforhumanity.org) |
+| **Created** | YYYY-MM-DD |
+| **Updated** | YYYY-MM-DD |
+| **Version history** | Draft-01 (YYYY-MM-DD): Initial publication. |
+| **Latest editor's draft** | Link to the document where the current working draft of this RFC can be seen |
+| **Implementation report** | Not available. This document is at Initial Draft status; report will be linked in the next formal release of this RFC, following merge to main. |
+| **Stress test report** | Not available. This document is at Initial Draft status; report will be linked in the next formal release of this RFC, following merge to main. |
+| **Conformance impact** | Not determined. This document is at Initial Draft status; impact will be classified in the next formal release of this RFC, following merge to main. |
+| **Security/privacy implications** | Document specific implications. |
+| **Replaces / Relates to** | Link to previous or deprecated version of this document |
+| **Feedback** | See subheadings below. |
+| **Errata** | To be published. |
+
+### Feedback
+
+#### Issues
+
+- [Open issues labelled NFH-XXX](https://github.com/beckn/protocol-specifications-v2/issues?q=is%3Aissue+label%3A%22NFH-XXX%22)
+
+#### Discussions
+
+- [GitHub Discussions labelled NFH-XXX](https://github.com/beckn/protocol-specifications-v2/discussions?discussions_q=label%3A%22NFH-XXX%22)
+
+#### Pull Requests
+
+- [Pull requests labelled NFH-XXX](https://github.com/beckn/protocol-specifications-v2/pulls?q=is%3Apr+label%3A%22NFH-XXX%22)
+
+---
 
 ## Abstract
 
