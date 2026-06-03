@@ -76,6 +76,10 @@ Examples include:
 
 Beckn remains fundamentally asynchronous. Forward actions typically receive an immediate acknowledgment, while business results flow through paired callback endpoints such as `discover → on_discover` and `confirm → on_confirm`.
 
+### Endpoints are not actor-exclusive
+
+Endpoints are **not** bound to a particular actor. Any action — the contracting lifecycle, `status`/`on_status`, `update`/`on_update`, `cancel`/`on_cancel`, `invoice`/`on_invoice`, `dispute`/`on_dispute`, and the rest — MAY be initiated by **either** node (CN or PN). Accordingly, **both nodes MUST implement the complete set of endpoints** — every action endpoint and its `on_*` callback. The action/callback pairing expresses correlation, not which actor hosts which endpoint.
+
 ### Release-quality specification matters
 
 The repository treats the API specification and governance artifacts as part of the release contract. Changes to transport semantics, conformance expectations, and participation rules are documented directly in the versioned API package and top-level governance files.

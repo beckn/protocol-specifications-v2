@@ -84,6 +84,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 > `/dispute` (POST) — either NP raises a dispute against a confirmed contract or associated entity by submitting a `DisputeAction` carrying a `Dispute`. `/on_dispute` (POST) — the receiving NP returns the opened or linked dispute case via an `OnDisputeAction`. Both are defined in the canonical OpenAPI contract; see [NFH-006](./API.md). _Normative request/response and correlation rules to be completed._
 
+> **Endpoints are not actor-exclusive.** Since either NP may raise a dispute, **both nodes MUST implement `dispute`/`on_dispute`** (and their `on_*` callbacks). This is not specific to disputes: endpoints are not exclusive to a particular actor anywhere in the protocol — including the contracting lifecycle and [invoicing](./Invoicing_and_Settlements.md) — so both the CN and the PN MUST implement the complete set of action and callback endpoints. See [NFH-006](./API.md).
+
 #### Data model
 
 > Define the `Dispute` schema fields (`id`, `contractId`, `descriptor`, `status`, `disputeAttributes`), their cardinality, and validation rules. _To be completed._

@@ -18,6 +18,8 @@ Primary action groups:
 - Post-Fulfillment
 - Fabric API - Cataloging Service
 
+Endpoints are **not** exclusive to a specific actor. Any action MAY be initiated by either network participant (CN or PN), so **both nodes MUST implement the complete set of endpoints** — every action endpoint and its `on_*` callback. The action/callback pairing expresses message correlation, not a fixed assignment of which actor hosts which endpoint.
+
 ## Endpoint families
 
 Discovery:

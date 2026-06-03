@@ -113,6 +113,12 @@ select -> on_select -> init -> on_init -> confirm -> on_confirm
 
 This lifecycle expresses the intended action symmetry between forward actions and asynchronous callbacks and should be preserved unless the canonical contract defines operation-specific behavior otherwise.
 
+### Endpoints are not actor-exclusive
+
+Protocol endpoints are **not** exclusive to a particular actor. Any value-exchange action — the contracting actions (`select` / `init` / `confirm`), `status` / `on_status`, `update` / `on_update`, `cancel` / `on_cancel`, the post-fulfillment actions, and the post-performance actions `invoice` / `on_invoice` ([NFH-015](./Invoicing_and_Settlements.md)) and `dispute` / `on_dispute` ([NFH-014](./Resolving_Disputes.md)) — MAY be initiated by **either** network participant (the CN or the PN).
+
+Consequently, **both nodes MUST implement the complete endpoint surface — every action endpoint and its corresponding `on_*` callback.** A node MUST NOT assume that it will only ever receive a given call or only ever originate it. The action/callback pairing shown in the lifecycle above describes message *correlation*, not a fixed assignment of which actor hosts which endpoint.
+
 ### Endpoint groups
 
 #### Discovery
@@ -168,6 +174,7 @@ Post-fulfillment: /rate,/on_rate,/support,/on_support
 - `context.try` semantics are used for preview and commit behavior in selected flows, limited to `update` and `cancel`.
 - Catalog publishing actions may support alias forms such as `catalog/publish` and `catalog_publish` where defined in OpenAPI.
 - Catalog pull is asynchronous and returns an immediate acknowledgement with request tracking metadata.
+- Both network participants (CN and PN) MUST implement the complete set of action and callback endpoints. Endpoints are not exclusive to a specific actor: any action MAY be initiated by either node, so a node MUST be able to both originate and receive every action and its `on_*` callback.
 - Implementations MUST treat `api/v2.0.0/beckn.yaml` as the canonical endpoint and payload contract.
 - Implementations MUST enforce request signature validation and MUST verify the `Signature` response header on synchronous acknowledgements as defined in [NFH-007 §5](./Authentication_and_Trust.md).
 - Catalog infrastructure endpoints MUST follow operation-specific constraints defined in OpenAPI, including parameter and response semantics.

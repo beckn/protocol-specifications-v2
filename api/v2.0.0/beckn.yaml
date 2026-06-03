@@ -14,6 +14,10 @@ info:
     - **Performance (previously called Fulfillment)** : Status updates, real-time tracking, contract cancellation / termination, contract amendment 
     - **Post-performance (previously called Post-fulfillment)**: Rating, feedback, and support
 
+    ## Endpoint Implementation (Normative)
+
+    Protocol endpoints are NOT exclusive to a particular actor. Any value-exchange action — the contracting actions, `status`/`on_status`, `update`/`on_update`, `cancel`/`on_cancel`, `invoice`/`on_invoice`, `dispute`/`on_dispute`, and the rest — MAY be initiated by either network participant (the CN or the PN). Therefore both CNs and PNs MUST implement the complete set of endpoints: every action endpoint AND its corresponding `on_*` callback. A node MUST NOT assume it will only ever receive a given call or only ever originate it; the action/callback pairing expresses message correlation, not a fixed assignment of which actor hosts which endpoint.
+
     ## Fabric Actors (Normative)
 
     Any actor on the fabric participating in a value-exchange transaction MUST be one of the following:
@@ -24,7 +28,7 @@ info:
 
     3. **Consumer Node (CN)** — A verified, on-fabric application that onboards consumers or consumer-facing agents as clients by creating or verifying their identity on the fabric. It initiates value-exchange transactions on behalf of its clients. It MUST provide an addressable endpoint to routing incoming messages to the respective consumers it onboards. It SHOULD implement a client-facing interface for discovery, contracting, fulfillment and post-fulfillment workflows. 
 
-    4. **Provider Node (PN)** — A verified, on-fabric application that onboards providers or provider-facing agents as clients by creating or verifying their identity on the fabric. Its network-facing API MUST implement the Beckn Protocol endpoints that receive value-exchange requests from calling CNs and respond to them via asynchronous callback endpoints implemented by the CNs. It MUST provide an addressable endpoint to routing incoming messages to the respective providers it has onboarded. It SHOULD provide a client-facing interface for publishing and managing catalogs, contracts, fulfillments, ratings, feedback, and providing support to CNs.
+    4. **Provider Node (PN)** — A verified, on-fabric application that onboards providers or provider-facing agents as clients by creating or verifying their identity on the fabric. Its network-facing API MUST implement the Beckn Protocol endpoints that receive value-exchange requests and respond via asynchronous callbacks. Per Endpoint Implementation above, endpoints are not actor-exclusive: both CNs and PNs MUST implement the complete set of action and callback endpoints, since either node may initiate any action. It MUST provide an addressable endpoint to routing incoming messages to the respective providers it has onboarded. It SHOULD provide a client-facing interface for publishing and managing catalogs, contracts, fulfillments, ratings, feedback, and providing support to CNs.
 
     5. **Discovery Service (DS)**: — A verified on-fabric application that enables discovery of catalogs only accessible via CNs. Its network-facing API MUST implement the Beckn Protocol API endpoints that receive catalog discovery requests from CNs and asynchronously respond with catalogs from various providers. It MUST subscribe to updates from the fabric cataloging service (see next section), and ensure the catalog it has is the most recent. It MAY be implemented as an independent SaaS for CNs to consume, or implemented by the CNs themselves.
 
@@ -1353,7 +1357,7 @@ paths:
   /invoice:
     post:
       summary: An NP raises an invoice to a counterparty
-      description: "STUB — DRAFT. Either network participant — the CN or the PN —\
+      description: "Either network participant — the CN or the PN —\
         \ MAY, acting as issuer, raise an invoice to a counterparty NP by submitting\
         \ a statement of the incoming and outgoing amounts owed between them against\
         \ one or more orders and the resulting net outstanding amount, which the counterparty\
@@ -1368,8 +1372,7 @@ paths:
         \ issuing NP returning the updated invoice with its status and remaining outstanding\
         \ amount. The issuing NP MUST correlate the callback using the messageId from\
         \ Context.\n\nResponse codes: Ack, AckNoCallback, NackBadRequest, NackUnauthorized,\
-        \ ServerError.\n\nThis endpoint is a draft stub introduced under NFH-015 (Invoicing\
-        \ and Settlements) and is subject to change before release."
+        \ ServerError.\n\nThis endpoint is defined under NFH-015 (Invoicing and Settlements)."
       operationId: invoice
       tags:
       - Post-Fulfillment
@@ -1414,7 +1417,7 @@ paths:
   /on_invoice:
     post:
       summary: The counterparty NP returns the updated invoice
-      description: "STUB — DRAFT. The NP that received the invoice calls this endpoint\
+      description: "The NP that received the invoice calls this endpoint\
         \ on the issuing NP, delivering the updated invoice whose status and outstanding\
         \ amount reflect its acknowledgement, commitment, settlement, dispute, or cancellation\
         \ of the stated account.\n\nAdditional preconditions: An /invoice request MUST\
@@ -1426,8 +1429,7 @@ paths:
         \ triggered by the counterparty NP in response to an /invoice request. The issuing\
         \ NP MUST use the messageId in Context to correlate this callback with the originating\
         \ /invoice call.\n\nResponse codes: Ack, NackBadRequest, NackUnauthorized, ServerError.\n\
-        \nThis endpoint is a draft stub introduced under NFH-015 (Invoicing and Settlements)\
-        \ and is subject to change before release."
+        \nThis endpoint is defined under NFH-015 (Invoicing and Settlements)."
       operationId: onInvoice
       tags:
       - Post-Fulfillment
@@ -2734,7 +2736,7 @@ components:
 
     OnInvoiceAction:
       title: On Invoice Action
-      description: "STUB — DRAFT. The real-world act by which the counterparty NP returns\
+      description: "The real-world act by which the counterparty NP returns\
         \ the updated invoice to the issuing NP, reflecting its acknowledgement, commitment,\
         \ settlement, dispute, or cancellation of the stated account.\n\nThis schema\
         \ appears in the post-performance phase of the value-exchange lifecycle. The\
@@ -2742,8 +2744,7 @@ components:
         \ the issuing NP consumes it to record the agreed state of the account and the\
         \ remaining outstanding amount.\n\nRelationship: Composes the Invoice schema\
         \ as its primary carrier, whose status and outstanding fields reflect the updated\
-        \ settlement state. This is a draft stub introduced under NFH-015 (Invoicing\
-        \ and Settlements) and is subject to change before release."
+        \ settlement state. Defined under NFH-015 (Invoicing and Settlements)."
       additionalProperties: false
       properties:
         invoice:
@@ -2892,24 +2893,21 @@ components:
 
     InvoiceAction:
       title: Invoice Action
-      description: "STUB — DRAFT. The real-world act by which a network participant\
+      description: "The real-world act by which a network participant\
         \ (the CN or the PN), acting as issuer, raises an invoice to a counterparty\
         \ NP, submitting the statement of incoming and outgoing amounts against one\
         \ or more orders and the resulting net outstanding amount.\n\nThis schema appears\
         \ in the post-performance phase of the value-exchange lifecycle. The issuing\
         \ NP produces it as the message payload of an /invoice request; the counterparty\
         \ NP consumes it to acknowledge, commit, settle, dispute, or cancel the invoice,\
-        \ returning the updated invoice via /on_invoice. The same invoice MAY be re-raised\
+        \ returning the updated invoice via /on_invoice. The same invoice MAY be re-issued\
         \ any number of times to reflect a running account.\n\nRelationship: Composes\
-        \ the Invoice schema as its primary carrier. The Invoice MUST include an id\
-        \ and at least one statement entry. This is a draft stub introduced under NFH-015\
-        \ (Invoicing and Settlements) and is subject to change before release."
+        \ the Invoice schema as its primary carrier. The Invoice MUST include an id and\
+        \ at least one statement entry (enforced by the Invoice schema's required fields).\
+        \ Defined under NFH-015 (Invoicing and Settlements)."
       properties:
         invoice:
-          allOf:
-          - $ref: '#/components/schemas/Invoice'
-          - required:
-            - costBreakup
+          $ref: '#/components/schemas/Invoice'
       required:
       - invoice
 
@@ -3540,7 +3538,6 @@ components:
           - properties: {}
 
     Descriptor:
-      $schema: https://json-schema.org/draft/2020-12/schema
       description: "A structured label that provides machine-readable and human-readable\
         \ identification for any Beckn entity, including its code, name, descriptions,\
         \ and associated media and document references.\n\nDescriptor appears throughout\
@@ -4121,7 +4118,6 @@ components:
       additionalProperties: false
 
     RatingInput:
-      $schema: https://json-schema.org/draft/2020-12/schema
       description: "A structured rating record that captures a consumer's numeric\
         \ assessment and optional qualitative feedback for a specific entity associated\
         \ with a completed contract, including the contract itself, individual resources,\
@@ -4219,36 +4215,172 @@ components:
         disputeAttributes:
           $ref: '#/components/schemas/Attributes'
 
+    PaymentAction:
+      type: object
+      title: PaymentAction
+      description: "A proof of settlement that discharges all or part of an invoice —\
+        \ one entry per payment event, carrying the amount, method, status, transaction\
+        \ reference, and time. Mirrors the canonical Beckn PaymentAction at\
+        \ https://schema.beckn.io/PaymentAction/v2.0.\n\nThe state and checkoutAt properties\
+        \ mirror the canonical State and CheckoutTerminal schemas; they are represented\
+        \ here as open objects to keep this OpenAPI document self-contained."
+      additionalProperties: false
+      properties:
+        amount:
+          description: The amount associated with this payment action.
+          type: object
+          properties:
+            currency:
+              description: ISO 4217 currency code.
+              type: string
+            value:
+              type: number
+        paymentStatus:
+          description: The payment lifecycle status of this action.
+          type: string
+          enum:
+          - INITIATED
+          - PENDING
+          - AUTHORIZED
+          - CAPTURED
+          - COMPLETED
+          - FAILED
+          - CANCELLED
+          - REFUNDED
+          - PARTIALLY_REFUNDED
+          - CHARGEBACK
+          - DISPUTED
+          - EXPIRED
+          - REVERSED
+          - VOIDED
+          - SETTLED
+          - ON_HOLD
+          - ADJUSTED
+        paymentMethod:
+          description: The instrument or mechanism used for this payment.
+          type: object
+          properties:
+            method:
+              type: string
+        paymentUrl:
+          description: URL for payment processing or redirection.
+          type: string
+          format: uri
+        state:
+          description: The processing state of this payment. Mirrors the canonical State
+            schema (https://schema.beckn.io/State/v2.0).
+          type: object
+          additionalProperties: true
+        txnRef:
+          description: PSP, gateway, or bank transaction reference.
+          type: string
+        checkoutAt:
+          description: The checkout terminal through which this payment was made. Mirrors
+            the canonical CheckoutTerminal schema (https://schema.beckn.io/CheckoutTerminal/v2.0).
+          type: object
+          additionalProperties: true
+        paidAt:
+          description: The time at which the payment was made.
+          type: string
+          format: date-time
+        paymentActionAttributes:
+          description: Extensible set of ecosystem-specific payment-action attributes.
+          $ref: '#/components/schemas/Attributes'
+      required:
+      - paymentStatus
+
+    SettlementTerm:
+      type: object
+      title: SettlementTerm
+      description: "Describes the terms under which an invoice is to be settled —\
+        \ the amount, when payment is triggered, on what schedule, where it is remitted,\
+        \ and which payment methods are accepted. Mirrors the canonical Beckn SettlementTerm\
+        \ at https://schema.beckn.io/SettlementTerm/v2.0. It is distinct from a payment\
+        \ action: it describes where money is disbursed after reconciliation.\n\nThe\
+        \ paymentTrigger and settlementSchedule properties mirror the canonical PaymentTrigger\
+        \ and SettlementSchedule schemas; they are represented here as open objects to\
+        \ keep this OpenAPI document self-contained."
+      additionalProperties: true
+      properties:
+        amount:
+          description: The amount associated with this settlement term.
+          type: object
+          properties:
+            currency:
+              description: ISO 4217 currency code.
+              type: string
+            value:
+              type: number
+        paymentTrigger:
+          description: The event that triggers payment against this settlement term.
+            Mirrors the canonical PaymentTrigger schema
+            (https://schema.beckn.io/PaymentTrigger/v2.0).
+          type: object
+          additionalProperties: true
+        settlementStatus:
+          type: string
+          enum:
+          - PENDING
+          - COMPLETE
+        settlementSchedule:
+          description: The schedule on which settlement occurs. Mirrors the canonical
+            SettlementSchedule schema (https://schema.beckn.io/SettlementSchedule/v2.0).
+          type: object
+          additionalProperties: true
+        payTo:
+          description: The account to which the money must be remitted — a bank account,
+            a virtual payment address (such as a UPI ID), or a payment URL.
+          anyOf:
+          - type: object
+            properties:
+              accountHolderName:
+                type: string
+              accountNumber:
+                type: string
+              branchCode:
+                type: string
+              bankName:
+                type: string
+          - type: object
+            properties:
+              vpa:
+                type: string
+          - type: object
+            properties:
+              paymentUrl:
+                type: string
+                format: uri
+        acceptedPaymentMethods:
+          description: The methods accepted by the payee (identified in payTo) for
+            this settlement.
+          type: array
+          items:
+            type: string
+            enum:
+            - CASH_DEPOSIT
+            - BANK_TRANSFER
+        settlementTermAttributes:
+          description: Additional use-case-specific settlement terms.
+          $ref: '#/components/schemas/Attributes'
+
     PriceSpecification:
       type: object
       title: PriceSpecification
       description: "An itemized monetary specification carrying a net value, its currency,\
         \ and an optional set of components that break the value down into typed parts\
         \ such as units, taxes, fees, discounts, and surcharges. Mirrors the canonical\
-        \ Beckn PriceSpecification at https://schema.beckn.io/PriceSpecification/v2.1,\
-        \ extended with an optional contractId so that, within an Invoice cost breakup,\
-        \ a line item can reference the order it concerns.\n\nWithin an Invoice cost breakup,\
-        \ each PriceSpecification is one line item: its value is the total for that line\
-        \ and its contractId, when present, identifies the order. Values are signed —\
-        \ an amount owed to the payee is positive and an amount the payee owes is negative\
-        \ — so the invoice's net amount payable is the signed sum of its line items.\n\
-        \nRelationship: Composed by the Invoice schema within its costBreakup array, and\
-        \ RECOMMENDED for monetary considerations within Consideration.considerationAttributes."
+        \ Beckn PriceSpecification at https://schema.beckn.io/PriceSpecification/v2.1.\n\
+        \nRelationship: Composed by the Invoice schema as each statement entry's amount\
+        \ and as the invoice total, and RECOMMENDED for monetary considerations within\
+        \ Consideration.considerationAttributes."
       additionalProperties: true
       properties:
         currency:
           description: ISO 4217 currency code.
           type: string
         value:
-          description: The net value of this price specification. Within an Invoice
-            cost breakup this is the total for the line item, signed from the payee's
-            perspective.
+          description: The net value of this price specification.
           type: number
-        contractId:
-          description: The order (Contract) this line item concerns. Omitted for a
-            charge not tied to a specific order, such as an agreed buyer-finder fee,
-            which MAY instead reference a separate contract between the parties.
-          $ref: '#/components/schemas/Contract/properties/id'
         components:
           description: Optional sub-components that break this line item's value down
             into typed parts (unit price, tax, delivery, discount, fee, surcharge).
@@ -4275,92 +4407,134 @@ components:
     Invoice:
       type: object
       title: Invoice
-      description: "STUB — DRAFT. A statement raised by one network participant to another\
-        \ recording, against one or more orders, the amounts owed between a payee and\
-        \ a payer and resolving to a net amount payable. Mirrors the canonical Beckn Invoice\
-        \ at https://schema.beckn.io/Invoice/v2.1, with a status field for the settlement\
-        \ lifecycle.\n\nInvoice appears in the post-performance phase of the value-exchange\
-        \ lifecycle. Any NP MAY raise an invoice against any other NP — what an invoice\
-        \ is raised for is not coupled to who raises it: a PN typically raises an invoice\
-        \ for the orders placed with it, while a CN MAY raise a separate invoice for an\
-        \ agreed buyer-finder fee. The issuing NP produces it in InvoiceAction; the counterparty\
-        \ NP commits, settles, disputes, or cancels it via OnInvoiceAction. The same invoice\
-        \ MAY be re-raised any number of times to reflect a running account, including\
-        \ periodic (for example T+x or end-of-month) net settlement.\n\nRelationship: Composes\
-        \ the Participant schema for payee and payer — rich Provider, Consumer, Person,\
-        \ or Organization identity is carried within Participant.participantAttributes —\
-        \ the Descriptor schema for status, and the PriceSpecification schema for each\
-        \ costBreakup line item. The net amount payable is the signed sum of the costBreakup\
-        \ line-item values from the payee's perspective. The current state of an Invoice\
-        \ MAY be queried via StatusAction/OnStatusAction. This is a draft stub introduced\
-        \ under NFH-015 (Invoicing and Settlements) and is subject to change before release."
+      description: "A financial statement issued by a creditor to a debtor\
+        \ that itemises the amounts owed and records how they are settled. Each statement\
+        \ entry is a billed financial entry — an order, refund, commission, finder fee,\
+        \ or adjustment — rather than a product or service. The invoice tracks its lifecycle\
+        \ status, the agreed settlement terms, and the proofs of settlement (payment actions)\
+        \ that discharge the amount due. Mirrors the canonical Beckn Invoice at\
+        \ https://schema.beckn.io/Invoice/v2.2.\n\nInvoice appears in the post-performance\
+        \ phase of the value-exchange lifecycle. Any NP MAY issue an invoice to any other\
+        \ NP — the issuer is the node that invokes the /invoice (or /on_invoice) endpoint\
+        \ and is NOT modelled as a field; the creditor is owed the net amount and the debtor\
+        \ owes it. A PN typically issues an invoice for the orders placed with it (creditor\
+        \ = PN), while a CN MAY issue a separate invoice for an agreed buyer-finder fee\
+        \ (creditor = CN). The same invoice MAY be re-issued any number of times to reflect\
+        \ a running account.\n\nRelationship: An independent schema (not a specialisation\
+        \ of Contract). Composes the Participant schema for creditor and debtor, the Descriptor\
+        \ schema for status, the Consideration and PriceSpecification schemas for each statement\
+        \ entry (the Consideration carries the billed item polymorphically through its\
+        \ considerationAttributes JSON-LD @type — Contract, RetailOrder, DeliveryService,\
+        \ Commission, FinderFee, Adjustment, Refund), the SettlementTerm schema for settlementTerms,\
+        \ and the PaymentAction schema for each settlementAction proof. The current state of\
+        \ an Invoice MAY be queried via StatusAction/OnStatusAction. Defined under NFH-015 (Invoicing and Settlements)."
       properties:
         id:
-          description: Stable invoice identifier (system id) assigned by the issuing
-            NP. The same id MUST be reused when an invoice is re-raised to update a
-            running account; a new id denotes a distinct invoice.
+          description: Stable invoice identifier (system id). While the chances of a UUID
+            collision are rare, a combination of issuer identity and this id is recommended
+            for global uniqueness.
           type: string
+          format: uuid
         number:
           description: Human-visible invoice number.
           type: string
-        issueDate:
-          description: The date on which this invoice was issued.
+        issuedAt:
+          description: Timestamp at which the invoice was issued.
+          type: string
+          format: date-time
+        dueDate:
+          description: Date by which the invoice amount is due for settlement.
           type: string
           format: date
-        dueDate:
-          description: The date by which the net amount is due, when applicable.
-          type:
-          - string
-          - 'null'
-          format: date
+        descriptor:
+          description: Describes the nature of the invoice in human / agent readable terms.
+          $ref: '#/components/schemas/Descriptor'
         status:
-          description: The lifecycle state of this invoice, expressed as a Descriptor
-            whose code MUST be one of the standard invoice state values.
+          description: The lifecycle state of the invoice expressed as a Descriptor whose
+            code MUST be one of the standard invoice state values.
           allOf:
           - $ref: '#/components/schemas/Descriptor'
           - type: object
             properties:
               code:
                 enum:
-                - PROFORMA
+                - DRAFT
+                - PENDING
                 - COMMITTED
                 - SETTLED
                 - CANCELLED
                 - DISPUTED
-        payee:
-          description: The participant to be paid — the issuer of the account. Rich
-            identity (Provider, Consumer, Person, Organization) is carried within
-            its participantAttributes.
+                default: PENDING
+        creditor:
+          description: The party that is owed the net amount — the seller / provider.
           $ref: '#/components/schemas/Participant'
-        payer:
-          description: The participant that owes the net amount. Rich identity is
-            carried within its participantAttributes.
+        debtor:
+          description: The party the invoice is issued to and who owes the net amount —
+            the consumer being billed.
           $ref: '#/components/schemas/Participant'
-        costBreakup:
-          description: The itemized statement. Each element is a PriceSpecification
-            line item — typically one per order (referenced by its contractId) carrying
-            that order's total, plus any line items not tied to a specific order such
-            as an agreed buyer-finder fee. The net amount payable is the signed sum of
-            the line-item values from the payee's perspective.
+        statement:
+          description: The itemised statement of charges that make up the invoice. Each
+            entry pairs a Consideration — the value being billed, whose considerationAttributes
+            carries a JSON-LD object (by @type) identifying the underlying item such as a
+            Contract, RetailOrder, DeliveryService, Commission, FinderFee, Adjustment, or
+            Refund — with the monetary amount for that entry.
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+            - consideration
+            - amount
+            additionalProperties: false
+            properties:
+              consideration:
+                description: The value being billed by this entry. Its considerationAttributes
+                  carries the JSON-LD object (@type) identifying what is billed — e.g. a
+                  Contract, RetailOrder, DeliveryService, Commission, FinderFee, Adjustment,
+                  or Refund.
+                allOf:
+                - $ref: '#/components/schemas/Consideration'
+                - type: object
+                  properties:
+                    status:
+                      description: The lifecycle state of this billed entry, set and updated
+                        by the creditor or debtor as it moves from raised through to settled.
+                      properties:
+                        code:
+                          enum:
+                          - PENDING
+                          - COMMITTED
+                          - DISPUTED
+                          - SETTLED
+                          default: PENDING
+              amount:
+                description: The monetary amount for this statement entry.
+                $ref: '#/components/schemas/PriceSpecification'
+        total:
+          description: The net amount payable for this invoice across all statement entries.
+          $ref: '#/components/schemas/PriceSpecification'
+        settlementTerms:
+          description: The agreed terms under which the invoice is to be settled — amount,
+            payment trigger, schedule, remittance account, and accepted methods.
+          $ref: '#/components/schemas/SettlementTerm'
+        settlementAction:
+          description: Proofs of settlement that discharge the invoice — one entry per
+            payment event (supporting installments and partial payments).
           type: array
           items:
-            $ref: '#/components/schemas/PriceSpecification'
-        disputeId:
-          description: When status is DISPUTED, references the Dispute case raised
-            against this invoice. See NFH-014 (Resolving Disputes).
-          $ref: '#/components/schemas/Dispute/properties/id'
+            $ref: '#/components/schemas/PaymentAction'
         invoiceAttributes:
-          description: 'Attribute pack for tax regime (for example GST/VAT), e-invoice
-            references, settlement window (for example T+x or end-of-month), and legal
-            boilerplate.'
+          description: 'Domain-specific extension attributes for this invoice — tax regime
+            (for example GST/VAT), e-invoice references, legal boilerplate.'
           $ref: '#/components/schemas/Attributes'
+      additionalProperties: false
       required:
       - id
       - number
-      - issueDate
-      - payee
-      - payer
-      additionalProperties: false
+      - issuedAt
+      - creditor
+      - debtor
+      - statement
 
     Settlement:
       type: object
