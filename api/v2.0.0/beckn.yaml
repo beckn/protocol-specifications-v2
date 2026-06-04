@@ -1244,21 +1244,27 @@ paths:
 
   /dispute:
     post:
-      summary: An NP raises a dispute against a contract
-      description: "STUB — DRAFT. Either network participant — the CN or the PN —\
-        \ MAY raise a dispute against a confirmed contract or one of its associated\
-        \ entities (a settlement, a fulfillment stage, or a commitment). The initiating\
-        \ NP submits a dispute record to the counterparty NP, which opens or links a\
-        \ dispute case.\n\nAdditional preconditions: The initiating NP MUST hold a\
-        \ confirmed Contract id before this endpoint may be called.\n\nThe message\
-        \ MUST contain a DisputeAction carrying a Dispute object that describes the\
-        \ nature of the grievance and the reference to the disputed entity.\n\nCallback\
-        \ relationship: After processing the dispute, the receiving NP MUST send an\
-        \ /on_dispute callback to the initiating NP returning the opened or linked\
-        \ dispute case details. The initiating NP MUST correlate the callback using\
-        \ the messageId from Context.\n\nResponse codes: Ack, AckNoCallback, NackBadRequest,\
-        \ NackUnauthorized, ServerError.\n\nThis endpoint is a draft stub introduced\
-        \ under NFH-014 (Resolving Disputes) and is subject to change before release."
+      summary: An NP raises a dispute against a contract or associated entity
+      description: "Either network participant — the CN or the PN, acting as the\
+        \ claimant — MAY raise a dispute against its counterparty (the respondent) over\
+        \ a confirmed contract or one of its associated entities: an order, a fulfilment,\
+        \ an invoice or one of its statement entries, a payment, a commitment, or a\
+        \ performance — indeed any piece of information published on the network. The\
+        \ claimant submits a dispute record to the respondent, which opens or links a\
+        \ dispute case.\n\nAdditional preconditions: The dispute MUST attach at least\
+        \ one unresolved support case (supportCases), expressing that the parties\
+        \ attempted support resolution first; and MUST itemise at least one case, each\
+        \ identifying its disputed subject (by JSON-LD @type), a reason, and at least one\
+        \ piece of supporting evidence, before this endpoint may be called.\n\nThe\
+        \ message MUST contain a DisputeAction carrying a Dispute object whose cases\
+        \ describe what is contested, why, and the evidence backing it.\n\n\
+        Callback\
+        \ relationship: After processing the dispute, the respondent MUST send an\
+        \ /on_dispute callback to the claimant returning the opened or linked dispute\
+        \ case details. The claimant MUST correlate the callback using the messageId\
+        \ from Context.\n\nResponse codes: Ack, AckNoCallback, NackBadRequest,\
+        \ NackUnauthorized, ServerError.\n\nThis endpoint is defined under NFH-014\
+        \ (Resolving Disputes)."
       operationId: dispute
       tags:
       - Post-Fulfillment
@@ -1302,21 +1308,20 @@ paths:
 
   /on_dispute:
     post:
-      summary: The receiving NP returns dispute case details
-      description: "STUB — DRAFT. The NP that received the dispute calls this endpoint\
-        \ on the initiating NP, delivering the opened or linked dispute case including\
-        \ its current status and any resolution details.\n\nAdditional preconditions:\
-        \ A /dispute request MUST have been sent by the initiating NP and accepted\
-        \ (200 Ack) by the receiving NP before this callback is triggered. The receiving\
-        \ NP MAY also send proactive /on_dispute callbacks when a dispute case changes\
-        \ state.\n\nThe message MUST contain an OnDisputeAction carrying a Dispute\
-        \ object with the case reference and current status.\n\nCallback relationship:\
-        \ This endpoint is triggered by the receiving NP in response to a /dispute\
-        \ request. The initiating NP MUST use the messageId in Context to correlate\
-        \ this callback with the originating /dispute call.\n\nResponse codes: Ack,\
-        \ NackBadRequest, NackUnauthorized, ServerError.\n\nThis endpoint is a draft\
-        \ stub introduced under NFH-014 (Resolving Disputes) and is subject to change\
-        \ before release."
+      summary: The respondent returns dispute case details
+      description: "The respondent — the NP against which the dispute was raised — calls\
+        \ this endpoint on the claimant, delivering the opened or linked dispute case\
+        \ including its current status and any resolution details.\n\nAdditional\
+        \ preconditions: A /dispute request MUST have been sent by the claimant and\
+        \ accepted (200 Ack) by the respondent before this callback is triggered. The\
+        \ respondent MAY also send proactive /on_dispute callbacks when a dispute case\
+        \ changes state.\n\nThe message MUST contain an OnDisputeAction carrying a\
+        \ Dispute object with the case reference, current status, and — once the case is\
+        \ terminal — its resolution.\n\nCallback relationship: This endpoint is triggered\
+        \ by the respondent in response to a /dispute request. The claimant MUST use the\
+        \ messageId in Context to correlate this callback with the originating /dispute\
+        \ call.\n\nResponse codes: Ack, NackBadRequest, NackUnauthorized, ServerError.\n\
+        \nThis endpoint is defined under NFH-014 (Resolving Disputes)."
       operationId: onDispute
       tags:
       - Post-Fulfillment
@@ -2546,15 +2551,15 @@ components:
 
     DisputeAction:
       title: Dispute Action
-      description: "STUB — DRAFT. The real-world act by which a network participant\
-        \ (the CN or the PN) raises a dispute against a confirmed contract or one of\
-        \ its associated entities, submitting a grievance that the counterparty uses\
-        \ to open or link a dispute case.\n\nThis schema appears in the post-performance\
-        \ phase of the value-exchange lifecycle. The initiating NP produces it as the\
-        \ message payload of a /dispute request; the receiving NP consumes it to open\
-        \ or link a dispute case and return the details.\n\nRelationship: Composes\
-        \ the Dispute schema as its primary carrier. This is a draft stub introduced\
-        \ under NFH-014 (Resolving Disputes) and is subject to change before release."
+      description: "The real-world act by which a network participant — the claimant,\
+        \ which MAY be the CN or the PN — raises a dispute against its counterparty over\
+        \ a confirmed contract or one of its associated entities, submitting a grievance\
+        \ that the respondent uses to open or link a dispute case.\n\nThis schema appears\
+        \ in the post-performance phase of the value-exchange lifecycle. The claimant\
+        \ produces it as the message payload of a /dispute request; the respondent\
+        \ consumes it to open or link a dispute case and return the details via\
+        \ /on_dispute.\n\nRelationship: Composes the Dispute schema as its primary\
+        \ carrier. Defined under NFH-014 (Resolving Disputes)."
       type: object
       additionalProperties: false
       properties:
@@ -2658,15 +2663,15 @@ components:
 
     OnDisputeAction:
       title: On Dispute Action
-      description: "STUB — DRAFT. The real-world act by which the receiving NP returns\
-        \ the opened or linked dispute case to the initiating NP, carrying the case\
-        \ reference, current status, and any resolution details.\n\nThis schema appears\
-        \ in the post-performance phase of the value-exchange lifecycle. The receiving\
-        \ NP produces it as the message payload of an /on_dispute callback; the initiating\
-        \ NP consumes it to track the dispute case to resolution.\n\nRelationship:\
-        \ Composes the Dispute schema as its primary carrier. This is a draft stub\
-        \ introduced under NFH-014 (Resolving Disputes) and is subject to change before\
-        \ release."
+      description: "The real-world act by which the respondent returns the opened or\
+        \ linked dispute case to the claimant, carrying the case reference, current\
+        \ status, and any resolution details.\n\nThis schema appears in the\
+        \ post-performance phase of the value-exchange lifecycle. The respondent\
+        \ produces it as the message payload of an /on_dispute callback; the claimant\
+        \ consumes it to track the dispute case to resolution. It MAY also be sent\
+        \ proactively when a dispute case changes state.\n\nRelationship: Composes the\
+        \ Dispute schema as its primary carrier. Defined under NFH-014 (Resolving\
+        \ Disputes)."
       type: object
       additionalProperties: false
       properties:
@@ -3522,14 +3527,8 @@ components:
         resources:
           type: array
           items:
-            required:
-            - id
-            - quantity
             $ref: '#/components/schemas/Resource'
         offer:
-          required:
-          - id
-          - resourceIds
           $ref: '#/components/schemas/Offer'
         commitmentAttributes:
           description: Domain-specific extension attributes for this commitment.
@@ -4185,35 +4184,292 @@ components:
 
     Dispute:
       type: object
-      description: "STUB — DRAFT. A record representing a grievance raised by a network\
-        \ participant against a confirmed contract or one of its associated entities\
-        \ (a settlement, a fulfillment stage, a commitment, or the counterparty), tracking\
-        \ the case from when it is opened through to its resolution.\n\nDispute appears\
-        \ in the post-performance phase of the value-exchange lifecycle. Either NP\
-        \ (the CN or the PN) introduces a draft dispute record in DisputeAction; the\
-        \ receiving NP opens or links a case and updates its status through to resolution\
-        \ via OnDisputeAction.\n\nRelationship: Carried by the DisputeAction and OnDisputeAction\
-        \ schemas. The contractId field references the Contract under dispute. The\
-        \ disputeAttributes field extends the core schema with domain-specific dispute\
-        \ details via the Attributes schema. This is a draft stub introduced under\
-        \ NFH-014 (Resolving Disputes) and is subject to change before release."
+      title: Dispute
+      description: "A formal disagreement raised by one node (the claimant) against\
+        \ another (the respondent) over any piece of information published on the network.\
+        \ Anything can be disputed — a Contract, an Invoice, a Settlement, a Performance,\
+        \ a Consideration, contract terms, or any other published object. A dispute\
+        \ itemises one or more cases, each backed by a reason and supporting evidence,\
+        \ and tracks its lifecycle from unresolved through to resolved or withdrawn.\
+        \ Resolution is a tri-party process — the claimant and respondent agree on a\
+        \ neutral online dispute resolution (ODR) provider. Mirrors the canonical Beckn\
+        \ Dispute at https://schema.beckn.io/Dispute/v2.0.\n\nDispute appears in the\
+        \ post-performance phase of the value-exchange lifecycle. Either NP (the CN or\
+        \ the PN) MAY be the claimant: it introduces a draft dispute record in\
+        \ DisputeAction; the respondent acknowledges and drives the case to resolution\
+        \ via OnDisputeAction. Either party MAY query, revise, or withdraw the shared\
+        \ Dispute through the generalized StatusAction, UpdateAction, and CancelAction\
+        \ (each of which carries a dispute alongside a contract and an invoice).\n\n\
+        Relationship: Carried by the DisputeAction and OnDisputeAction schemas. Composes\
+        \ the Participant schema for claimant, respondent, and odrProvider, the Descriptor\
+        \ schema for status and each case reason, the Attributes schema for each case\
+        \ subject (carrying the disputed object polymorphically through its JSON-LD\
+        \ @type — Contract, Invoice, Settlement, Performance, Consideration, ContractTerms),\
+        \ and the Document schema for each piece of case evidence. A dispute whose case\
+        \ subject is an Invoice is how a DISPUTED invoice (NFH-015) is linked to its\
+        \ dispute. Defined under NFH-014 (Resolving Disputes)."
       properties:
         id:
+          description: Stable dispute identifier (system id). While the chances of a UUID
+            collision are rare, a combination of claimant identity and this id is
+            recommended for global uniqueness.
           type: string
-          description: Globally unique identifier of the dispute case.
-        contractId:
-          $ref: '#/components/schemas/Contract/properties/id'
+          format: uuid
+        raisedAt:
+          description: Timestamp at which the dispute was raised.
+          type: string
+          format: date-time
         descriptor:
+          description: Describes the nature of the dispute in human / agent readable terms.
           $ref: '#/components/schemas/Descriptor'
         status:
-          type: string
-          enum:
-          - OPEN
-          - UNDER_REVIEW
-          - RESOLVED
-          - REJECTED
+          description: The lifecycle state of the dispute expressed as a Descriptor whose
+            code MUST be one of the standard dispute state values. WITHDRAWN represents a
+            dispute cancelled by the claimant.
+          allOf:
+          - $ref: '#/components/schemas/Descriptor'
+          - type: object
+            properties:
+              code:
+                enum:
+                - UNRESOLVED
+                - RESOLVED
+                - WITHDRAWN
+                default: UNRESOLVED
+        claimant:
+          description: The party that raises the dispute.
+          $ref: '#/components/schemas/Participant'
+        respondent:
+          description: The party against whom the dispute is raised.
+          $ref: '#/components/schemas/Participant'
+        odrProvider:
+          description: The agreed online dispute resolution (ODR) provider — a neutral
+            third party (e.g. a legal services organisation or the network facilitator
+            organisation) that helps resolve the dispute. Dispute resolution is a
+            tri-party arrangement; the claimant and respondent must agree on this
+            provider, which may happen after the dispute is raised. The descriptor.code
+            identifies the resolution role played.
+          allOf:
+          - $ref: '#/components/schemas/Participant'
+          - type: object
+            properties:
+              descriptor:
+                properties:
+                  code:
+                    description: The dispute-resolution role played by this provider.
+                    enum:
+                    - MEDIATOR
+                    - ARBITRATOR
+                    - CONCILIATOR
+                    - ADJUDICATOR
+                    - OMBUDSMAN
+                    - NEUTRAL_EVALUATOR
+                    - EXPERT
+        supportCases:
+          description: The support cases (tickets) that underpin this dispute. A dispute
+            MUST NOT be raised until at least one unresolved support case is attached —
+            i.e. the parties are expected to have attempted support resolution first.
+            Enforced by the contains constraint requiring at least one element whose
+            status.code is UNRESOLVED.
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/SupportCase'
+          contains:
+            type: object
+            required:
+            - status
+            properties:
+              status:
+                type: object
+                required:
+                - code
+                properties:
+                  code:
+                    const: UNRESOLVED
+        cases:
+          description: The disputed matters that make up this dispute. Each entry pairs a
+            case — the disputed subject with its reason and supporting evidence — with its
+            own resolution status. Any piece of information published on the network can be
+            a case subject.
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+            - case
+            - status
+            additionalProperties: false
+            properties:
+              case:
+                description: 'A single disputed matter: what is being disputed, why, and
+                  the evidence backing it.'
+                type: object
+                required:
+                - subject
+                - reason
+                - evidence
+                additionalProperties: false
+                properties:
+                  id:
+                    description: Identifier of this case.
+                    type: string
+                  subject:
+                    description: The piece of information under dispute, carried as a
+                      JSON-LD object whose @type identifies what it is — e.g. a Contract,
+                      Invoice, Settlement, Performance, Consideration, or ContractTerms. The
+                      object may be embedded inline or referenced by URL within the container.
+                    $ref: '#/components/schemas/Attributes'
+                  reason:
+                    description: The reason this subject is disputed. The code categorises
+                      the reason; the name / shortDesc / longDesc carry the narrative.
+                      Required — a dispute must be backed by a reason.
+                    $ref: '#/components/schemas/Descriptor'
+                  evidence:
+                    description: Supporting evidence and proofs backing the dispute. Each
+                      item is a Document that may be machine-readable (e.g. a verifiable
+                      credential, via its standard/security fields) or human-readable —
+                      images, audio recordings, videos, chat histories, emails, or artifacts
+                      shared outside the network — distinguished by mimeType. A case without
+                      any attached proof, even circumstantial, may be rejected at the
+                      respondent's discretion.
+                    type: array
+                    minItems: 1
+                    items:
+                      $ref: '#/components/schemas/Document'
+              status:
+                description: The resolution state of this individual case.
+                allOf:
+                - $ref: '#/components/schemas/Descriptor'
+                - type: object
+                  properties:
+                    code:
+                      enum:
+                      - UNRESOLVED
+                      - RESOLVED
+                      default: UNRESOLVED
         disputeAttributes:
+          description: Domain-specific extension attributes for this dispute.
           $ref: '#/components/schemas/Attributes'
+      additionalProperties: false
+      required:
+      - id
+      - claimant
+      - respondent
+      - supportCases
+      - cases
+
+    CommunicationChannel:
+      title: CommunicationChannel
+      description: "A channel through which communication or support takes place. Mirrors\
+        \ the canonical Beckn CommunicationChannel at\
+        \ https://schema.beckn.io/CommunicationChannel/v2.0. The enumerated values are\
+        \ derived from SupportInfo.channels (https://schema.beckn.io/SupportInfo/v2.0)."
+      type: string
+      enum:
+      - PHONE
+      - EMAIL
+      - WEB
+      - CHAT
+      - WHATSAPP
+      - IN_APP
+      - OTHER
+
+    SupportCase:
+      type: object
+      title: SupportCase
+      description: "A domain-agnostic customer support ticket used to record an issue\
+        \ raised between parties — its category, priority, lifecycle status, supporting\
+        \ attachments, and support interaction sessions. It is independent of any\
+        \ particular domain; domain-specific values are carried via the category\
+        \ descriptor and the extensible attribute bags. Mirrors the canonical Beckn\
+        \ SupportCase at https://schema.beckn.io/SupportCase/v2.0.\n\nRelationship:\
+        \ Composed by the Dispute schema's supportCases array — a dispute MUST attach\
+        \ at least one unresolved support case, expressing that the parties attempted\
+        \ support resolution before disputing. Composes the Descriptor schema for\
+        \ category and status, the Document schema for attachments, and the\
+        \ CommunicationChannel and MediaFile schemas for support sessions."
+      properties:
+        id:
+          description: Stable support case identifier.
+          type: string
+          example: SUP-2024-00789
+        category:
+          description: The category of the issue, expressed as a Descriptor whose code is
+            defined by the domain (e.g. SHIPMENT_LOST, BILLING_DISPUTE, SERVICE_QUALITY).
+          $ref: '#/components/schemas/Descriptor'
+        description:
+          description: Human-readable description of the issue.
+          type: string
+        priority:
+          description: Priority of the support case. Suggested values are P1, P2, P3;
+            custom string values are also allowed.
+          anyOf:
+          - type: string
+            enum:
+            - P1
+            - P2
+            - P3
+          - type: string
+        status:
+          description: The lifecycle state of the support case expressed as a Descriptor
+            whose code MUST be one of the standard values.
+          allOf:
+          - $ref: '#/components/schemas/Descriptor'
+          - type: object
+            properties:
+              code:
+                enum:
+                - UNRESOLVED
+                - RESOLVED
+                default: UNRESOLVED
+        raisedBy:
+          description: Identifier of the party who raised the support case.
+          type: string
+        assignedAgent:
+          description: Identifier of the support agent the case is assigned to.
+          type: string
+        attachments:
+          description: Supporting attachments / evidence for the case — documents, images,
+            or other artifacts, distinguished by mimeType.
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        sessions:
+          description: Support interaction sessions associated with this case. Each session
+            records the channel used and any media exchanged.
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              id:
+                description: Identifier of this session.
+                type: string
+              supportChannel:
+                description: The channel over which this session took place.
+                $ref: '#/components/schemas/CommunicationChannel'
+              data:
+                description: Media captured or exchanged during the session.
+                $ref: '#/components/schemas/MediaFile'
+        claimAmount:
+          description: Amount claimed in relation to this case, if any.
+          type: number
+        resolution:
+          description: Resolution details, once the case is resolved.
+          type: string
+        createdAt:
+          description: Timestamp at which the case was created.
+          type: string
+          format: date-time
+        resolvedAt:
+          description: Timestamp at which the case was resolved.
+          type: string
+          format: date-time
+      required:
+      - id
+      - category
+      additionalProperties: false
 
     PaymentAction:
       type: object
