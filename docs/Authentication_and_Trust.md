@@ -118,7 +118,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 - **dedi protocol:** The Decentralized Directory protocol used by the GRR for namespace and key management.
 - **keyId:** A structured string that uniquely identifies a signing key registered on a dedi-protocol registry.
 - **Signing string:** The canonical byte sequence that is signed and verified using Ed25519.
-- **Body digest:** The BLAKE2b-512 hash of the HTTP request or response body, encoded as described in §3.1.
+- **Body digest:** The BLAKE-512 hash of the HTTP request or response body, encoded as described in §3.1.
 - **request-signature:** The raw Ed25519 signature value extracted from an incoming request's `Authorization` header and included verbatim in either a PN's callback signing string (§3.3) or a responding NP's Ack response signing string (§3.4), cryptographically binding the outgoing message to the specific request that triggered it.
 - **Implicit keyId:** A keyId that uses a path-only format and is resolved exclusively via the GRR at `fabric.nfh.global/registry`.
 - **Explicit keyId:** A keyId that embeds the full registry URL, allowing resolution against any dedi-protocol compliant registry.
@@ -134,7 +134,7 @@ All Beckn authentication MUST use the following primitives:
 | Primitive | Value |
 |---|---|
 | Signature algorithm | Ed25519 (as specified in RFC 8032) |
-| Body hash algorithm | BLAKE2b-512 (as specified in RFC 7693) |
+| Body hash algorithm | BLAKE-512 (as specified in RFC 7693) |
 | Body hash encoding | Standard Base64 with `=` padding (RFC 4648 §4) |
 | Timestamp format | Unix epoch integer (seconds since 1970-01-01T00:00:00Z) |
 
@@ -217,12 +217,12 @@ The signing string is a newline-delimited (`\n`) sequence of labeled values. The
 The body digest is computed as:
 
 ```
-digest = "BLAKE2b-512=" + Base64( BLAKE2b-512( UTF-8(body) ) )
+digest = "BLAKE-512=" + Base64( BLAKE-512( UTF-8(body) ) )
 ```
 
 - `body` is the raw UTF-8-encoded HTTP request or response body as it appears on the wire, before any transfer encoding is removed.
 - For requests with no body (e.g. GET), the digest MUST be computed over the empty byte string.
-- The prefix `BLAKE2b-512=` is a literal string prepended to the Base64-encoded hash.
+- The prefix `BLAKE-512=` is a literal string prepended to the Base64-encoded hash.
 
 ##### 3.2 Standard Signing String
 
@@ -368,7 +368,7 @@ Use the key lookup procedure (§2.3) to retrieve the PN's Ed25519 public key.
 
 Using the `headers` field as the ordered list of fields:
 
-- If `headers` is `"(created) (expires) digest"`: reconstruct the standard signing string (§3.2) using the `created` and `expires` values from the PN's `Authorization` header and the BLAKE2b-512 digest of the received callback body. This is a PN-initiated callback.
+- If `headers` is `"(created) (expires) digest"`: reconstruct the standard signing string (§3.2) using the `created` and `expires` values from the PN's `Authorization` header and the BLAKE-512 digest of the received callback body. This is a PN-initiated callback.
 - If `headers` is `"(created) (expires) digest request-signature"`: reconstruct the callback signing string (§3.3) using the above plus the value on the `request-signature` line. This is a solicited callback; proceed to Step 7.
 
 ##### Step 6 — Verify the PN's Ed25519 signature
@@ -395,7 +395,7 @@ Upon receiving a request from a CN, the PN or DS MUST perform the following veri
 2. Confirm `created` is not in the future beyond the subnet-configured clock skew tolerance (default: 5 seconds) and `expires` is not in the past.
 3. Confirm `algorithm` is `ed25519`.
 4. Fetch the CN's public key using the key lookup procedure (§2.3).
-5. Reconstruct the standard signing string (§3.2) using the `created` and `expires` values and the BLAKE2b-512 digest of the received request body.
+5. Reconstruct the standard signing string (§3.2) using the `created` and `expires` values and the BLAKE-512 digest of the received request body.
 6. Verify the decoded `signature` against the signing string using the CN's public key.
 7. Return the appropriate response with the responding NP's `Signature` response header (§5). The `Signature` header MUST use the Ack response signing string (§3.4), with the `request-signature` field set to the raw Base64 value extracted from the incoming request's `Authorization` header.
 
@@ -445,7 +445,7 @@ A PN sending a PN-initiated callback MUST assign a unique `messageId` to each no
 | CON-004-01 | Every Beckn HTTP request MUST carry an `Authorization` header in Beckn HTTP Signature format. | MUST |
 | CON-004-02 | Every Beckn HTTP synchronous response MUST carry a `Signature` response header signing the response body. | MUST |
 | CON-004-03 | The signature algorithm MUST be `ed25519`. No other value is permitted. | MUST |
-| CON-004-04 | The body digest MUST be computed using BLAKE2b-512 and encoded as `BLAKE2b-512={Base64}`. | MUST |
+| CON-004-04 | The body digest MUST be computed using BLAKE-512 and encoded as `BLAKE-512={Base64}`. | MUST |
 | CON-004-05 | The `keyId` field MUST use either the implicit format (`{namespace_id}/{registry_id}/{record_id}\|{algorithm}`) or the explicit format (full dedi protocol URL with `\|{algorithm}` suffix). | MUST |
 | CON-004-06 | An implicit `keyId` MUST be resolved exclusively via `https://fabric.nfh.global/registry/dedi/lookup/{keyId}` without URL-encoding the keyId string. | MUST |
 | CON-004-07 | The `expires` timestamp MUST NOT exceed the registered expiry of the signing key. | MUST |
@@ -508,9 +508,9 @@ The following v1.x patterns are breaking changes in v2.0:
 
 ```
 body = '{"context":{"action":"select",...},"message":{...}}'
-hash = BLAKE2b-512( UTF-8(body) )
-digest = "BLAKE2b-512=" + Base64(hash)
-       = "BLAKE2b-512=qK3Uvd39k+SHfSdG5igXsRY2Sh+nvBSNlQkLxzM7NnP4..."
+hash = BLAKE-512( UTF-8(body) )
+digest = "BLAKE-512=" + Base64(hash)
+       = "BLAKE-512=qK3Uvd39k+SHfSdG5igXsRY2Sh+nvBSNlQkLxzM7NnP4..."
 ```
 
 ##### Step 2 — Construct signing string
@@ -518,7 +518,7 @@ digest = "BLAKE2b-512=" + Base64(hash)
 ```
 (created): 1746518400
 (expires): 1746518700
-digest: BLAKE2b-512=qK3Uvd39k+SHfSdG5igXsRY2Sh+nvBSNlQkLxzM7NnP4...
+digest: BLAKE-512=qK3Uvd39k+SHfSdG5igXsRY2Sh+nvBSNlQkLxzM7NnP4...
 ```
 
 ##### Step 3 — Sign and assemble header
@@ -548,8 +548,8 @@ This is the raw Base64 value from the `signature="..."` field of the CN's `Autho
 
 ```
 ack_body = '{"message":{"status":"ACK","messageId":"550e8400-e29b-41d4-a716-446655440000"}}'
-digest = "BLAKE2b-512=" + Base64( BLAKE2b-512( UTF-8(ack_body) ) )
-       = "BLAKE2b-512=AckBodyDigestHere..."
+digest = "BLAKE-512=" + Base64( BLAKE-512( UTF-8(ack_body) ) )
+       = "BLAKE-512=AckBodyDigestHere..."
 ```
 
 ##### Step 3 — Construct Ack signing string
@@ -557,7 +557,7 @@ digest = "BLAKE2b-512=" + Base64( BLAKE2b-512( UTF-8(ack_body) ) )
 ```
 (created): 1746518401
 (expires): 1746518701
-digest: BLAKE2b-512=AckBodyDigestHere...
+digest: BLAKE-512=AckBodyDigestHere...
 request-signature: Base64EncodedEd25519SignatureHere==
 ```
 
@@ -587,8 +587,8 @@ cn_signature_value = "Base64EncodedEd25519SignatureHere=="
 
 ```
 callback_body = '{"context":{"action":"on_select","transactionId":"550e8400-e29b-41d4-a716-446655440001","messageId":"550e8400-e29b-41d4-a716-446655440000",...},"message":{...}}'
-digest = "BLAKE2b-512=" + Base64( BLAKE2b-512( UTF-8(callback_body) ) )
-       = "BLAKE2b-512=rN4Wve49l+TIfTeH6jhYtCS3Ti+owCTOmRlMyy8OoQQ5..."
+digest = "BLAKE-512=" + Base64( BLAKE-512( UTF-8(callback_body) ) )
+       = "BLAKE-512=rN4Wve49l+TIfTeH6jhYtCS3Ti+owCTOmRlMyy8OoQQ5..."
 ```
 
 ##### Step 3 — Construct callback signing string
@@ -596,7 +596,7 @@ digest = "BLAKE2b-512=" + Base64( BLAKE2b-512( UTF-8(callback_body) ) )
 ```
 (created): 1746518450
 (expires): 1746518750
-digest: BLAKE2b-512=rN4Wve49l+TIfTeH6jhYtCS3Ti+owCTOmRlMyy8OoQQ5...
+digest: BLAKE-512=rN4Wve49l+TIfTeH6jhYtCS3Ti+owCTOmRlMyy8OoQQ5...
 request-signature: Base64EncodedEd25519SignatureHere==
 ```
 
@@ -628,7 +628,7 @@ This RFC establishes a bilateral, non-repudiable authentication model for Beckn 
 
 1. **Explicit keyId trust model:** Should the spec provide a standard mechanism for NPs to publish their list of trusted external registries, or leave this to operator configuration?
 
-2. **Challenge-response authentication for fabric service callbacks:** Fabric services (NS, GRR, CS) are implicitly trusted by all NPs on the fabric. Given this implicit trust, should the spec define a challenge-response path as the designated verification mechanism for fabric service callbacks, rather than requiring full request-body signature verification? The proposed mechanism: the NP generates a challenge by encrypting `(input || nonce)` with the fabric service's well-known public key and includes it in the outbound request; the fabric service decrypts the challenge using its private key and echoes the plaintext `(input || nonce)` back in the callback response; the NP verifies the echo matches its original plaintext, confirming the callback originated from a party in possession of the fabric's private key. This would be particularly valuable for large payloads such as `catalog/pull` results delivered by the CS to a DS, where computing and verifying a BLAKE2b-512 digest and Ed25519 signature over the full response body is non-trivial. Open considerations include: how the challenge is transmitted (a dedicated request header or a field in the `context` object); whether the response body should still carry a signature for non-repudiation even if the challenge-response is used for source authentication; and whether this mechanism should apply to all fabric service interactions or only to specific endpoints where payload size makes full verification costly.
+2. **Challenge-response authentication for fabric service callbacks:** Fabric services (NS, GRR, CS) are implicitly trusted by all NPs on the fabric. Given this implicit trust, should the spec define a challenge-response path as the designated verification mechanism for fabric service callbacks, rather than requiring full request-body signature verification? The proposed mechanism: the NP generates a challenge by encrypting `(input || nonce)` with the fabric service's well-known public key and includes it in the outbound request; the fabric service decrypts the challenge using its private key and echoes the plaintext `(input || nonce)` back in the callback response; the NP verifies the echo matches its original plaintext, confirming the callback originated from a party in possession of the fabric's private key. This would be particularly valuable for large payloads such as `catalog/pull` results delivered by the CS to a DS, where computing and verifying a BLAKE-512 digest and Ed25519 signature over the full response body is non-trivial. Open considerations include: how the challenge is transmitted (a dedicated request header or a field in the `context` object); whether the response body should still carry a signature for non-repudiation even if the challenge-response is used for source authentication; and whether this mechanism should apply to all fabric service interactions or only to specific endpoints where payload size makes full verification costly.
 
 3. **End-to-end catalog integrity — PN origin proof through the CS:** When a PN publishes a catalog to the CS via `/catalog/publish`, the HTTP request signature (defined in §4) authenticates the publish request but does not travel with the catalog payload. When the CS subsequently delivers that catalog to a DS — either via `/on_discover`, a `catalog/pull` callback, or a subscription push — the DS receives a payload signed by the CS, not by the PN. Implicit trust in the CS means the DS trusts the CS not to tamper, but it provides no independent means to verify that the catalog contents are exactly what the PN originally submitted. Should the spec require PNs to produce an application-layer signature over the catalog payload itself (separate from the HTTP request signature) that the CS preserves and forwards verbatim, allowing the DS — and ultimately the CN — to verify PN origin and integrity independently of the CS? Open considerations include: where the PN payload signature is carried (a `signature` field within the `Catalog` schema, or a parallel metadata envelope); whether the CS should validate the PN payload signature before indexing and reject malformed submissions; how key rotation interacts with previously indexed catalogs whose payload signatures were produced with an older key; and whether end-to-end integrity verification should be mandatory or optional given that the CS is already implicitly trusted.
 
