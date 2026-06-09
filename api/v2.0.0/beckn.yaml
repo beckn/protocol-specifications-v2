@@ -2380,6 +2380,12 @@ components:
             Array of catalogs matching the discovery request.'
           items:
             $ref: '#/components/schemas/Catalog'
+        fanOutStatus:
+          description: >
+            Present when this callback is part of a fan-out sequence. The CN uses
+            this to track progress and render partial results while waiting for
+            remaining provider responses.
+          $ref: '#/components/schemas/FanOutStatus'
       additionalProperties: false
 
     OnInitAction:
@@ -2786,6 +2792,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Resource'
+        resourceCategories:
+          description: >
+            Array of ResourceCategory declarations that signal provider capability
+            for fan-out discovery. A catalog MAY contain resourceCategories instead
+            of (or alongside) a full resources array.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceCategory'
         provider:
           $ref: '#/components/schemas/Provider'
         validity:
@@ -2800,6 +2814,8 @@ components:
         - resources
       - required:
         - offers
+      - required:
+        - resourceCategories
       additionalProperties: false
 
     CatalogOnPublishAction:
@@ -3523,6 +3539,12 @@ components:
             $ref: '#/components/schemas/SpatialConstraint'
         mediaSearch:
           $ref: '#/components/schemas/MediaSearch'
+        fanOut:
+          description: >
+            When present, instructs the DS to perform live fan-out calls to matching
+            PNs at query time. MUST be used together with at least one of textSearch,
+            filters, or spatial — fanOut alone without a search criterion is invalid.
+          $ref: '#/components/schemas/FanOutDirective'
       additionalProperties: false
 
     Location:
@@ -3808,6 +3830,133 @@ components:
         resourceAttributes:
           description: All the properties of a resource that describe its value, its terms of usage, fulfillment, and consideration
           $ref: '#/components/schemas/Attributes'
+
+    ResourceCategory:
+      type: object
+      description: >
+        A capability declaration that signals to the Discovery Service that this provider
+        participates in a given category and can respond to live fan-out queries.
+        ResourceCategories are published alongside (or instead of) full Resource lists
+        and are stored by the DS for provider matching at query time.
+      required:
+        - id
+        - descriptor
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this category declaration within the catalog.
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        schemaTypes:
+          type: array
+          description: >
+            One or more schema type URIs that this provider can serve in this category.
+            The DS uses these to match fan-out requests with the correct providers.
+          items:
+            type: string
+            format: uri
+        liveAttributes:
+          type: array
+          description: >
+            Advisory list of attribute names that this provider exposes for live queries.
+            The DS MAY use this to route fan-out requests that filter on these attributes.
+          items:
+            type: string
+        categoryAttributes:
+          $ref: '#/components/schemas/Attributes'
+
+    FanOutDirective:
+      type: object
+      description: >
+        When present in an Intent, instructs the DS to perform live fan-out calls
+        to matching PNs at query time. The DS MUST NOT perform fan-out if this field
+        is absent. Fan-out is supplemental — the intent MUST also include at least one
+        of textSearch, filters, or spatial.
+      additionalProperties: false
+      properties:
+        maxProviders:
+          type: integer
+          description: Maximum number of providers to fan out to. Defaults to 10.
+          minimum: 1
+          maximum: 100
+          default: 10
+        timeoutMs:
+          type: integer
+          description: Per-provider call timeout in milliseconds. Defaults to 5000.
+          minimum: 500
+          maximum: 30000
+          default: 5000
+        streamingMode:
+          type: string
+          description: >
+            INCREMENTAL — the DS returns each provider's response as it arrives (multiple
+            on_discover callbacks, one per provider). AGGREGATED — the DS collects all
+            responses and delivers a single on_discover callback.
+          enum:
+            - INCREMENTAL
+            - AGGREGATED
+          default: INCREMENTAL
+        schemaTypes:
+          type: array
+          description: >
+            Restrict fan-out to providers registered under these schema type URIs.
+            When absent, the DS fans out to all matching providers.
+          items:
+            type: string
+            format: uri
+
+    FanOutStatus:
+      type: object
+      description: >
+        Present in on_discover callbacks when the response is part of a fan-out sequence.
+        The DS attaches this to each callback so the CN can track progress and render
+        partial results while waiting for remaining providers.
+      required:
+        - phase
+      additionalProperties: false
+      properties:
+        phase:
+          type: string
+          description: >
+            INITIATED — fan-out started, no provider responses yet.
+            PARTIAL — at least one provider responded, others still pending.
+            COMPLETE — all providers have responded or timed out.
+          enum:
+            - INITIATED
+            - PARTIAL
+            - COMPLETE
+        participatingProviders:
+          type: array
+          description: Per-provider status entries.
+          items:
+            type: object
+            required:
+              - providerId
+              - providerName
+            properties:
+              providerId:
+                type: string
+              providerName:
+                type: string
+              bppId:
+                type: string
+              status:
+                type: string
+                enum:
+                  - PENDING
+                  - RESPONDED
+                  - TIMED_OUT
+                  - ERROR
+        totalProviders:
+          type: integer
+          description: Total number of providers selected for fan-out.
+        respondedProviders:
+          type: integer
+          description: Number of providers that have responded so far.
+        timedOutProviders:
+          type: integer
+          description: Number of providers that exceeded timeoutMs without responding.
 
     Settlement:
       type: object
