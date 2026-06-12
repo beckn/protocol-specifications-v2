@@ -3996,7 +3996,7 @@ components:
           - ANY
           - ALL
           - NONE
-          default: any
+          default: ANY
         srid:
           description: Coordinate Reference System identifier for `geometry`. Default is `"EPSG:4326"`. If provided, servers MAY reproject to EPSG:4326 internally.
           type: string
