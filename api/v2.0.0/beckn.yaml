@@ -2992,11 +2992,9 @@ components:
             \ array of strings to support multi-network scoping."
           oneOf:
             - type: string
-              minLength: 1
             - type: array
               items:
                 type: string
-                minLength: 1
               minItems: 1
               uniqueItems: true
         timestamp:
