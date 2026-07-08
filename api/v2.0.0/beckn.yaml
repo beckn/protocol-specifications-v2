@@ -2079,7 +2079,7 @@ components:
         \ chains the responder's signature to the incoming request's Authorization\
         \ signature via the `request-signature` field, cryptographically proving the\
         \ responder was in possession of the specific inbound request.\n\nSee `#/components/schemas/AckSignature`\
-        \ for the wire format and signing string construction. See NFH-004 Authentication\
+        \ for the wire format and signing string construction. See NFH-007 Authentication\
         \ and Trust §5 for the full signing procedure."
       required: true
       schema:
@@ -3847,20 +3847,20 @@ components:
         \ on the fabric GRR:\n\n    (created): {unix_timestamp}\n    (expires): {unix_timestamp}\n\
         \    digest: BLAKE-512={base64_body_hash}\n\nThe `headers` attribute of\
         \ the Authorization header MUST be `\"(created) (expires) digest\"`. The\
-        \ `keyId` field identifies the signer using the format `{namespace}/{registry}/{record}|ed25519`\
-        \ (implicit, resolved at GRR) or a full dedi protocol URL followed by `|ed25519`\
-        \ (explicit). The algorithm MUST be `ed25519`. The body digest MUST use BLAKE2b-512\
+        \ `keyId` field identifies the signer using the pipe-separated format\
+        \ `{subscriber_id}|{unique_key_id}|ed25519`. The algorithm MUST be `ed25519`.\
+        \ The body digest MUST use BLAKE2b-512\
         \ encoded as `BLAKE-512={Base64}`.\n\nUsed for: CN→PN requests across\
         \ all phases of the value-exchange lifecycle; PN→CN PN-initiated callbacks.\
         \ The receiving actor verifies it against the sender's registered public key.\
         \ Requests with an absent, expired, or unverifiable Signature MUST be rejected\
         \ with 401 NackUnauthorized.\n\nFor PN solicited callbacks, use CallbackSignature\
         \ instead. For synchronous response signing, see components/headers/AckSignatureHeader.\
-        \ See NFH-004 Authentication and Trust for the full specification."
+        \ See NFH-007 Authentication and Trust for the full specification."
       type: string
       pattern: ^Signature keyId="[^"]+",algorithm="ed25519",created="\d+",expires="\d+",headers="\(created\)
         \(expires\) digest",signature="[A-Za-z0-9+/]+=*"$
-      example: 'Signature keyId="example.ns/gro.example/bap-key-001|ed25519",algorithm="ed25519",created="1714000000",expires="1714000600",headers="(created)
+      example: 'Signature keyId="example-bap.beckn.io|bap-key-001|ed25519",algorithm="ed25519",created="1714000000",expires="1714000600",headers="(created)
         (expires) digest",signature="BASE64SIGNATURE=="'
 
     CallbackSignature:
@@ -3882,11 +3882,11 @@ components:
         \ using BLAKE2b-512.\n\nUsed for: PN→CN solicited callbacks only. For PN-initiated\
         \ notifications (no preceding CN request), use the standard Signature schema\
         \ instead. For synchronous response signing, see components/headers/AckSignatureHeader.\
-        \ See NFH-004 Authentication and Trust §6 for the full callback signing procedure."
+        \ See NFH-007 Authentication and Trust §6 for the full callback signing procedure."
       type: string
       pattern: ^Signature keyId="[^"]+",algorithm="ed25519",created="\d+",expires="\d+",headers="\(created\)
         \(expires\) digest request-signature",signature="[A-Za-z0-9+/]+=*"$
-      example: 'Signature keyId="example.ns/gro.example/bpp-key-001|ed25519",algorithm="ed25519",created="1714000060",expires="1714000660",headers="(created)
+      example: 'Signature keyId="example-bpp.beckn.io|bpp-key-001|ed25519",algorithm="ed25519",created="1714000060",expires="1714000660",headers="(created)
         (expires) digest request-signature",signature="BPPSIGNATURE=="'
 
     AckSignature:
@@ -3906,12 +3906,12 @@ components:
         \ NP. The algorithm MUST be `ed25519`. The body digest covers the response\
         \ body using BLAKE2b-512.\n\nUsed for: all synchronous HTTP responses across\
         \ all Beckn endpoints. For request signing, see Signature. For PN solicited\
-        \ callback signing, see CallbackSignature. See NFH-004 Authentication and\
+        \ callback signing, see CallbackSignature. See NFH-007 Authentication and\
         \ Trust §5 for the full response signing procedure."
       type: string
       pattern: ^Signature keyId="[^"]+",algorithm="ed25519",created="\d+",expires="\d+",headers="\(created\)
         \(expires\) digest request-signature",signature="[A-Za-z0-9+/]+=*"$
-      example: 'Signature keyId="example.ns/gro.example/bpp-key-001|ed25519",algorithm="ed25519",created="1714000060",expires="1714000660",headers="(created)
+      example: 'Signature keyId="example-bpp.beckn.io|bpp-key-001|ed25519",algorithm="ed25519",created="1714000060",expires="1714000660",headers="(created)
         (expires) digest request-signature",signature="ACKSIGNATURE=="'
 
     Support:

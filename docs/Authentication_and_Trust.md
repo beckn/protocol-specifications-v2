@@ -36,11 +36,7 @@ This document defines the authentication and trust model for Beckn Protocol v2.0
     - [Normative Requirements](#normative-requirements)
       - [1. Cryptographic Primitives](#1-cryptographic-primitives)
       - [2. Key Identity — the keyId Field](#2-key-identity--the-keyid-field)
-        - [2.1 Implicit Format](#21-implicit-format)
-        - [2.2 Explicit Format](#22-explicit-format)
-        - [2.3 Key Lookup Procedure](#23-key-lookup-procedure)
-          - [For implicit keyIds](#for-implicit-keyids)
-          - [For explicit keyIds](#for-explicit-keyids)
+        - [2.1 Key Lookup Procedure](#21-key-lookup-procedure)
       - [3. Signing String Construction](#3-signing-string-construction)
         - [3.1 Body Digest](#31-body-digest)
         - [3.2 Standard Signing String](#32-standard-signing-string)
@@ -72,7 +68,6 @@ This document defines the authentication and trust model for Beckn Protocol v2.0
       - [Key rotation](#key-rotation)
       - [Privacy](#privacy)
       - [Key compromise](#key-compromise)
-      - [Explicit keyId trust](#explicit-keyid-trust)
     - [Migration Notes](#migration-notes)
     - [Examples](#examples)
       - [Example 1: CN Request to PN](#example-1-cn-request-to-pn)
@@ -101,7 +96,7 @@ Beckn Protocol enables bilateral, asynchronous value-exchange interactions betwe
 
 The trust model in both Beckn Protocol v1.x and v2.0 is identical in principle: each NP independently authenticates inbound messages by fetching the sender's registered public key from a verified public registry and verifying the Ed25519 signature over the message body. The Beckn Gateway (BG), present in v1.x, was a routing intermediary — it forwarded requests between CNs and PNs — but it was never the source of trust and was not an authentication component. The structural change in v2.0 is the registry protocol. In v1.x, NPs issued Beckn Protocol-format API calls to query subscriber records from a Beckn-compliant registry. In v2.0, NPs issue dedi (Decentralized Directory) protocol-format API calls to query namespace and key records from a dedi-compliant registry. The GRR at `fabric.nfh.global/registry` is the canonical v2.0 registry; it is not a Beckn API and implements no Beckn endpoint. The removal of the BG simplifies the message flow to direct CN ↔ PN/DS communication but does not change the underlying trust mechanism.
 
-This RFC specifies: (a) the key identity format that binds a signing key to a fabric-registered namespace; (b) the signing string construction that commits the sender's identity to a specific message body and time window; (c) the request signing procedure; (d) the synchronous response signing procedure that enables the sender to verify authenticated receipt; (e) the callback signing procedure that chains the PN's signature to the CN's original request signature; (f) the pre-call verification procedure for NPs on the same network; and (g) replay protection rules for CN requests and PN callbacks.
+This RFC specifies: (a) the key identity format that binds a signing key to a fabric-registered subscriber; (b) the signing string construction that commits the sender's identity to a specific message body and time window; (c) the request signing procedure; (d) the synchronous response signing procedure that enables the sender to verify authenticated receipt; (e) the callback signing procedure that chains the PN's signature to the CN's original request signature; (f) the pre-call verification procedure for NPs on the same network; and (g) replay protection rules for CN requests and PN callbacks.
 
 ## Specification
 
@@ -116,12 +111,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 - **CS (Cataloging Service):** The fabric service that receives, validates, and indexes catalogs submitted by PNs and distributes them to DSes.
 - **GRR (Global Root Registry):** The fabric's canonical identity and address lookup service, hosted at `fabric.nfh.global/registry`, operated by the Networks for Humanity Foundation.
 - **dedi protocol:** The Decentralized Directory protocol used by the GRR for namespace and key management.
-- **keyId:** A structured string that uniquely identifies a signing key registered on a dedi-protocol registry.
+- **keyId:** A pipe-separated string that uniquely identifies a subscriber's signing key on the registry, composed of three components — `subscriber_id`, `unique_key_id`, and `algorithm` (see §2).
 - **Signing string:** The canonical byte sequence that is signed and verified using Ed25519.
 - **Body digest:** The BLAKE2b-512 hash of the HTTP request or response body, encoded as described in §3.1.
 - **request-signature:** The raw Ed25519 signature value extracted from an incoming request's `Authorization` header and included verbatim in either a PN's callback signing string (§3.3) or a responding NP's Ack response signing string (§3.4), cryptographically binding the outgoing message to the specific request that triggered it.
-- **Implicit keyId:** A keyId that uses a path-only format and is resolved exclusively via the GRR at `fabric.nfh.global/registry`.
-- **Explicit keyId:** A keyId that embeds the full registry URL, allowing resolution against any dedi-protocol compliant registry.
 - **PN-initiated callback:** A callback sent by a PN to a CN's `/on_*` endpoint without a preceding CN request in the current message exchange. Only endpoints designated as supporting PN-initiated callbacks in the Beckn Protocol API specification may send them.
 - **Solicited callback:** A callback sent by a PN to a CN's `/on_*` endpoint in direct response to a prior CN request accepted with a `200 Ack`.
 
@@ -144,71 +137,39 @@ No other signature or hash algorithm is permitted. An NP that receives a message
 
 #### 2. Key Identity — the keyId Field
 
-Every Beckn HTTP Signature carries a `keyId` field that uniquely identifies the signing key. The `keyId` MUST take exactly one of two formats: implicit or explicit.
-
-##### 2.1 Implicit Format
+Every Beckn HTTP Signature carries a `keyId` field that uniquely identifies the signing key. The `keyId` MUST be a single string composed of exactly three pipe-separated (`|`) components:
 
 ```
-{namespace_id}/{registry_id}/{record_id}|{algorithm}
+{subscriber_id}|{unique_key_id}|{algorithm}
 ```
 
-- `{namespace_id}` — the NP's namespace on the fabric, as registered via the Namespacing Service.
-- `{registry_id}` — the registry within that namespace that holds the key record.
-- `{record_id}` — the specific record identifier within the registry.
-- `{algorithm}` — MUST be `ed25519`.
-- The three path components are separated by `/`; the algorithm is separated from the path by `|`.
-
-An implicit keyId MUST be resolvable via the fabric's Global Root Registry only. Verifying NPs MUST treat an implicit keyId as residing at `https://fabric.nfh.global/registry` and MUST NOT attempt to resolve it against any other registry.
+- `{subscriber_id}` — the subscriber's FQDN.
+- `{unique_key_id}` — the registry-generated key identifier (a UUID is RECOMMENDED) that identifies the specific key in the fabric.
+- `{algorithm}` — the signing algorithm; MUST match the `algorithm` attribute of the `Authorization` header and MUST be `ed25519`.
 
 **Example:**
 ```
-example-bap.beckn.io/keys/signing-key-001|ed25519
+example-bap.beckn.io|ae3ea24b-cfec-495e-81f8-044aaef164ac|ed25519
 ```
 
-##### 2.2 Explicit Format
+##### 2.1 Key Lookup Procedure
 
-```
-https://{registry_domain}/{namespace_id}/{registry_id}/{record_id}|{algorithm}
-```
+The verifying NP MUST resolve the signing key by looking up the subscriber's key record from the registry using the `subscriber_id` and `unique_key_id` components extracted from the `keyId`. The verifying NP MUST:
 
-- The full URL up to (but not including) the `|` separator is a dedi protocol-compliant registry URL that resolves to the key record.
-- `{algorithm}` — MUST be `ed25519`.
-- The algorithm is appended after the URL using the `|` separator.
+1. Extract `subscriber_id`, `unique_key_id`, and `algorithm` from the `keyId`.
+2. Confirm the `algorithm` component extracted from the `keyId` matches the `algorithm` attribute of the `Authorization` header and equals `ed25519`. If it does not, reject with `401`.
+3. Look up the subscriber's key record from the registry using `subscriber_id` and `unique_key_id`.
+4. Extract the signing public key from the registry response.
+5. Verify the Ed25519 signature using that public key.
+6. If the lookup fails or returns no key, reject with `401`.
 
-An explicit keyId instructs the verifier to resolve the public key from the specified registry URL rather than from the GRR. The target URL MUST be a dedi protocol-compliant registry. NPs MAY choose not to trust registries outside `fabric.nfh.global/registry`; in that case they MUST reject signatures carrying explicit keyIds from untrusted registries with a `401 NackUnauthorized`.
-
-**Example:**
-```
-https://registry.example-nfo.io/example-bpp.beckn.io/keys/signing-key-001|ed25519
-```
-
-##### 2.3 Key Lookup Procedure
-
-###### For implicit keyIds
-
-The verifying NP MUST fetch the public key by issuing an HTTP GET request to:
-
-```
-https://fabric.nfh.global/registry/dedi/lookup/{keyId}
-```
-
-where `{keyId}` is the full implicit keyId string — including the `|algorithm` suffix — appended to the path **without URL-encoding**. The `|` and `/` characters MUST be transmitted as literal characters in the path.
-
-**Example lookup URL:**
-```
-https://fabric.nfh.global/registry/dedi/lookup/example-bap.beckn.io/keys/signing-key-001|ed25519
-```
-
-###### For explicit keyIds
-
-The verifying NP MUST extract the URL portion (everything before `|`) and issue an HTTP GET to that URL to retrieve the key record.
-
-In both cases, the verifying NP MUST:
-
-1. Confirm the `algorithm` suffix matches the `algorithm` field in the `Authorization` header. If they differ, reject with `401`.
-2. Extract the public key from the registry response.
-3. Verify the Ed25519 signature using that public key.
-4. If the lookup fails or returns no key, reject with `401`.
+> **Informative — Beckn Fabric registry lookup.** The URL shape below reflects how the current Beckn Fabric dedi registry resolves a key; it is a Fabric deployment convention, **not** a normative part of the dedi protocol, and other registries MAY use a different scheme. The Fabric registry plugin builds the lookup URL as:
+>
+> ```
+> {registry_base_url}/lookup/{subscriber_id}/{registry_scope}/{unique_key_id}
+> ```
+>
+> where `{registry_base_url}` is the configured registry endpoint including the GRR base path (e.g. `https://fabric.nfh.global/registry`) and `{registry_scope}` is a registry-specific segment. The signing public key is read from the returned key record. The concrete scope value and response layout are Fabric deployment details and are documented separately from this RFC.
 
 #### 3. Signing String Construction
 
@@ -286,7 +247,7 @@ Attribute definitions:
 
 | Attribute | Type | Description |
 |---|---|---|
-| `keyId` | string | The signing key identifier in implicit or explicit format (§2). |
+| `keyId` | string | The signing key identifier in `{subscriber_id}|{unique_key_id}|{algorithm}` format (§2). |
 | `algorithm` | string | MUST be `ed25519`. |
 | `created` | integer string | Unix timestamp of signature creation. |
 | `expires` | integer string | Unix timestamp of signature expiry. |
@@ -327,7 +288,7 @@ The signing procedure for a synchronous response is:
 6. Base64-encode the 64-byte signature.
 7. Add the `Signature` header to the HTTP response.
 
-The sending NP SHOULD verify the `Signature` response header upon receiving a synchronous response, using the responding NP's public key fetched via the key lookup procedure (§2.3). The sender SHOULD confirm the `request-signature` field in the response matches the `signature` value from its own outbound `Authorization` header for that request. A missing or invalid `Signature` response header does not invalidate the transaction but SHOULD be logged and MAY be treated as a degraded trust signal.
+The sending NP SHOULD verify the `Signature` response header upon receiving a synchronous response, using the responding NP's public key fetched via the key lookup procedure (§2.1). The sender SHOULD confirm the `request-signature` field in the response matches the `signature` value from its own outbound `Authorization` header for that request. A missing or invalid `Signature` response header does not invalidate the transaction but SHOULD be logged and MAY be treated as a degraded trust signal.
 
 #### 6. Callback Signing — PN to CN
 
@@ -364,7 +325,7 @@ Confirm `algorithm` is `ed25519`. Reject any other value.
 
 ##### Step 4 — Fetch the PN's public key
 
-Use the key lookup procedure (§2.3) to retrieve the PN's Ed25519 public key.
+Use the key lookup procedure (§2.1) to retrieve the PN's Ed25519 public key.
 
 ##### Step 5 — Reconstruct the signing string
 
@@ -396,7 +357,7 @@ Upon receiving a request from a CN, the PN or DS MUST perform the following veri
 1. Parse `keyId`, `algorithm`, `created`, `expires`, `headers`, and `signature` from the `Authorization` header.
 2. Confirm `created` is not in the future beyond the subnet-configured clock skew tolerance (default: 60 seconds) and `expires` is not in the past.
 3. Confirm `algorithm` is `ed25519`.
-4. Fetch the CN's public key using the key lookup procedure (§2.3).
+4. Fetch the CN's public key using the key lookup procedure (§2.1).
 5. Reconstruct the standard signing string (§3.2) using the `created` and `expires` values and the BLAKE2b-512 digest of the received request body.
 6. Verify the decoded `signature` against the signing string using the CN's public key.
 7. Return the appropriate response with the responding NP's `Signature` response header (§5). The `Signature` header MUST use the Ack response signing string (§3.4), with the `request-signature` field set to the raw Base64 value extracted from the incoming request's `Authorization` header.
@@ -448,8 +409,8 @@ A PN sending a PN-initiated callback MUST assign a unique `messageId` to each no
 | CON-004-02 | Every Beckn HTTP synchronous response MUST carry a `Signature` response header signing the response body. | MUST |
 | CON-004-03 | The signature algorithm MUST be `ed25519`. No other value is permitted. | MUST |
 | CON-004-04 | The body digest MUST be computed using BLAKE2b-512 and encoded as `BLAKE-512={Base64}`. | MUST |
-| CON-004-05 | The `keyId` field MUST use either the implicit format (`{namespace_id}/{registry_id}/{record_id}\|{algorithm}`) or the explicit format (full dedi protocol URL with `\|{algorithm}` suffix). | MUST |
-| CON-004-06 | An implicit `keyId` MUST be resolved exclusively via `https://fabric.nfh.global/registry/dedi/lookup/{keyId}` without URL-encoding the keyId string. | MUST |
+| CON-004-05 | The `keyId` field MUST use the pipe-separated format `{subscriber_id}\|{unique_key_id}\|{algorithm}`. | MUST |
+| CON-004-06 | An NP MUST resolve the signing key from the registry using the `subscriber_id` and `unique_key_id` components of the `keyId`. | MUST |
 | CON-004-07 | The `expires` timestamp MUST NOT exceed the registered expiry of the signing key. | MUST |
 | CON-004-08 | An NP receiving a Beckn request with a missing, expired, or unverifiable signature MUST return `401 NackUnauthorized`. | MUST |
 | CON-004-09 | A PN sending a solicited callback to a CN MUST use the callback signing string, appending the CN's original `signature` value as the `request-signature` field. | MUST |
@@ -457,16 +418,15 @@ A PN sending a PN-initiated callback MUST assign a unique `messageId` to each no
 | CON-004-11 | The CN MUST verify the `request-signature` field in a PN solicited callback against its own previously sent signature for the same `transactionId`/`messageId`. | MUST |
 | CON-004-12 | A PN sending a PN-initiated callback MUST use the standard signing string with `headers="(created) (expires) digest"`. | MUST |
 | CON-004-13 | The `created` timestamp SHOULD NOT be more than 60 seconds in the future relative to the verifier's clock. NFOs MAY configure a different tolerance for their subnet; all NPs on that subnet MUST use the configured value. | SHOULD |
-| CON-004-14 | An NP MUST NOT trust an explicit `keyId` resolving to a registry outside `fabric.nfh.global/registry` unless that registry has been explicitly configured as trusted by the NP's operator. | SHOULD |
-| CON-004-15 | The `request-signature` value included in the callback signing string MUST be the raw Base64 `signature` attribute value from the CN's `Authorization` header, with no additional encoding or transformation. | MUST |
-| CON-004-16 | A CN MUST assign a unique `messageId` to every outbound request. | MUST |
-| CON-004-17 | A PN solicited callback MUST carry the same `messageId` as the triggering CN request. | MUST |
-| CON-004-18 | A CN MUST persist each outbound request's `messageId` until the corresponding solicited callback is received or the request's `expires` timestamp passes. | MUST |
-| CON-004-19 | A PN sending a PN-initiated callback MUST carry a unique `messageId`. | MUST |
-| CON-004-20 | A PN sending a PN-initiated callback MUST carry a `transactionId` matching an active, confirmed transaction between that CN and PN. | MUST |
-| CON-004-21 | When both the sending and receiving NP are members of the same subnet, the sending NP SHOULD perform a `subscriber_reference` registry lookup for the receiving NP immediately before dispatching a message. | SHOULD |
-| CON-004-22 | A PN SHOULD verify that its own signing key has not expired before sending a solicited callback. | SHOULD |
-| CON-004-23 | Every synchronous response `Signature` header MUST use the Ack response signing string (§3.4) with `headers="(created) (expires) digest request-signature"`. The `request-signature` value MUST be the raw Base64 `signature` attribute value from the incoming request's `Authorization` header. | MUST |
+| CON-004-14 | The `request-signature` value included in the callback signing string MUST be the raw Base64 `signature` attribute value from the CN's `Authorization` header, with no additional encoding or transformation. | MUST |
+| CON-004-15 | A CN MUST assign a unique `messageId` to every outbound request. | MUST |
+| CON-004-16 | A PN solicited callback MUST carry the same `messageId` as the triggering CN request. | MUST |
+| CON-004-17 | A CN MUST persist each outbound request's `messageId` until the corresponding solicited callback is received or the request's `expires` timestamp passes. | MUST |
+| CON-004-18 | A PN sending a PN-initiated callback MUST carry a unique `messageId`. | MUST |
+| CON-004-19 | A PN sending a PN-initiated callback MUST carry a `transactionId` matching an active, confirmed transaction between that CN and PN. | MUST |
+| CON-004-20 | When both the sending and receiving NP are members of the same subnet, the sending NP SHOULD perform a `subscriber_reference` registry lookup for the receiving NP immediately before dispatching a message. | SHOULD |
+| CON-004-21 | A PN SHOULD verify that its own signing key has not expired before sending a solicited callback. | SHOULD |
+| CON-004-22 | Every synchronous response `Signature` header MUST use the Ack response signing string (§3.4) with `headers="(created) (expires) digest request-signature"`. The `request-signature` value MUST be the raw Base64 `signature` attribute value from the incoming request's `Authorization` header. | MUST |
 
 ### Cross-cutting considerations
 
@@ -480,15 +440,11 @@ When an NP rotates its signing key, the old key MUST remain resolvable in the GR
 
 #### Privacy
 
-The `keyId` path exposes the NP's namespace identifier in every request header. This is by design: fabric identity is not pseudonymous at the protocol level.
+The `keyId` exposes the NP's `subscriber_id` in every request header. This is by design: fabric identity is not pseudonymous at the protocol level.
 
 #### Key compromise
 
 If an NP's private key is compromised, the NP MUST immediately revoke the key record in the GRR. The GRR revocation status MUST be checked at verification time; a cached public key from a revoked record MUST NOT be used to verify signatures.
-
-#### Explicit keyId trust
-
-Allowing explicit keyIds pointing to arbitrary registries creates a trust bootstrapping problem. NPs that have not configured explicit trust for a given registry SHOULD default to rejecting such signatures rather than accepting them, to avoid being deceived by rogue registries.
 
 ### Migration Notes
 
@@ -498,7 +454,7 @@ The following v1.x patterns are breaking changes in v2.0:
 2. **Registry protocol change:** The v1.x Beckn Protocol-compliant registry lookup is replaced by dedi protocol-compliant lookup against `fabric.nfh.global/registry`. All registry query code MUST be updated to the dedi protocol API.
 3. **Request-signature chaining:** Solicited callbacks now carry the CN's original signature as the `request-signature` field in the signing string. v1.x callback implementations MUST add this field with `headers="(created) (expires) digest request-signature"`.
 4. **Synchronous response signing:** Every response now requires a `Signature` header using the Ack response signing string (§3.4), which includes `request-signature`. v1.x implementations that returned unsigned responses MUST add this; implementations that used a 3-line signing string for responses MUST add the `request-signature` field.
-5. **keyId format change:** The v1.x format `{subscriber_id}|{unique_key_id}|{algorithm}` is replaced by the path-based implicit format `{namespace_id}/{registry_id}/{record_id}|{algorithm}`. Existing key registrations MUST be migrated to the new namespace structure in the GRR before go-live on v2.0.
+5. **keyId format retained:** The `keyId` format (§2) is unchanged from v1.x. No migration of the keyId string is required. What changes is the registry protocol used to resolve it (dedi lookup against `fabric.nfh.global/registry`, per item 2 above); the `subscriber_id` and `unique_key_id` components carry over directly as the lookup keys.
 
 ### Examples
 
@@ -528,7 +484,7 @@ digest: BLAKE-512=qK3Uvd39k+SHfSdG5igXsRY2Sh+nvBSNlQkLxzM7NnP4...
 ```http
 POST /select HTTP/1.1
 Host: pn.example.com
-Authorization: Signature keyId="cn.example.com/keys/k001|ed25519",algorithm="ed25519",created="1746518400",expires="1746518700",headers="(created) (expires) digest",signature="Base64EncodedEd25519SignatureHere=="
+Authorization: Signature keyId="cn.example.com|k001|ed25519",algorithm="ed25519",created="1746518400",expires="1746518700",headers="(created) (expires) digest",signature="Base64EncodedEd25519SignatureHere=="
 Content-Type: application/json
 
 {"context":{"action":"select","transactionId":"550e8400-e29b-41d4-a716-446655440001","messageId":"550e8400-e29b-41d4-a716-446655440000",...},"message":{...}}
@@ -568,7 +524,7 @@ request-signature: Base64EncodedEd25519SignatureHere==
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json
-Signature: keyId="pn.example.com/keys/k002|ed25519",algorithm="ed25519",created="1746518401",expires="1746518701",headers="(created) (expires) digest request-signature",signature="BPPAckSignatureHere=="
+Signature: keyId="pn.example.com|k002|ed25519",algorithm="ed25519",created="1746518401",expires="1746518701",headers="(created) (expires) digest request-signature",signature="BPPAckSignatureHere=="
 
 {"message":{"status":"ACK","messageId":"550e8400-e29b-41d4-a716-446655440000"}}
 ```
@@ -607,7 +563,7 @@ request-signature: Base64EncodedEd25519SignatureHere==
 ```http
 POST /on_select HTTP/1.1
 Host: cn.example.com
-Authorization: Signature keyId="pn.example.com/keys/k002|ed25519",algorithm="ed25519",created="1746518450",expires="1746518750",headers="(created) (expires) digest request-signature",signature="BPPCallbackSignatureHere=="
+Authorization: Signature keyId="pn.example.com|k002|ed25519",algorithm="ed25519",created="1746518450",expires="1746518750",headers="(created) (expires) digest request-signature",signature="BPPCallbackSignatureHere=="
 Content-Type: application/json
 
 {"context":{"action":"on_select","transactionId":"550e8400-e29b-41d4-a716-446655440001","messageId":"550e8400-e29b-41d4-a716-446655440000",...},"message":{...}}
@@ -615,7 +571,7 @@ Content-Type: application/json
 
 ##### CN verification
 
-1. Fetch PN's public key from `https://fabric.nfh.global/registry/dedi/lookup/pn.example.com/keys/k002|ed25519`.
+1. Fetch PN's public key by looking up `subscriber_id=pn.example.com` and `unique_key_id=k002` on the registry via its dedi lookup interface (§2.1).
 2. Reconstruct the callback signing string using the four `headers` fields in declared order.
 3. Verify PN's `signature` against the reconstructed string.
 4. Extract `request-signature` value: `Base64EncodedEd25519SignatureHere==`.
@@ -628,11 +584,9 @@ This RFC establishes a bilateral, non-repudiable authentication model for Beckn 
 
 ### Open Questions
 
-1. **Explicit keyId trust model:** Should the spec provide a standard mechanism for NPs to publish their list of trusted external registries, or leave this to operator configuration?
+1. **Challenge-response authentication for fabric service callbacks:** Fabric services (NS, GRR, CS) are implicitly trusted by all NPs on the fabric. Given this implicit trust, should the spec define a challenge-response path as the designated verification mechanism for fabric service callbacks, rather than requiring full request-body signature verification? The proposed mechanism: the NP generates a challenge by encrypting `(input || nonce)` with the fabric service's well-known public key and includes it in the outbound request; the fabric service decrypts the challenge using its private key and echoes the plaintext `(input || nonce)` back in the callback response; the NP verifies the echo matches its original plaintext, confirming the callback originated from a party in possession of the fabric's private key. This would be particularly valuable for large payloads such as `catalog/pull` results delivered by the CS to a DS, where computing and verifying a BLAKE2b-512 digest and Ed25519 signature over the full response body is non-trivial. Open considerations include: how the challenge is transmitted (a dedicated request header or a field in the `context` object); whether the response body should still carry a signature for non-repudiation even if the challenge-response is used for source authentication; and whether this mechanism should apply to all fabric service interactions or only to specific endpoints where payload size makes full verification costly.
 
-2. **Challenge-response authentication for fabric service callbacks:** Fabric services (NS, GRR, CS) are implicitly trusted by all NPs on the fabric. Given this implicit trust, should the spec define a challenge-response path as the designated verification mechanism for fabric service callbacks, rather than requiring full request-body signature verification? The proposed mechanism: the NP generates a challenge by encrypting `(input || nonce)` with the fabric service's well-known public key and includes it in the outbound request; the fabric service decrypts the challenge using its private key and echoes the plaintext `(input || nonce)` back in the callback response; the NP verifies the echo matches its original plaintext, confirming the callback originated from a party in possession of the fabric's private key. This would be particularly valuable for large payloads such as `catalog/pull` results delivered by the CS to a DS, where computing and verifying a BLAKE2b-512 digest and Ed25519 signature over the full response body is non-trivial. Open considerations include: how the challenge is transmitted (a dedicated request header or a field in the `context` object); whether the response body should still carry a signature for non-repudiation even if the challenge-response is used for source authentication; and whether this mechanism should apply to all fabric service interactions or only to specific endpoints where payload size makes full verification costly.
-
-3. **End-to-end catalog integrity — PN origin proof through the CS:** When a PN publishes a catalog to the CS via `/catalog/publish`, the HTTP request signature (defined in §4) authenticates the publish request but does not travel with the catalog payload. When the CS subsequently delivers that catalog to a DS — either via `/on_discover`, a `catalog/pull` callback, or a subscription push — the DS receives a payload signed by the CS, not by the PN. Implicit trust in the CS means the DS trusts the CS not to tamper, but it provides no independent means to verify that the catalog contents are exactly what the PN originally submitted. Should the spec require PNs to produce an application-layer signature over the catalog payload itself (separate from the HTTP request signature) that the CS preserves and forwards verbatim, allowing the DS — and ultimately the CN — to verify PN origin and integrity independently of the CS? Open considerations include: where the PN payload signature is carried (a `signature` field within the `Catalog` schema, or a parallel metadata envelope); whether the CS should validate the PN payload signature before indexing and reject malformed submissions; how key rotation interacts with previously indexed catalogs whose payload signatures were produced with an older key; and whether end-to-end integrity verification should be mandatory or optional given that the CS is already implicitly trusted.
+2. **End-to-end catalog integrity — PN origin proof through the CS:** When a PN publishes a catalog to the CS via `/catalog/publish`, the HTTP request signature (defined in §4) authenticates the publish request but does not travel with the catalog payload. When the CS subsequently delivers that catalog to a DS — either via `/on_discover`, a `catalog/pull` callback, or a subscription push — the DS receives a payload signed by the CS, not by the PN. Implicit trust in the CS means the DS trusts the CS not to tamper, but it provides no independent means to verify that the catalog contents are exactly what the PN originally submitted. Should the spec require PNs to produce an application-layer signature over the catalog payload itself (separate from the HTTP request signature) that the CS preserves and forwards verbatim, allowing the DS — and ultimately the CN — to verify PN origin and integrity independently of the CS? Open considerations include: where the PN payload signature is carried (a `signature` field within the `Catalog` schema, or a parallel metadata envelope); whether the CS should validate the PN payload signature before indexing and reject malformed submissions; how key rotation interacts with previously indexed catalogs whose payload signatures were produced with an older key; and whether end-to-end integrity verification should be mandatory or optional given that the CS is already implicitly trusted.
 
 ## Acknowledgements
 
