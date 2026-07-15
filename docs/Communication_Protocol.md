@@ -300,6 +300,7 @@ sequenceDiagram
 - A PN MAY send multiple callbacks carrying the same `messageId` if the action semantics permit it.
 - The CN MUST accept and process each callback independently. The CN MUST NOT discard a callback solely because a prior callback with the same `messageId` was already received.
 - The CN SHOULD treat later callbacks with the same `messageId` as incremental state updates for the same request.
+- Each callback is authenticated and replay-checked independently. A repeat callback under the same `messageId` is distinguished from an actual replayed message by its signature, not by `messageId` reuse — see [NFH-007 §10.2](./Authentication_and_Trust.md#102-solicited-callback-replay-protection).
 
 #### 10. Multicast Flows
 
@@ -336,7 +337,7 @@ sequenceDiagram
     CN-->>DS: 200 Ack
 ```
 
-**Paginated responses.** If the aggregated catalog is large, the DS MAY send multiple `on_discover` callbacks for the single `discover` request, each carrying the same `messageId`. The CN MUST treat each arriving `on_discover` as an additional page of the same result set (consistent with the multiple-callbacks pattern in §9) and MUST NOT discard later pages.
+**Paginated responses.** If the aggregated catalog is large, the DS MAY send multiple `on_discover` callbacks for the single `discover` request, each carrying the same `messageId`. The CN MUST treat each arriving `on_discover` as an additional page of the same result set (consistent with the multiple-callbacks pattern in §9) and MUST NOT discard later pages. As with §9, each page is authenticated and replay-checked independently by signature, not by `messageId` reuse (see [NFH-007 §10.2](./Authentication_and_Trust.md#102-solicited-callback-replay-protection)).
 
 **CN calling PNs directly.** A CN is not required to use a DS. A CN MAY call individual PNs directly using the parallel multicast pattern (see §10.2), treating each PN as an independent discover target and aggregating responses at the CN. This is appropriate when the CN already knows which PNs to query.
 
@@ -606,6 +607,10 @@ TBA.
 **Q: Does one `status` request trigger all future `on_status` callbacks indefinitely, or does each `on_status` push require a new `status` request?**
 
 A single `status` request can trigger multiple `on_status` callbacks from the PN without the CN re-issuing `status`. The PN may continue pushing state updates — "In Transit", "Out for Delivery", "Delivered" — all under the same `messageId` as the original request (see §9). The CN does not need to poll. However, the CN is also free to send a fresh `status` request at any time to explicitly request an update; this would create a new `messageId` and its own callback chain.
+
+**Q: If a PN sends two `on_status` callbacks with the same `messageId`, won't the CN's replay protection reject the second one as a duplicate?**
+
+No. Replay protection (NFH-007 §10.2) does not key on `messageId` alone — it keys on the `(messageId, signature)` pair. The second `on_status` carries new content (a different status value, a new timestamp) and is therefore signed with a different signature than the first, so it is accepted as a distinct, legitimate callback. Only a callback that repeats both the same `messageId` and the same signature as one already accepted — i.e., a byte-identical resend — is rejected as a replay.
 
 **Q: Is there a way for a CN to explicitly signal to a PN that a session is over?**
 

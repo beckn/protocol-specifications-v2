@@ -388,14 +388,14 @@ A CN MUST assign a globally unique `messageId` to every outbound request. No two
 
 ##### 10.2 Solicited Callback Replay Protection
 
-A PN MUST use the **same** `messageId` as the triggering CN request in its solicited callback. This shared `messageId` is the mechanism by which the CN correlates the callback to its outbound request.
+A PN MUST use the **same** `messageId` as the triggering CN request in its solicited callback. This shared `messageId` is the mechanism by which the CN correlates the callback to its outbound request. Some actions permit a PN to send more than one solicited callback carrying the same `messageId` (see [NFH-013 §9](./Communication_Protocol.md#9-multiple-callbacks-for-a-single-request) and [§10.1](./Communication_Protocol.md#101-discovery-multicast)); replay protection MUST NOT treat this legitimate reuse as a replay.
 
-The CN MUST persist the `messageId` of each outbound request until one of the following occurs, whichever is earlier:
+The CN MUST persist, for each outbound request, the `messageId` together with the `signature` attribute of every solicited callback accepted against it, until one of the following occurs, whichever is earlier:
 
-- The corresponding solicited callback is received and accepted.
+- The transaction reaches a terminal state (fulfilled, cancelled, or expired).
 - The `expires` timestamp from the CN's outbound `Authorization` header for that request passes.
 
-Upon receiving a callback, the CN MUST verify that the `messageId` in the callback's `context` object matches a `messageId` the CN has persisted and for which it has not yet received a callback. A callback with a `messageId` the CN does not recognize, or one for which a callback has already been received, MUST be rejected.
+Upon receiving a callback, the CN MUST verify that the `messageId` in the callback's `context` object matches a `messageId` the CN has persisted. A callback with a `messageId` the CN does not recognize MUST be rejected. A callback whose `(messageId, signature)` pair — the callback's own `Authorization` header `signature` attribute, not the chained `request-signature` — matches one already accepted for that `messageId` MUST be rejected as a replay. A callback carrying the same `messageId` as a previously accepted callback but a distinct `signature` MUST NOT be rejected solely on that basis — it MUST be evaluated as a new solicited callback in its own right.
 
 ##### 10.3 PN-Initiated Callback Replay Protection
 
@@ -421,12 +421,13 @@ A PN sending a PN-initiated callback MUST assign a unique `messageId` to each no
 | CON-004-14 | The `request-signature` value included in the callback signing string MUST be the raw Base64 `signature` attribute value from the CN's `Authorization` header, with no additional encoding or transformation. | MUST |
 | CON-004-15 | A CN MUST assign a unique `messageId` to every outbound request. | MUST |
 | CON-004-16 | A PN solicited callback MUST carry the same `messageId` as the triggering CN request. | MUST |
-| CON-004-17 | A CN MUST persist each outbound request's `messageId` until the corresponding solicited callback is received or the request's `expires` timestamp passes. | MUST |
+| CON-004-17 | A CN MUST persist each outbound request's `messageId` and the `signature` of every solicited callback accepted against it until the transaction reaches a terminal state or the request's `expires` timestamp passes. | MUST |
 | CON-004-18 | A PN sending a PN-initiated callback MUST carry a unique `messageId`. | MUST |
 | CON-004-19 | A PN sending a PN-initiated callback MUST carry a `transactionId` matching an active, confirmed transaction between that CN and PN. | MUST |
 | CON-004-20 | When both the sending and receiving NP are members of the same subnet, the sending NP SHOULD perform a `subscriber_reference` registry lookup for the receiving NP immediately before dispatching a message. | SHOULD |
 | CON-004-21 | A PN SHOULD verify that its own signing key has not expired before sending a solicited callback. | SHOULD |
 | CON-004-22 | Every synchronous response `Signature` header MUST use the Ack response signing string (§3.4) with `headers="(created) (expires) digest request-signature"`. The `request-signature` value MUST be the raw Base64 `signature` attribute value from the incoming request's `Authorization` header. | MUST |
+| CON-004-23 | A CN MUST reject a solicited callback whose `(messageId, signature)` matches one already accepted for that `messageId`. It MUST NOT reject a callback solely because its `messageId` has previously received a callback. | MUST |
 
 ### Cross-cutting considerations
 
