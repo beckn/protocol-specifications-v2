@@ -1,19 +1,19 @@
 # Decentralized Catalog Publishing and Discovery
 
 ## Document Details
-- **ID:** NFH-TBD
+- **ID:** NFH-014
 - **Publication Status:** Draft
 - **Authors:**
-  - Mayuresh A Nirhali, Networks for Humanity
+  - Mayuresh Nirhali and Beckn Architecture Working Group
 - **Created:** 2026-08-05
 - **Updated:** 2026-08-05
-- **Version history:** Draft-01 (2026-08-05): Initial publication.
+- **Version history:** Initial version (2026-08-05): Initial publication.
 - **Latest editor's draft:** Not yet pushed to a branch of `protocol-specifications-v2`. Will be linked once a working branch exists.
 - **Implementation report:** Not available. This document is at Initial Draft status; report will be linked in the next formal release of this RFC, following merge to main.
 - **Stress test report:** Untested: no reference implementation has been exercised against this specification yet. A crawler reference implementation (an ONIX plugin) and publisher-side tooling are tracked as implementation deliverables, not yet built against this draft.
-- **Conformance impact:** Implementers operating a Provider Node (PN) MUST self-host and self-sign catalog data instead of calling `POST /catalog/publish`; implementers operating a Discovery Service (DS) MUST crawl and verify DeDi-anchored catalog files instead of calling `POST /catalog/pull`/`POST /catalog/search`/`POST /catalog/subscription`.
-- **Security/privacy implications:** Introduces two new signature scopes (per-catalog-file self-signature, per-catalog-index-entry self-signature) and removes a single, centrally-enforced publish-time validation gate; see §Security Considerations and §Privacy Considerations.
-- **Replaces / Relates to:** Relates to [NFH-006](./API.md) (Beckn API Endpoints), [NFH-007](./Authentication_and_Trust.md) (Authentication and Trust), [NFH-012](./Schema_Design_Guide.md) (Schema Design Guide). Does not replace any existing RFC in full; retires the `Fabric API - Cataloging Service` endpoint group defined in `beckn.yaml`, tracked as a follow-up edit (see §Non-Goals).
+- **Conformance impact:** Implementers operating a Provider Node (PN) MUST self-host and self-sign catalog data; implementers operating a Discovery Service (DS) MUST crawl and verify DeDi-anchored catalog files to build their own index.
+- **Security/privacy implications:** Introduces two new signature scopes (per-catalog-file self-signature, per-catalog-index-entry self-signature); see §Security Considerations and §Privacy Considerations.
+- **Replaces / Relates to:** Relates to [NFH-006](./API.md) (Beckn API Endpoints), [NFH-007](./Authentication_and_Trust.md) (Authentication and Trust), [NFH-012](./Schema_Design_Guide.md) (Schema Design Guide). Establishes decentralized catalog publishing and discovery as a Fabric capability; does not replace any existing RFC in full.
 - **Feedback:**
   - Issues: Click [here](#) (link to be added once a tracking issue exists)
   - Discussions: Click [here](#) (link to be added; MUST include an NFH Fabric Support Forum thread before this leaves Draft status)
@@ -22,18 +22,13 @@
 
 ## Abstract
 
-This RFC retires the centralized Cataloging Service (CS) and its seven endpoints (`/catalog/publish`, `/catalog/on_publish`, `/catalog/push`, `/catalog/subscription`, `/catalog/pull`, `/catalog/on_pull`, `/catalog/search`) as the mechanism by which Provider Nodes (PNs) make catalogs discoverable. In their place, a PN self-hosts its own catalog data as self-signed files on infrastructure it already controls, discoverable by extending its existing Beckn Subscriber DeDi record with one new field. A Discovery Service (DS) discovers and indexes this data by crawling — resolving each PN's DeDi manifest, verifying signed catalog files and self-signed catalog-index entries, and applying incremental updates — instead of calling a mandatory, shared Fabric write API. `/discover` and `/on_discover` are unaffected; the `Catalog` schema itself is unaffected. This RFC commits catalog access to being public-only and does not re-home the Rego policy-as-code enforcement currently specified against the CS in NFH-012. Companion artifacts: new `CatalogFile`, `CatalogChangeFile`, and Catalog Index schemas, and one additive field on the existing DeDi `Beckn_subscriber` schema.
-
-## Disclaimer
-
-This RFC commits catalog access to being public-only, with no restricted or access-gated catalog path (see Non-Goal NG1). Any existing or planned NFO policy that assumes per-catalog download restriction — for example, a master catalog visible only to approved resellers — is not supported by this design and would need to be re-implemented, if still required, as an access-control layer the NFO operates entirely outside this protocol. This is a deliberate scope decision, not an oversight; it is not excused elsewhere in this document.
+This RFC establishes a decentralized model for catalog publishing and discovery on the Beckn fabric. A Provider Node (PN) publishes catalog data by hosting self-signed files on infrastructure it already controls, discoverable through one new field on its existing Beckn Subscriber DeDi record. A Discovery Service (DS) builds its own index by crawling — resolving a PN's DeDi manifest, verifying signed catalog files and self-signed catalog-index entries, and applying incremental updates. Catalog access is uniformly public: any party with a file's URL can fetch it, and no download-gating mechanism exists in this design. A PN may organize its catalogs across one or more independently-versioned indexes, and a network operator's membership registry — not this RFC's mechanism — governs which catalogs a network-scoped DS trusts. `/discover` and `/on_discover` are unaffected; the existing `Catalog` schema is unaffected. Companion artifacts: new `CatalogFile`, `CatalogChangeFile`, and Catalog Index schemas, and one additive field on the existing DeDi `Beckn_subscriber` schema.
 
 ## Table of Contents
 
 - [Decentralized Catalog Publishing and Discovery](#decentralized-catalog-publishing-and-discovery)
   - [Document Details](#document-details)
   - [Abstract](#abstract)
-  - [Disclaimer](#disclaimer)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Specification](#specification)
@@ -41,6 +36,7 @@ This RFC commits catalog access to being public-only, with no restricted or acce
     - [Motivation](#motivation)
     - [Design Goals and Non-Goals](#design-goals-and-non-goals)
     - [Roles and Actors](#roles-and-actors)
+    - [Publishing Artifacts and Layering](#publishing-artifacts-and-layering)
     - [Protocol Flows](#protocol-flows)
       - [10.1 Onboarding and steady-state publish](#101-onboarding-and-steady-state-publish)
       - [10.2 Discovery crawl](#102-discovery-crawl)
@@ -49,10 +45,11 @@ This RFC commits catalog access to being public-only, with no restricted or acce
       - [10.5 Error flows](#105-error-flows)
       - [10.6 Async trigger conditions](#106-async-trigger-conditions)
       - [10.7 AI Agent exercisability](#107-ai-agent-exercisability)
+    - [Versioning](#versioning)
     - [Schema Changes](#schema-changes)
     - [Security Considerations](#security-considerations)
     - [Privacy Considerations](#privacy-considerations)
-    - [Breaking Changes and Migration](#breaking-changes-and-migration)
+    - [End-to-End Flow (Informative)](#end-to-end-flow-informative)
     - [Conformance Requirements](#conformance-requirements)
     - [Security and Interoperability Considerations](#security-and-interoperability-considerations)
     - [Prior Art](#prior-art)
@@ -66,9 +63,9 @@ This RFC commits catalog access to being public-only, with no restricted or acce
 
 ## Introduction
 
-Catalog discovery in Beckn Protocol v2.0.0 is currently mediated by the Cataloging Service (CS), one of three Fabric Threads named as mandatory infrastructure in `beckn.yaml`'s "Required Infrastructure Building Blocks," alongside the Namespacing Service and Global Root Registry. Every PN that wants its catalogs discoverable MUST call `POST /catalog/publish` against the CS; every DS that wants to serve consumers MUST subscribe to and pull from that same CS. Catalog reach — arguably the single highest-value capability a PN needs from the fabric — currently depends on one piece of shared, centrally-operated infrastructure that every PN and DS on every network must trust, regardless of which network they transact on.
+Catalog reach is one of the highest-value capabilities a Provider Node (PN) needs from the fabric, and this RFC establishes it as something a PN provides for itself: a PN hosts its own catalog data as self-signed files on infrastructure it already controls — a website, a CDN, an object store — discoverable through its existing fabric identity. A Discovery Service (DS) finds and verifies that data by crawling, using the same DeDi identity layer already used fabric-wide to resolve a network participant's registered keys, and builds its own index from what it verifies. No shared, centrally-operated service sits in either path.
 
-The working group should engage with this RFC because it relocates where trust is anchored for the entire discovery phase of the protocol. If accepted, catalog data moves off Fabric-hosted infrastructure entirely: a PN publishes by writing signed files to storage it already controls, and a DS discovers PNs by crawling the same DeDi identity layer already used to resolve `bapId`/`bppId` keys, rather than by calling a mandatory Fabric write API. This is a foundational-layer change with direct implications for every implementer currently integrating against the CS-published `/catalog/*` endpoints, and for how NFOs enforce catalog quality once the CS's publish-time gate is removed.
+The working group should engage with this RFC because it defines where trust is anchored for the entire discovery phase of the protocol: in the PN's own signature over its own content, verified independently by every DS, rather than in a single intermediary every participant must trust. This is a foundational-layer change with direct implications for how catalogs are published and indexed fabric-wide, and for how network operators express which catalogs they stand behind.
 
 ## Specification
 
@@ -78,25 +75,28 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 - **Provider Node (PN):** unchanged from `beckn.yaml` — the fabric identity that owns catalog data. Under this RFC, a PN's Registry-anchored identity is also its DeDi publisher identity for catalog data.
 - **Discovery Service (DS):** unchanged from `beckn.yaml` — the fabric identity that serves `/discover`/`/on_discover`. Under this RFC, a DS also crawls PN-hosted catalog data to populate its own index.
+- **Node:** any network participant with a DeDi entry — its own DeDi manifest and Beckn Subscriber record. The term is not PN-specific: a CN, DS, or NFO is equally a node. This RFC's flows concern a PN's node specifically, which may be the PN's own domain, or a subdomain a platform assigns to a provider it onboards; see §Publishing Artifacts and Layering.
 - **Catalog file:** a self-signed file, conforming to the new `CatalogFile` schema, hosted by a PN at a URL of its own choosing, wrapping exactly one unmodified `Catalog` object.
 - **Change file:** a self-signed file, conforming to the new `CatalogChangeFile` schema, carrying an incremental delta (added/updated/removed resources or offers) between two versions of one catalog.
-- **Catalog index:** a self-signing, per-catalog-entry file, hosted by a PN, listing every catalog it offers together with references to that catalog's current baseline and change files. Not a DeDi file; DeDi does not ingest it.
-- **DeDi manifest:** the existing DeDi artifact at `/.well-known/dedi.json` on a PN's domain, unmodified by this RFC.
-- **Beckn Subscriber record:** the existing DeDi record carrying a PN's `subscriber_id`, `url`, `type`, `domain`, and signing key(s); this RFC adds one field to it.
+- **Catalog index:** a self-signing, per-catalog-entry file, hosted by a PN, listing every catalog it offers under that index together with references to that catalog's current baseline and change files. Not a DeDi file; DeDi does not ingest it. A node may host more than one catalog index.
+- **DeDi manifest:** the existing DeDi artifact at `/.well-known/dedi.json` on a node's domain, unmodified by this RFC.
+- **Beckn Subscriber record:** the existing DeDi record carrying a node's `subscriber_id`, `url`, `type`, `domain`, and signing key(s); this RFC adds one field to it.
+- **Membership registry:** an NFO's existing registry of `beckn-subscriber-reference` records, used unmodified by this RFC to express which nodes a network-scoped DS trusts.
+- **Compaction:** the act of a PN folding an accumulated chain of change files into a fresh baseline, published alongside — not in place of — the change files that led up to it, which stay listed for a grace period so a DS mid-lineage can still reach the new baseline by applying diffs (§10.1).
 - **Normative:** requirements that define conformance and interoperability behavior.
 - **Informative:** explanatory guidance that does not by itself define conformance.
 
 ### Motivation
 
-**Current State.** `beckn.yaml` defines a `Fabric API - Cataloging Service` tag covering seven endpoints: `POST /catalog/publish` → `POST /catalog/on_publish` (a PN pushes `Catalog` objects to the CS; the CS validates, indexes, and reports per-catalog `ACCEPTED`/`REJECTED`/`PARTIAL` via `CatalogProcessingResult`); `POST /catalog/subscription` (a DS declares interest via `networkIds`/`schemaTypes`, backed by `CatalogSubscribeAction`/`CatalogSubscription`); `POST /catalog/push` (the CS pushes matching updates to subscribed DSes); and `POST /catalog/search`/`POST /catalog/pull` → `POST /catalog/on_pull` (a DS queries or bulk-retrieves the CS's index, backed by `CatalogSearchAction`/`CatalogPullAction`/`CatalogPullCallbackAction`). `/discover` and `/on_discover` sit on top of whatever the DS has indexed via this pipeline and are unaffected by this RFC.
+**Current State.** `beckn.yaml` defines a `Fabric API - Cataloging Service` tag covering seven endpoints: `POST /catalog/publish` → `POST /catalog/on_publish` (a PN pushes `Catalog` objects to a Fabric-operated service, which validates, indexes, and reports per-catalog `ACCEPTED`/`REJECTED`/`PARTIAL` via `CatalogProcessingResult`); `POST /catalog/subscription` (a DS declares interest via `networkIds`/`schemaTypes`, backed by `CatalogSubscribeAction`/`CatalogSubscription`); `POST /catalog/push` (matching updates are pushed to subscribed DSes); and `POST /catalog/search`/`POST /catalog/pull` → `POST /catalog/on_pull` (a DS queries or bulk-retrieves an index maintained by that same service). `/discover` and `/on_discover` sit on top of whatever the DS has indexed via this pipeline and are unaffected by this RFC.
 
 **Identified Problems.**
-1. A PN's discoverability on every network it participates in depends on the availability, policy, and rate limits of one shared service it does not operate — CS downtime is a single point of failure for catalog reach, fabric-wide, affecting every PN and DS simultaneously.
-2. The CS requires every PN to run a second, protocol-specific write path (`POST /catalog/publish`) in addition to whatever infrastructure it already operates to serve its own catalog data — a website, a CDN, an existing product feed — duplicating infrastructure a PN commonly has already.
-3. [NFH-007](./Authentication_and_Trust.md), §12 open questions, already identifies that a DS receiving a catalog via the CS receives a payload signed by the CS, not by the originating PN: the DS trusts the CS not to tamper, but has no independent way to verify the catalog contents are exactly what the PN submitted, without trusting the CS itself. This RFC treats that open question as a requirement to satisfy, not merely acknowledge.
-4. `CatalogSubscription`'s `networkIds`/`schemaTypes` filtering happens once, at the CS. Every DS's relevance logic is therefore delegated to whoever operates the CS, rather than being something a DS can compute independently against openly available data.
+1. A PN's discoverability on every network it participates in depends on the availability, policy, and rate limits of one shared service it does not operate — its downtime is a single point of failure for catalog reach, fabric-wide, affecting every PN and DS simultaneously.
+2. The current mechanism requires every PN to run a second, protocol-specific write path in addition to whatever infrastructure it already operates to serve its own catalog data — a website, a CDN, an existing product feed — duplicating infrastructure a PN commonly has already.
+3. [NFH-007](./Authentication_and_Trust.md), §12 open questions, already identifies that a DS receiving a catalog via the current pipeline receives a payload signed by the intermediary service, not by the originating PN: the DS has no independent way to verify the catalog contents are exactly what the PN submitted, without trusting that intermediary. This RFC treats that open question as a requirement to satisfy, not merely acknowledge.
+4. `networkIds`/`schemaTypes` filtering happens once, centrally. Every DS's relevance logic is therefore delegated to whoever operates the shared service, rather than being something a DS can compute independently against openly available data.
 
-**Why the Current Design Cannot Be Extended.** The identified problems are properties of having a mandatory, centrally-operated write path at all, not properties of that path's specific request/response shape. Adding a signature field to `CatalogPublishAction`'s payload would address problem 3 alone; it does not address problems 1 or 2 — the CS remains a mandatory single point of failure for discoverability, and PNs still need a bespoke write path in addition to whatever hosting they already run. Only removing the mandatory shared write path, while preserving the trust properties the CS currently provides, resolves all four problems together.
+**Why the Current Design Cannot Be Extended.** The identified problems are properties of having a mandatory, centrally-operated write path at all, not properties of that path's specific request/response shape. Adding a signature field to the existing publish payload would address problem 3 alone; it does not address problems 1 or 2 — a mandatory intermediary remains a single point of failure for discoverability, and PNs still need a bespoke write path in addition to whatever hosting they already run. Only removing the mandatory shared write path, while preserving the trust properties it currently provides, resolves all four problems together.
 
 **Requirements.**
 - **R1.** A PN MUST be able to make a catalog discoverable without calling any Fabric-operated write API.
@@ -105,37 +105,63 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 - **R4.** The mechanism MUST reuse the PN's and DS's existing fabric identity (their Registry-anchored DeDi keys) rather than introduce a second identity or key-management scheme for catalog data specifically.
 - **R5.** The `Catalog` schema and the `/discover`↔`/on_discover` exchange MUST NOT change.
 - **R6.** The mechanism MUST support incremental updates to a catalog without requiring a full re-publish of unchanged content.
-- **R7.** The mechanism MUST provide a defined tombstone behavior for catalog retirement, so a DS can distinguish "no longer offered" from "host unreachable."
+- **R7.** The mechanism MUST let a DS distinguish "no longer offered" from "host unreachable," via a positive signal a DS can verify on a successfully-fetched entry — not by inferring meaning from an entry's absence, since an incomplete or partial crawl is indistinguishable from a real removal by absence alone.
 
 ### Design Goals and Non-Goals
 
 **Design Goals.**
 - **G1** (→ R1): Publishing is an act of writing signed files to self-controlled storage; it is never an API call.
 - **G2** (→ R2, R4): Every catalog file and every catalog-index entry carries its own detached signature, verifiable against the PN's Registry-anchored key, independent of any intermediary.
-- **G3** (→ R3): A DS discovers a PN's catalogs by resolving one new field on the PN's existing Beckn Subscriber DeDi record to a catalog index, then crawling from there — no subscription API required.
+- **G3** (→ R3): A DS discovers a PN's catalogs by resolving one new field on the PN's existing Beckn Subscriber DeDi record to one or more catalog indexes, then crawling from there — no subscription API required.
 - **G4** (→ R6): A catalog's updates are expressed as an immutable baseline plus a chain of change files, so a DS fetches only what changed.
-- **G5** (→ R7): A catalog-index entry carries an explicit `status`/`retiredAt` tombstone.
+- **G5** (→ R7): A catalog-index entry carries an explicit, one-way `retiredAt` tombstone; a DS treats retirement as verified only on positively observing it, never by inferring it from an entry's absence.
 - **G6** (→ R5): No change to `Catalog`, `/discover`, or `/on_discover`.
 
 **Non-Goals.**
-- **NG1 — Restricted (access-gated) catalogs.** Deliberately rejected, not deferred. Catalog access is public-only under this design (see Disclaimer); any party with a catalog file's URL can fetch it. A network requiring confidentiality for specific catalogs is out of this RFC's scope entirely and would need an access-control layer operating outside this protocol.
-- **NG2 — Re-homing Rego policy-as-code enforcement.** [NFH-012](./Schema_Design_Guide.md) §"Policy-as-code" and its conformance requirement CON-012-19 currently specify that the CS validates submitted catalogs against Rego policy attached to referenced master catalogs, before publishing. This RFC removes the CS's publish-time enforcement point but does not yet specify where that validation runs instead. Deferred to a follow-up RFC — see Open Questions.
+- **NG1 — Restricted (access-gated) catalogs.** Catalog access is public-only under this design; any party with a catalog file's URL can fetch it. This RFC does not define, and does not need, a download-gating mechanism. A network requiring confidentiality for a specific catalog is out of this RFC's scope entirely and would need an access-control layer operating outside this protocol.
+- **NG2 — Re-homing Rego policy-as-code enforcement.** [NFH-012](./Schema_Design_Guide.md)'s master-catalog policy validation, currently specified against a centrally-operated indexing service, is out of scope for this RFC. Where that validation runs under this model is an open question — see Open Questions.
 - **NG3 — Master/Regular resource inheritance semantics.** `resourceDirectives[].extends.masterResourceId` and `variant` are reused as-is from today's `publishDirectives`; this RFC relocates where resolution happens (see §10.3) but does not redesign the semantics themselves.
 - **NG4 — A specific crawler implementation.** This RFC specifies the artifacts and the verification contract a crawler MUST satisfy. It does not mandate specific software; an ONIX plugin implementation is anticipated as a reference, not required by this specification.
 - **NG5 — Changes to the DeDi protocol itself.** This RFC composes the existing, externally-governed DeDi manifest/file format (see GOVERNANCE.md's note on Registry protocols, governed by Linux Foundation Decentralized Trust) and proposes exactly one additive field on one existing DeDi schema (`Beckn_subscriber`). It does not modify DeDi's protocol and has no authority to.
-- **NG6 — Retiring the CS's endpoints and schemas from `beckn.yaml`, and the corresponding edits to NFH-001, NFH-006, and NFH-007.** Tracked as a fast-follow once this design is accepted; not performed by this RFC. This RFC's Breaking Changes and Migration section identifies exactly what those edits will need to be.
+- **NG6 — Editing `beckn.yaml`'s existing catalog endpoints/schemas, and the corresponding edits to NFH-001, NFH-006, and NFH-007.** Tracked as a fast-follow once this design is accepted; not performed by this RFC. §End-to-End Flow notes exactly which existing endpoints that follow-up will need to touch.
 - **NG7 — Collapsing `bapId`/`bppId`/`networkId`/`subscriberId` into a single domain-valued `nodeId`.** Design discussion that fed into this RFC explored replacing today's identity fields with one identifier whose value is a domain, since catalog discovery under this design is already anchored to a PN's domain. That collapse is a cross-cutting identity change affecting the transaction leg as much as the catalog leg, and is deliberately not adopted by this RFC — every flow and schema here keeps `PN`/`DS`/`CN`/`NFO` as Registry-anchored identities exactly as `beckn.yaml` defines them today. If pursued, it belongs in its own RFC; this RFC does not depend on it and would not need revision if it never happens.
 
 ### Roles and Actors
 
 | Actor | Protocol Identity | Role in this RFC's Flows | Endpoints Invoked | Endpoints Implemented |
 |---|---|---|---|---|
-| PN | Registry-anchored domain identity (unchanged) | Self-hosts and self-signs its own catalog files, change files, and catalog index; adds `catalog_index_urls` to its existing Beckn Subscriber DeDi record | None new — HTTP GET against its own storage is not a protocol-defined invocation | None new — hosts static files; no server required for the flows this RFC defines |
+| PN | Registry-anchored domain identity (unchanged) | Self-hosts and self-signs its own catalog files, change files, and catalog index(es); adds `catalog_index_urls` to its existing Beckn Subscriber DeDi record | None new — HTTP GET against its own storage is not a protocol-defined invocation | None new — hosts static files; no server required for the flows this RFC defines |
 | DS | Registry-anchored domain identity (unchanged) | Resolves PNs' DeDi manifests and Beckn Subscriber records; crawls, verifies, and indexes catalog files; serves `/discover` from its own index | Conditional HTTP `GET` against PN-hosted DeDi and catalog files; existing DeDi lookup for Registry keys | `/discover`, `/on_discover` (unchanged from `beckn.yaml`) |
 | CN | Registry-anchored domain identity (unchanged) | Unaffected — calls `/discover` exactly as today | `/discover` | `/on_discover` |
-| NFO | Registry-anchored domain identity (unchanged) | Publishes and maintains the `beckn-subscriber-reference` membership registry a DS uses for network-scoped relevance filtering | None new | None new |
+| NFO | Registry-anchored domain identity (unchanged) | Publishes and maintains the membership registry a DS uses for network-scoped trust; see below | None new | None new |
 
-The CS does not appear in this table: this RFC's central proposal is that the CS's role in catalog discovery is retired, not delegated. Note for the working group: [NFH-010](./RFC_Authoring_Guide.md) §9 currently restricts permissible RFC actors to `{CN, PN, CS, Fabric}`, a list that does not include `DS` or `NFO` despite both being used throughout `beckn.yaml` today. This RFC uses `DS` and `NFO` consistent with existing spec usage; reconciling NFH-010's actor list is tracked as a separate governance fix, not performed here.
+**Membership governs trust, not access.** A network is real, under this RFC, only when its NFO has published a membership registry — the same `beckn-subscriber-reference` registry participants are onboarded into today, under the NFO's own domain. A node's presence in that registry is binary: either a reference record exists for it, or it doesn't. Two consequences follow directly:
+
+- **Public catalogs need no operator at all.** A PN whose catalogs carry no `networkIds`, or whose only concern is being crawled by any DS willing to crawl it, never touches a membership registry, and every DS can take its catalogs. This is the default case, not a special one.
+- **A PN can be its own operator.** Nothing prevents a PN from publishing a membership registry under its own domain and using that domain as the `networkId`, if it wants a specific set of DSes to index it under a named banner. The cost is real: it now does the operator's own job of keeping that registry current.
+
+A DS crawling on behalf of a specific network MUST check that a PN has a reference record in that network's membership registry before indexing the PN's catalogs under that network's banner. This is a relevance/trust decision — which catalogs a *network-scoped* DS indexes — never an access decision: every catalog remains fetchable by anyone regardless of membership.
+
+The CS does not appear in this table: catalog publishing and discovery under this RFC require no centrally-operated actor. Note for the working group: [NFH-010](./RFC_Authoring_Guide.md) §9 currently restricts permissible RFC actors to `{CN, PN, CS, Fabric}`, a list that does not include `DS` or `NFO` despite both being used throughout `beckn.yaml` today. This RFC uses `DS` and `NFO` consistent with existing spec usage; reconciling NFH-010's actor list is tracked as a separate governance fix, not performed here.
+
+### Publishing Artifacts and Layering
+
+A node's publishing surface is four kinds of file across two layers. The DeDi layer — the manifest and the Beckn Subscriber record — follows DeDi's published format exactly and changes rarely. The catalog layer — the index and the catalog/change files — is where all publish-time churn lives, and neither is a DeDi file:
+
+1. The **DeDi manifest**, at the fixed, well-known path `/.well-known/dedi.json`, written once at onboarding. Lists the Beckn Subscriber record among the node's DeDi files.
+2. The **Beckn Subscriber record**, a normal DeDi file conforming to the existing `Beckn_subscriber` schema plus this RFC's one new field, `catalog_index_urls`. Changes only when an index URL is added, removed, or moved, or when the node's identity details change for reasons unrelated to catalogs.
+3. One or more **catalog indexes** — plain, self-signing files, updated on every publish. Not DeDi files; DeDi never ingests them.
+4. **Catalog files and change files** — the actual content, each self-signed; see §Schema Changes.
+
+**A node may host more than one catalog index.** `catalog_index_urls` is a list, not a single URL, specifically so a node can separate concerns that churn independently — for example, a fast-moving retail catalog from a slow-moving mobility one, or a public index from one scoped to a single network. Each index is versioned and signed on its own.
+
+**Indexes belong to the node, never to an individual provider inside it.** This governs how a platform onboarding many providers fits the model, without introducing a fifth artifact:
+
+- A provider that is its own node (its own domain) hosts its own manifest, Subscriber record, and index(es); nothing aggregates it.
+- A platform onboarding many providers is **one node**, however many indexes it keeps. Each catalog inside names its own provider — the `Catalog` schema already carries a `provider` object for exactly this — and the platform signs every file with its own key. This is today's provider-platform relationship, expressed as files instead of API calls.
+- A provider run as a subdomain node (e.g. `provider-x.platform.com`) has its own manifest, Subscriber record, index(es), and keys; one host's storage can serve many such small nodes side by side.
+
+A PN MUST NOT maintain a separate, per-provider catalog index inside a platform node; a catalog's own `provider` field, not a separate index, is what distinguishes providers sharing one node.
 
 ### Protocol Flows
 
@@ -146,72 +172,104 @@ A PN's one-time onboarding and every subsequent publish follow the same shape; o
 ```mermaid
 sequenceDiagram
     actor PN as Provider Node
-    participant Store as PN-controlled storage
-    participant DeDi as DeDi (Registry)
+    participant Store as PN storage
+    participant DeDi as DeDi Registry
 
     Note over PN: One-time, at onboarding
-    PN->>PN: Generate/confirm Ed25519 key already registered on the Registry
-    PN->>Store: Host catalog file(s), change file(s) as they occur, and the catalog index
-    PN->>DeDi: Add catalog_index_urls to its existing Beckn Subscriber record; re-sign; update manifest digest
-    Note over PN,DeDi: PN is now discoverable — no publish call was made
+    PN->>PN: Confirm the Ed25519 key already registered on the Registry
+    PN->>Store: Host catalog files, change files, and the catalog index
+    PN->>DeDi: Add catalog_index_urls to the Beckn Subscriber record and re-sign it
+    Note over PN,DeDi: PN is now discoverable, no publish call was made
 
     Note over PN: On every content update
-    PN->>PN: Edit catalog file, or emit a new change file
-    PN->>PN: Sign the file (JCS canonicalization minus the signature field)
-    PN->>PN: Re-sign the catalog-index entry (entryVersion bumped; content-lineage version bumped only if a file was actually published)
-    PN->>Store: Publish the updated file(s) and index
-    Note over PN,DeDi: DeDi manifest and Subscriber record are untouched by this step
+    PN->>PN: Edit a catalog file or emit a new change file, then sign it
+    PN->>PN: Re-sign the catalog index entry
+    PN->>Store: Publish the updated files and index
+    Note over PN,DeDi: The manifest and Subscriber record are untouched by this step
 ```
 
 A PN MUST sign every catalog file and every change file it publishes (§Schema Changes, `CatalogFile`/`CatalogChangeFile`). A PN MUST NOT publish a catalog-index entry whose `entryVersion`, or whose `baseline.version`/`changes[].version`, regresses relative to the entry it most recently published for that `catalogId`.
+
+**Canonical serialization and immutable URLs.** A PN MUST serialize a catalog file with a stable key order and formatting on every publish, so a digest changes only when content changes. A PN MUST publish a new version of a catalog file at a new, immutable URL; it MUST NOT overwrite a previously-published version in place.
+
+**Compression.** A PN MAY serve any `CatalogFile`/`CatalogChangeFile` gzip-compressed to reduce egress, signaled purely by the file's own URL extension: `.json.gz` for compressed, `.json` for plain — a DS applies gzip decompression or not based on that extension alone, with no content-negotiation or header sniffing required, consistent with these files being static, self-hosted artifacts rather than served by an application. A DS MUST decompress a `.json.gz` file before parsing it, and MUST compute or verify its digest and signature against the canonical, decompressed JSON content — never the compressed bytes, since gzip's own output isn't guaranteed byte-stable across tool versions even for identical input, and signing the compressed form would make a legitimate re-publish indistinguishable from tampering. The corresponding index entry's `size` (§Schema Changes), by contrast, reflects the size of the file as actually served — the compressed size, when `.json.gz` is used — since that is what a DS's cutover-rule estimate below and any egress budgeting genuinely care about.
+
+**Compaction.** When a catalog's change-file chain exceeds a threshold the PN chooses — by count, or by combined size relative to the baseline — or on a schedule, a PN MAY compact: emit a fresh baseline at a new URL and point the index at it. Which trigger to use is entirely the PN's own operational choice and has no interoperability impact — a DS's crawl logic is identical regardless of why or when a PN compacted (below). As an informative aside: a size-based trigger pairs naturally with the same threshold the cutover rule already uses, so a PN compacting around "these diffs now cost about as much as the baseline" keeps its own storage and index proportionate to what a DS would prefer anyway. A PN MAY also compact at the change-file level alone, squashing several small change files into one that spans the same version range, without touching the baseline.
+
+Compacting the baseline MUST NOT strand a DS that is mid-lineage. A PN MUST continue to list, not merely host, the change files that led up to the new baseline — for at least the same grace period (chosen by the PN, covering its slowest expected crawler) for which it retains the underlying files themselves. A DS resuming from an old cursor after a compaction it never saw happen simply keeps doing what it always does: fetch the changes listed after its cursor and apply them in sequence, arriving at content identical to the new baseline without ever fetching the baseline snapshot itself; a DS with no stored cursor, or one too far behind for the diff chain to be worth it, uses the cutover rule (below) exactly as before and fetches the baseline directly. `changes[]` is consequently longer for a while immediately after a compaction than it would be under a hard reset, shrinking back down once the grace period elapses — some of compaction's index-payload benefit is deferred, not eliminated, which is the trade-off a PN is tuning when it picks its trigger and grace period. A DS's crawl logic (§10.2, §Versioning) itself requires no special handling for compaction — it always resolves to "fetch the changes I'm missing, or the baseline if that's cheaper," regardless of when or how compaction happened; the obligation above is entirely on the publish side.
+
+**Cutover rule.** If the combined `size` of a catalog's pending change files exceeds a threshold fraction of its baseline `size`, a DS SHOULD fetch the baseline instead of the accumulated changes.
 
 #### 10.2 Discovery crawl
 
 ```mermaid
 sequenceDiagram
     actor DS as Discovery Service
-    participant Reg as Registry / DeDi
-    participant PN as PN-controlled storage
+    participant Reg as Registry
+    participant PN as PN storage
 
-    DS->>Reg: Enumerate PNs relevant to a networkId (existing registry lookup)
-    DS->>PN: GET https://{domain}/.well-known/dedi.json (conditional)
-    PN-->>DS: DeDi manifest (signed)
-    DS->>DS: Verify manifest signature against Registry-registered key
-    DS->>PN: GET Beckn Subscriber record referenced by the manifest
-    PN-->>DS: Subscriber record, incl. catalog_index_urls (signed)
-    DS->>DS: Verify Subscriber record digest against the manifest
-    DS->>PN: GET each catalog_index_urls entry (conditional)
-    PN-->>DS: Catalog index (self-signing per entry)
+    DS->>Reg: Enumerate PNs relevant to a networkId
+    DS->>PN: GET the DeDi manifest at the well-known path, conditionally
+    PN-->>DS: DeDi manifest, signed
+    DS->>DS: Verify the manifest signature against the Registry-registered key
+    DS->>PN: GET the Beckn Subscriber record referenced by the manifest
+    PN-->>DS: Subscriber record, including catalog_index_urls, signed
+    DS->>DS: Verify the Subscriber record digest against the manifest
+    DS->>PN: GET each catalog_index_urls entry, conditionally
+    PN-->>DS: Catalog index, self-signing per entry
     loop for each catalog entry
-        DS->>DS: Verify entry signature; compare entryVersion and content-lineage versions to stored cursor
+        DS->>DS: Verify the entry signature, compare entryVersion and content-lineage versions to the stored cursor
         alt entry unchanged
-            DS->>DS: Skip — nothing to fetch
+            DS->>DS: Skip, nothing to fetch
         else entry changed
-            DS->>PN: GET baseline or change file(s) required by the cutover rule
-            PN-->>DS: Catalog file / change file (self-signed)
-            DS->>DS: Verify file signature and digest; schema-validate; apply upserts/removals; advance cursor
+            DS->>PN: GET the baseline or change files required by the cutover rule
+            PN-->>DS: Catalog file or change file, self-signed
+            DS->>DS: Verify the file signature and digest, schema-validate, apply upserts and removals, advance the cursor
         end
     end
-    Note over DS: Consumers query /discover against this index; they never wait on a crawl
+    Note over DS: Consumers query /discover against this index, they never wait on a crawl
 ```
 
 A DS MUST perform every verification step shown above before indexing any catalog content; a DS MUST NOT index a catalog file or catalog-index entry that fails any verification step. A DS SHOULD use conditional HTTP requests (`ETag`/`If-Modified-Since`) to avoid re-fetching unchanged artifacts.
 
+**Two implementation shapes for enumerating PNs (informative).** The first crawl step — finding the PNs and indexes relevant to a DS — can be answered directly against DeDi (a DS enumerates candidate domains and reads each one's manifest itself) or through a separate registry service that caches DeDi's records with a reverse lookup on top, answering "which index URIs are relevant to me" in one call instead of a sweep. Both are conformant: neither shape changes what gets verified or how, per-file, and a registry service is never treated as an authority — every file a DS ingests is still verified at its own source, per the steps above. Which shape a DS chooses is an implementation and deployment decision, not a protocol requirement.
+
 #### 10.3 Master/Regular catalog resolution
 
-Resolution of a REGULAR catalog resource's `resourceDirectives[].extends.masterResourceId` reference moves from centralized publish-time merge (performed today by the CS) to DS-side resolution at index time: a DS MUST inherit attributes from the named MASTER resource into the REGULAR resource, with the REGULAR resource's own fields taking precedence, using the same merge semantics as today. A DS MAY use a catalog-index entry's `catalogType` to order its crawl (indexing MASTER catalogs before resolving REGULAR catalogs that reference them) without needing to fetch every file first. Behavior when a referenced MASTER catalog has not yet been crawled is an open question (see Open Questions).
+Resolution of a REGULAR catalog resource's `resourceDirectives[].extends.masterResourceId` reference happens at the DS, during indexing: a DS MUST inherit attributes from the named MASTER resource into the REGULAR resource, with the REGULAR resource's own fields taking precedence, using the same merge semantics `publishDirectives` already defines today. A DS MAY use a catalog-index entry's `catalogType` to order its crawl — indexing MASTER catalogs before resolving REGULAR catalogs that reference them — without needing to fetch every file first.
+
+**`dependencies` gives this away earlier still.** `catalogType` alone tells a DS *that* a REGULAR catalog extends something, but not *which* MASTER catalog(s), or where to find them — that previously required fetching the file, inspecting every `resourceDirectives[].extends.masterResourceId` individually, and, if the MASTER catalog belongs to a different PN, resolving that PN's DeDi manifest and Beckn Subscriber record from scratch just to find its index. A REGULAR catalog's index entry instead carries `dependencies.masters` (§Schema Changes) directly:
+
+```json
+"dependencies": {
+  "masters": [
+    { "catalogId": "open-economy.nfh.global/electronics-master", "indexUrl": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
+  ]
+}
+```
+
+A PN MUST keep this current with what its resources actually extend. A DS can use `catalogId` alone to decide, before fetching anything, whether every MASTER dependency has already been crawled and indexed, and use `indexUrl` as a shortcut straight to the index that should contain it — particularly valuable when the MASTER catalog belongs to a node the DS isn't crawling yet. **`indexUrl` is a locator hint, not a trust delegation:** it is not itself signed, and a DS MUST verify whatever it fetches from it exactly as it would via ordinary discovery — the MASTER entry's own signature against its `catalogId`'s Registry-anchored key — and MUST fall back to standard DeDi resolution (§10.2) if the hint is stale, unreachable, or fails verification. Exactly what a DS should do when a declared dependency has not yet been crawled (fetch it out of order, index the REGULAR catalog partially, or wait) remains an open question (see Open Questions); `dependencies` makes that condition cheaply detectable and cheaper to resolve, but does not by itself settle the policy.
+
+**A resource or offer's `id` MAY appear in more than one catalog, not only through `extends` (informative).** `Resource.id` and `Offer.id` are defined as globally unique in `beckn.yaml`, not catalog-scoped — so the same id can legitimately be published from two independently-signed catalogs, whether or not one `extends` the other. Each catalog's `resources`/`offers` are part of that catalog's own signed content and lifecycle; there is no structural link between two catalogs that happen to list the same id outside the explicit Master/Regular relationship. Consequently: retiring, pausing, or removing one catalog has no effect, structural or otherwise, on any other catalog's own independently-signed listing of the same id. This only becomes a DS's problem if the DS itself deduplicates records by `id` across catalogs when building its own index (for example, to avoid showing a consumer the same product twice) — the protocol does not require this, but a DS that does it MUST reference-count: a deduplicated record MUST remain in the DS's index as long as any catalog the DS treats as ACTIVE or PAUSED (§10.4) — i.e., not RETIRED — still contains that id, and MUST be removed only once every catalog referencing it has been retired.
 
 #### 10.4 Catalog entry lifecycle
+
+**Terminology note — "listed" is not a state.** A catalog-index entry existing at all is a precondition for it having a lifecycle state, not itself a state a catalog transitions into or out of. A DS cannot reliably verify absence — a partial crawl, one failed fetch among several `catalog_index_urls`, or a truncated response all look identical to a real removal from the outside. So this RFC does not model "listed vs. not listed" as a transition, and a DS MUST NOT treat an entry's disappearance, by itself, as meaningful. The complete lifecycle is the three states below, each verified by something a DS can positively observe on a fetched, signed entry — never by something's absence.
 
 ```mermaid
 stateDiagram-v2
     [*] --> ACTIVE: PN publishes a first catalog-index entry
-    ACTIVE --> ACTIVE: PN publishes a content or metadata update (entryVersion bumps)
-    ACTIVE --> RETIRED: PN sets status=RETIRED, retiredAt=<timestamp>
-    RETIRED --> [*]: Entry MAY be removed from the index after a grace period
+    ACTIVE --> PAUSED: PN sets isActive to false
+    PAUSED --> ACTIVE: PN sets isActive to true
+    ACTIVE --> RETIRED: PN populates retiredAt
+    PAUSED --> RETIRED: PN populates retiredAt
 ```
 
-A PN MUST set an entry's `status` to `RETIRED` and populate `retiredAt` before removing a catalog's files; a PN MUST NOT silently omit a previously-published catalog entry from the index without first tombstoning it. A DS that observes a tombstoned entry MUST treat the catalog as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`.
+**Active vs. paused.** `isActive` (mirrored from the untouched `catalog.isActive`, §Schema Changes) is an ordinary, freely-reversible content attribute — the same field `Catalog` has always had. Toggling it in either direction is just another entry edit: `entryVersion` bumps, `baseline`/`changes[]` are untouched. A DS MUST NOT delete or stop tracking a catalog's previously-indexed content solely because `isActive` becomes `false` — a paused catalog stays fully indexed, just excluded from whatever the DS treats as currently-transactable.
+
+**Retired.** A PN MUST populate an entry's `retiredAt` before it stops publishing updates for that catalog; retirement is one-way (a PN MUST NOT unset `retiredAt` once populated), and `baseline`/`changes[]` are dropped from the entry once it is set, since there is nothing left to fetch. A DS MUST treat a catalog-index entry carrying `retiredAt` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`. This is the only condition under which a DS retires a catalog from its own index — a positive fact it verified on a signed entry, not an inference from that entry no longer appearing in a later crawl.
+
+**Absence, on its own, proves nothing.** If a DS previously indexed a `catalogId` and a later, successfully-fetched, validly-signed index no longer includes it, and the DS never observed a `retiredAt` marker on that entry beforehand, the DS MUST treat this as a possible incomplete crawl (§10.5) — log it and re-verify on the next cycle — and MUST NOT delete the catalog's previously-indexed content on that basis alone. A PN MAY eventually drop a long-retired entry from its index as its own storage hygiene, but this is informative housekeeping a DS is never required to observe or rely on; the tombstone, while the entry is still being served, is what a DS actually acts on.
 
 #### 10.5 Error flows
 
@@ -223,7 +281,8 @@ A PN MUST set an entry's `status` to `RETIRED` and populate `retiredAt` before r
 | `entryVersion` or content-lineage version regresses relative to stored cursor | DS, comparing fetched entry to cursor | Same as above | MUST flag as a possible rollback/tamper condition; MUST NOT apply the regressed content |
 | Mismatch between a catalog file's own internal `catalogId`/`version` and the index entry's declared `catalogId`/`version` | DS, after fetching the file | Same as above | MUST treat exactly as a digest mismatch — discard, don't index, log; MUST NOT attempt to reconcile by preferring either side |
 | DeDi manifest or Subscriber record signing key not present in the manifest's current `keys[]` | DS, during manifest/record verification | DeDi's own verification failure (per DeDi spec, out of this RFC's scope) | MUST treat everything signed with that key as unverifiable; MUST NOT index |
-| `catalogId` domain prefix does not match the crawled PN's own domain | DS, during entry verification | No response schema | Behavior open — see Open Questions ("id-collision enforcement") |
+| `catalogId` domain prefix does not match the crawled node's own domain | DS, during entry verification | No response schema | Behavior open — see Open Questions ("id-collision enforcement") |
+| A previously-indexed `catalogId` is absent from a successfully-fetched, validly-signed index, with no `retiredAt` ever observed on it | DS, comparing fetched index to its own prior state | No response schema | MUST treat as a possible incomplete crawl, not a removal; MUST log; MUST NOT delete the catalog's previously-indexed content; MUST re-verify on its next crawl cycle |
 
 #### 10.6 Async trigger conditions
 
@@ -231,17 +290,98 @@ The crawl in §10.2 is DS-initiated and pull-only; there is no PN-initiated deli
 
 #### 10.7 AI Agent exercisability
 
-Every flow in this section is exercisable by an AI Agent without human input: publishing (§10.1) is a deterministic file-generation and signing pipeline; crawling and verification (§10.2) is a deterministic fetch-verify-index loop with no decision point requiring human judgment; retirement (§10.4) is a state transition triggered by a PN-side automated process. No flow in this RFC requires human-in-the-loop confirmation.
+Every flow in this section is exercisable by an AI Agent without human input: publishing (§10.1) is a deterministic file-generation and signing pipeline; crawling and verification (§10.2) is a deterministic fetch-verify-index loop with no decision point requiring human judgment; removal from the index (§10.4) is simply the absence of an entry on a PN's next automated publish, no separate action required. No flow in this RFC requires human-in-the-loop confirmation.
+
+### Versioning
+
+Three independent layers, each with its own scope, deliberately kept distinct because they answer different questions.
+
+**There is no whole-index version field.** Whether a catalog index has changed at all is answered by ordinary conditional HTTP (`ETag`/`If-Modified-Since`, §10.2), at no cost beyond what fetching and parsing a fresh copy already requires. A plain, unsigned document-level counter would add nothing on top of that: a catalog index as a whole is not signed (only its entries are), so a hostile host could set such a field to whatever it wanted regardless of what it actually served underneath it. Rollback detection belongs, and is handled, one layer down, where the signed data actually is.
+
+**Catalog-entry level — has anything changed.** Each catalog entry carries `entryVersion`, an integer a PN MUST bump on *any* change to the entry — content or metadata (`networkIds`, `schemaTypes`, `catalogType`, `dependencies`, `isActive`, `retiredAt` all live in the entry too, and can change independent of the underlying resources/offers). This is a DS's cheap first check: unchanged since the last crawl means skip the entry entirely, with a positive guarantee that nothing about it moved, since `entryVersion` is inside the entry's own signed scope.
+
+**Catalog-entry level — what's current.** Independent of `entryVersion`, each entry also carries `baseline.version` and `changes[].version` — a DS's per-catalog cursor for deciding which change files it still needs. These do not collapse into `entryVersion`, and MUST NOT be conflated with it: `entryVersion` bumps on every edit, but `baseline`/`changes[]` versions bump only when a corresponding file is actually published. Forcing a metadata-only edit to also bump `baseline.version` would send a DS looking for a baseline or change file that doesn't exist — either a no-op file would have to be published to satisfy it, or version numbers would carry gaps that don't correspond to real files, breaking the "fetch changes after my cursor" contiguity the incremental scheme depends on. Keeping the two separate is what lets a metadata-only edit stay as cheap as it should be: one re-signed entry, no file republished.
+
+**Catalog-file level.** `CatalogFile` and `CatalogChangeFile` (§Schema Changes) carry `catalogId`, a version marker (`version` for a baseline; `fromVersion`/`toVersion` for a change file), and `next_update` inside the file itself, not only in the index entry that points at it. This gives a DS two equally valid paths: read the index first and fetch files by cursor as usual, or fetch a catalog file directly — from a known URL, an out-of-band reference, or a storage listing — and verify it entirely on its own, since it carries enough to check its own identity, version, freshness, and signature without the index at hand.
+
+**Version numbers are monotonic integers, not timestamps.** This is a deliberate choice, not left open: (1) exactly one PN publishes any given catalog, which makes an integer counter trivially safe with no coordination or collision risk; (2) a timestamp-as-version would duplicate information this design already carries elsewhere (`next_update` for staleness); and (3) it would introduce a real failure mode for no offsetting benefit — clock skew or a corrected system clock can make a legitimate republish look like a rollback, which a counter cannot.
+
+**Rules governing the relationship between the file and index levels:**
+- A file's own fields are covered by its own signature. Signing input is the whole document minus `signature`, so `catalogId`/`version` (or `fromVersion`/`toVersion`)/`next_update` are part of what's signed automatically — no separate binding step is needed.
+- A mismatch between an index entry's declared `catalogId`/version and a fetched file's own internal `catalogId`/version MUST be treated exactly like a digest mismatch: discard, don't index, log it. Neither side is authoritative over the other; a disagreement means something is wrong, not a tiebreak.
+- `next_update` inside a file and `next_update` on the index it's listed from are not required to agree, and a DS MUST NOT treat a difference between them as an error. They will often carry the same value in practice, since a PN typically regenerates both together, but they are independent freshness leases for the two access paths above: a DS that fetched via the index honors the index's `next_update`; a DS that fetched the file directly honors the file's own.
+- `isActive` is not a version-lineage field: a PN MAY toggle it in either direction at will (§10.4), and doing so only requires `entryVersion` to bump, not `baseline`/`changes[]`. This is unlike `retiredAt` (below), which is one-way — the two are different operations, not degrees of the same one.
+- A PN MUST NOT unset `retiredAt` once populated, and MUST NOT re-list a `catalogId` that has been retired. A DS MAY retain version-lineage state for a retired catalog indefinitely, so re-listing the same `catalogId` risks its version numbers looking like a rollback (§10.5) rather than a fresh start; a catalog offered again after retirement MUST be published under a new `catalogId`.
 
 ### Schema Changes
 
-**`CatalogFile` (new).** Models the real-world act of a PN making one catalog's content independently verifiable at rest. An existing schema cannot be reused: `Catalog` itself has `additionalProperties: false`, leaving no room for a sibling `signature` field without either changing `Catalog` (excluded by R5/G6) or wrapping it. `CatalogFile` is `{ catalogId, version, next_update, catalog, signature }`: `catalogId` and `version` are assigned by the PN and MUST match the corresponding catalog-index entry; `next_update` is assigned by the PN and bounds how long the file's freshness may be trusted when fetched directly, independent of the index; `catalog` is an unmodified `Catalog` object, assigned by the PN; `signature` is a detached signature (JCS canonicalization of the document minus this field, per RFC 8785) over every other field, keyed by the PN's Registry-registered key.
+Three new artifacts. Each is broken down field by field below: what it represents, who assigns it, and — since that's the part a flowing description tends to bury — the specific concern each field exists to solve.
 
-**`CatalogChangeFile` (new).** Models the real-world act of a PN publishing an incremental delta to a previously-published catalog. `{ catalogId, fromVersion, toVersion, next_update, resources: { upserts: [Resource], removals: [string] }, offers: { upserts: [Offer], removals: [string] }, catalog, signature }`. `resources.upserts`/`offers.upserts` items are complete, schema-valid `Resource`/`Offer` objects (existing schemas, reused by reference, not duplicated); `catalog` carries optional catalog-level attribute changes (name, validity window); `signature` follows the same convention as `CatalogFile`.
+#### `CatalogFile` (new)
 
-**Catalog Index (new).** Models the real-world act of a PN declaring the complete, current set of catalogs it offers, each independently verifiable. Not a DeDi file; not part of `beckn.yaml`. Top-level: `{ nodeId, next_update, catalogs: [...] }`. Each entry: `{ catalogId, entryVersion, catalogType, status, networkIds, schemaTypes, baseline: { version, url, size, digest }, changes: [{ version, url, size, digest }], retiredAt?, signature }`. `entryVersion` is assigned by the PN and MUST be bumped on any change to the entry, content or metadata; `signature` is a detached signature over the entire entry minus itself. **Open, per §Open Questions:** the canonical publication location for this schema.
+Models the real-world act of a PN making one catalog's content independently verifiable at rest, whether it's reached via the index or fetched directly. An existing schema cannot be reused: `Catalog` itself has `additionalProperties: false`, leaving no room for a sibling `signature` field without either changing `Catalog` (excluded by R5/G6) or wrapping it.
 
-**`Beckn_subscriber` (modified, externally governed).** One additive field, `catalog_index_urls` — an array of `{ url }` objects, assigned by the PN. Backward-compatible: existing records without this field are unaffected; a DS that does not find it simply has no catalog index to crawl for that PN. Because this schema is governed under DeDi/Linux Foundation Decentralized Trust, not this repository's CWG (see GOVERNANCE.md), this change requires coordination with that governance process and is tracked as a dependency, not something this RFC can merge unilaterally.
+| Field | Assigned by | Solves |
+|---|---|---|
+| `catalogId` | PN | Identifies which catalog this is, so a directly-fetched copy is self-describing, and so a DS can cross-check it against the index entry that pointed here. |
+| `version` | PN | This file's position in the catalog's content lineage; matched against the index entry's `baseline.version`, and against `CatalogChangeFile.fromVersion`/`toVersion` when applying deltas. |
+| `next_update` | PN | How long *this specific file's* freshness may be trusted when fetched directly — independent of the index's own `next_update`; see §Versioning. |
+| `catalog` | PN | The actual content: an unmodified `Catalog` object, identical in shape to what `beckn.yaml` already defines. |
+| `signature` | PN | Detached signature (JCS canonicalization of the document minus this field, per RFC 8785) over every field above, keyed by the PN's Registry-registered key — proves the content is genuinely this PN's, independent of where or how the file was found. |
+
+There is no separate activity field on `CatalogFile` itself. A party fetching the file directly, without consulting the index, reads the existing, unmodified `catalog.isActive` for that — the same field every other consumer of a `Catalog` object already knows to check. Whether the catalog has been retired (§10.4) is a different concept, tracked one level up on the index entry's `retiredAt` — not a field on this file, and not duplicated here. A retired catalog's `CatalogFile` simply stops being referenced by any live `baseline`/`changes[]` entry; the file itself carries no marker of its own retirement.
+
+The wrap does not reopen `Catalog` for changes and does not weaken wire compliance: `Catalog`'s schema governs the wire format (`/discover`/`/on_discover`), not this hosting file — a DS unwraps `.catalog` back to a bare object before anything reaches its own index or the wire.
+
+#### `CatalogChangeFile` (new)
+
+Models the real-world act of a PN publishing an incremental delta to a previously-published catalog, so a DS doesn't have to re-fetch the whole thing on every update.
+
+| Field | Assigned by | Solves |
+|---|---|---|
+| `catalogId` | PN | Same purpose as in `CatalogFile` — which catalog this delta applies to. |
+| `fromVersion` / `toVersion` | PN | The exact version range this delta covers; lets a DS confirm a chain of change files connects cleanly to its own stored cursor before applying any of them. |
+| `next_update` | PN | Same freshness purpose as in `CatalogFile`. |
+| `resources.upserts` | PN | Resources added or changed since `fromVersion` — complete, schema-valid `Resource` objects (existing schema, reused by reference); a DS replaces by id, never by position. |
+| `resources.removals` | PN | Resource ids removed since `fromVersion` — ids only, no object needed. |
+| `offers.upserts` / `offers.removals` | PN | Same two purposes, for `Offer`. |
+| `catalog` | PN | Optional catalog-level attribute changes (name, validity window) that aren't resource- or offer-specific. |
+| `signature` | PN | Same purpose as in `CatalogFile` — proves the delta itself, independent of the index. |
+
+#### Catalog Index (new)
+
+Models the real-world act of a PN declaring the complete, current set of catalogs it offers under one index, each independently verifiable. Not a DeDi file; not part of `beckn.yaml`.
+
+Top-level:
+
+| Field | Assigned by | Solves |
+|---|---|---|
+| `nodeId` | PN | Whose index this is; a DS checks this matches the node it's crawling. |
+| `next_update` | PN | How long the index as a whole may be trusted before re-fetching. |
+| `catalogs` | PN | The entries themselves, one per catalog. |
+
+Per catalog entry:
+
+| Field | Assigned by | Solves |
+|---|---|---|
+| `catalogId` | PN | Which catalog this entry describes. |
+| `entryVersion` | PN | Whether *anything* about this entry changed since the DS last looked — content or metadata — independent of whether a new file was published; the DS's cheapest first check (§Versioning). |
+| `catalogType` | PN | `MASTER` or `REGULAR`; lets a DS order its crawl — indexing MASTER catalogs before resolving REGULAR ones that extend them — without fetching every file first (§10.3). |
+| `dependencies.masters[]` (`catalogId`, `indexUrl`) | PN | Present on a REGULAR catalog entry: one entry per MASTER catalog any of its resources currently extend via `resourceDirectives[].extends.masterResourceId` (§10.3) — `catalogId` for a DS to check whether it's already crawled and indexed that MASTER, `indexUrl` as an unauthenticated shortcut to the index likely to contain it, sparing a DS a full DeDi resolution of the MASTER's own node just to locate it. An array of `{catalogId, indexUrl}` objects, not two parallel arrays, so the pairing can never drift out of sync; `dependencies` is itself an object wrapper (not `masters[]` directly at the top level) so a future dependency kind can be added without a breaking schema change. |
+| `networkIds` | PN | Which networks this catalog is relevant to — lets a network-scoped DS skip catalogs it doesn't need to bother indexing, without fetching them first. |
+| `schemaTypes` | PN | Which domain schema(s) the catalog's content conforms to — the same filtering purpose as `networkIds`, for a DS that only cares about specific domains (retail, not mobility, for example). |
+| `isActive` | PN | Mirrors `catalog.isActive` (unchanged, pre-existing field) so a DS can pre-filter on activity from the index alone, without fetching the file — the same filtering purpose as `networkIds`/`schemaTypes`. Freely reversible in either direction (§10.4, ACTIVE↔PAUSED); a change here bumps `entryVersion` like any other edit, nothing more. Meaningless once `retiredAt` is set. |
+| `baseline` (`version`, `url`, `size`, `digest`) | PN | Where to fetch the current full snapshot and how to verify it; present as long as the catalog is not retired. `url` MAY end in `.json.gz` for a gzip-compressed file (§10.1) — a DS decompresses before verifying `digest`. `size` reflects the file's actual served size (compressed, if `.json.gz`), which is what makes the cutover rule (§10.1) computable before downloading anything. |
+| `changes[]` (`version`, `url`, `size`, `digest`) | PN | Where to fetch each incremental delta since the baseline and how to verify each; a DS applies only the ones after its own stored cursor. Same `.json`/`.json.gz` and compressed-`size` convention as `baseline`. Dropped once `retiredAt` is set. |
+| `retiredAt` | PN | Absent for an ACTIVE or PAUSED catalog; once populated, it *is* the tombstone (§10.4) — a positive fact a DS verifies on the signed entry itself, never inferred from the entry's absence. One-way: never unset. `baseline`/`changes` are dropped once this is set. |
+| `crawlHint` | PN | Optional suggested crawl frequency (comparable to a sitemap's `changefreq`); a DS MAY honor it, but stays in control of its own schedule and budget regardless. |
+| `signature` | PN | Detached signature over the entire entry minus itself, covering every field above together as one unit — no field, including `networkIds`, `schemaTypes`, `isActive`, a `baseline`/`changes` reference, or the presence of `retiredAt`, can be added, dropped, or altered without breaking it. |
+
+A catalog index MAY additionally carry a whole-index signature, for PNs who want membership and ordering within a served copy covered as well — this is the one gap per-entry signing leaves open (§Security Considerations). An entry's `signature` MAY equally be encoded as a detached JWS (RFC 7515) instead of the `{keyId, value}` tuple shown in Appendix A, to match DeDi's own proof encoding — the encoding is a schema decision, not a semantic one. Signing keys MAY use either Ed25519 or ES256; ES256 matches the fabric's shipped signing guidance (OPA verifies it natively), Ed25519 matches DeDi's own examples. **Open, per §Open Questions:** the canonical publication location for this schema.
+
+#### `Beckn_subscriber` (modified, externally governed)
+
+One additive field, `catalog_index_urls` — an array of `{ url }` objects, assigned by the PN. Backward-compatible: existing records without this field are unaffected; a DS that does not find it simply has no catalog index to crawl for that node. Because this schema is governed under DeDi/Linux Foundation Decentralized Trust, not this repository's CWG (see GOVERNANCE.md), this change requires coordination with that governance process and is tracked as a dependency, not something this RFC can merge unilaterally.
 
 **Cross-artifact alignment.** `catalog_index_urls`, `entryVersion`, and the Catalog Index's field names are new named terms with no existing `context.jsonld`/`vocab.jsonld` entries. A companion PR in the `schemas` repository is required before this RFC can leave Draft status; not yet opened.
 
@@ -249,45 +389,29 @@ Every flow in this section is exercisable by an AI Agent without human input: pu
 
 This RFC's flows conform to [NFH-007](./Authentication_and_Trust.md)'s general model for the parts that don't change: Registry key resolution and revocation, and the `/discover`↔`/on_discover` exchange itself. Specific to this RFC, not already covered by NFH-007:
 
-1. **Two new signature scopes.** Neither `CatalogFile`/`CatalogChangeFile` self-signing nor catalog-index entry self-signing are HTTP transport signatures — both are JCS-canonicalized, detached signatures over file content at rest, verified independent of any request. NFH-007 does not currently define this pattern; this RFC introduces it as a new, catalog-specific mechanism, not an extension of the `Signature` schema used on the transaction leg.
-2. **Resolves an existing NFH-007 open question.** NFH-007 §12's second open question asks whether PNs should produce an application-layer signature over catalog payloads that a DS can verify independent of the CS. This RFC's `CatalogFile` self-signature is that mechanism; the open question SHOULD be marked resolved in NFH-007 once this RFC merges.
-3. **Removal of a single, centrally-enforced publish-time gate.** Today, the CS validates every submitted catalog once, centrally, before indexing. Under this RFC, validation happens independently, at crawl time, by every DS that chooses to crawl a given PN. A malicious or malformed catalog can never be trusted by a conforming DS (verification is mandatory per §10.2), but there is no longer a single, shared verdict — two DSes may, in principle, apply different strictness and reach different conclusions about the same PN. This is an accepted trade-off, not a gap; see §Security and Interoperability Considerations.
-4. **Host-compromise exposure is DeDi's, not new.** Because the manifest at `/.well-known/dedi.json` is the trust anchor for a PN's keys (`did:web`-style), a full compromise of a PN's web host can swap keys and files together. This is an accepted trade-off in DeDi's own design, inherited unchanged by this RFC; mitigated by external monitors watching for unexpected key changes, per DeDi's own guidance.
+1. **Two new signature scopes, protecting at two independent levels.** Neither `CatalogFile`/`CatalogChangeFile` self-signing nor catalog-index entry self-signing are HTTP transport signatures — both are JCS-canonicalized, detached signatures over file content at rest, verified independent of any request. **Protected:** file bytes (any change breaks the digest); file authenticity independent of the index (a relocated or cached copy of a catalog file is verifiable on its own, without the index alongside it); the catalog entry as a whole, including its `isActive`, `retiredAt`, `networkIds`, and `schemaTypes` declarations, all inside one signed scope. **Not protected, because a catalog index as a whole is unsigned by default:** absence — a stale or hostile host can still serve an old index that omits a newer catalog entry entirely, or a new change file, and content that's silently missing is not detectable without the optional whole-index signature; and cross-catalog ordering — which entries appear, and in what order, relative to each other. `next_update` forces refresh on a short cadence, and the monotonic version fields (§Versioning) expose rollback to any DS with history; the optional whole-index signature closes the remaining gap entirely for PNs who want it. This residual risk is accepted for discovery data on the basis that much of what is stale is caught again at transaction time, where the authoritative leg validates independently. It is also why §10.4 requires a DS to treat a catalog's disappearance from the index, absent a prior `retiredAt`, as a possible incomplete crawl rather than a verified removal: a hostile host omitting an entry without tombstoning it should be met with suspicion by a spec-following DS, not silent compliance.
+2. **Resolves an existing NFH-007 open question.** NFH-007 §12's second open question asks whether PNs should produce an application-layer signature over catalog payloads that a DS can verify independent of any intermediary. This RFC's `CatalogFile` self-signature is that mechanism; the open question SHOULD be marked resolved in NFH-007 once this RFC merges.
+3. **Validation is independent per DS, not centrally enforced once.** Under this RFC, a catalog's schema and signature validity are checked at crawl time, independently, by every DS that chooses to crawl a given PN. A malicious or malformed catalog can never be trusted by a conforming DS — verification is mandatory per §10.2 — but there is no single, shared verdict the way one centrally-operated validator would produce: two DSes may, in principle, apply different strictness and reach different conclusions about the same PN. This is an accepted property of the design, restated in §Security and Interoperability Considerations because it is protocol-wide, not local to this mechanism.
+4. **Host-compromise exposure is DeDi's, not new.** Because the manifest at `/.well-known/dedi.json` is the trust anchor for a node's keys (`did:web`-style), a full compromise of a node's web host can swap keys and files together. This is an accepted trade-off in DeDi's own design, inherited unchanged by this RFC; mitigated by external monitors watching for unexpected key changes, per DeDi's own guidance.
+5. **`dependencies.masters[].indexUrl` is an unauthenticated locator, not a trust delegation.** A REGULAR catalog's own signature covers the fact that it *declares* a given `indexUrl` for a MASTER dependency, but says nothing about what actually lives at that URL — a malicious REGULAR-catalog publisher cannot forge a MASTER catalog's content this way (CON-TBD-31 requires the fetched entry's own signature to verify against its claimed `catalogId`'s Registry-anchored key, same as any other entry), but could point the hint at a dead, wrong, or slow URL to waste a DS's crawl budget. This is a nuisance-level risk, not a trust break: the worst outcome is a wasted fetch, followed by the required fallback to standard DeDi resolution (§10.2).
 
 ### Privacy Considerations
 
-No field introduced by this RFC carries new PII. `catalog_index_urls` is a set of URLs pointing to a PN's own hosted infrastructure; `entryVersion`, `next_update`, `status`, `networkIds`, `schemaTypes`, and the catalog-index/file signature fields carry no personal data. `Catalog.provider` (business/contact details) is unchanged and unaffected by this RFC — its existing privacy posture, whatever it is today, is not altered by relocating where the surrounding `Catalog` object is hosted.
+No field introduced by this RFC carries new PII. `catalog_index_urls` is a set of URLs pointing to a node's own hosted infrastructure; `entryVersion`, `next_update`, `isActive`, `retiredAt`, `networkIds`, `schemaTypes`, and the catalog-index/file signature fields carry no personal data. `Catalog.provider` (business/contact details) is unchanged and unaffected by this RFC — its existing privacy posture, whatever it is today, is not altered by relocating where the surrounding `Catalog` object is hosted.
 
-### Breaking Changes and Migration
+### End-to-End Flow (Informative)
 
-| Changed Artifact | Replacement | Migration Path | Target Removal Version |
-|---|---|---|---|
-| `POST /catalog/publish` / `POST /catalog/on_publish` | Self-hosted, self-signed `CatalogFile` + catalog-index entry | PNs MUST begin hosting `CatalogFile`s and a catalog index, and add `catalog_index_urls` to their Beckn Subscriber record, before ceasing calls to `/catalog/publish`. Both mechanisms MAY coexist during migration; a CS operator SHOULD advertise a sunset date. | v2.1.0 |
-| `POST /catalog/subscription` (POST/GET/DELETE) | DS-internal crawl-target configuration, driven by networkId registry enumeration | DSes MUST replace subscription management with their own crawl scheduler; no server-side migration action needed once the CS is decommissioned. | v2.1.0 |
-| `POST /catalog/push` | DS-initiated crawl (§10.2), optionally accelerated by an out-of-band change signal (§10.6, design deferred) | DSes MUST switch from push-receipt to a pull/crawl loop. | v2.1.0 |
-| `POST /catalog/pull` / `POST /catalog/on_pull` | Catalog index's `baseline`/`changes[]` fetch, per the cutover rule in `CatalogFile`/`CatalogChangeFile` | DSes MUST replace bulk-pull requests with direct, verified fetches against PN-hosted files. | v2.1.0 |
-| `POST /catalog/search` | No fabric-mandated replacement; a DS MAY expose an equivalent search API to its own downstream consumers over its own index | No action required by PNs; DS operators choosing to keep a search surface implement it themselves. | v2.1.0 |
-| `CatalogPublishAction`, `CatalogOnPublishAction`, `CatalogProcessingResult`, `CatalogSubscribeAction`, `CatalogSubscription`, `CatalogSearchAction`, `CatalogPullAction`, `CatalogPullCallbackAction`, `CatalogSubscriptionResponse` schemas | `CatalogFile`, `CatalogChangeFile`, Catalog Index schema (this RFC) | Retired alongside their endpoints. Not removed from `beckn.yaml` by this RFC (see Non-Goal NG6) — tracked as a fast-follow. | v2.1.0 |
+A worked walkthrough, tying §10.1 through §10.4 together into one concrete scenario. This section is illustrative; the normative requirements live in the sections it references, not here. This RFC does not itself modify `beckn.yaml` (see Non-Goal NG6), so today's catalog endpoints are referenced by name below only to show where this flow sits relative to them — not as artifacts this RFC changes.
 
-No change to `Catalog`, `/discover`, or `/on_discover` — nothing migrates on that surface.
+1. `open-economy.nfh.global` (a PN) authors a `Catalog` for its electronics line, wraps it in a `CatalogFile`, signs it, and hosts it at a URL on its own CDN (§10.1).
+2. It writes a catalog index listing that catalog's entry — `catalogId`, `entryVersion`, `catalogType`, `baseline` — signs the entry, and hosts the index alongside the file.
+3. It adds `catalog_index_urls`, pointing at that index, to its existing Beckn Subscriber record, and re-signs the record (§Publishing Artifacts and Layering). No call was made to any Fabric-operated service at any point in these three steps.
+4. `ion-discovery.nfh.global` (a DS scoped to the `ion.nfh.global` network) enumerates candidate PNs from the Registry, resolves `open-economy.nfh.global`'s DeDi manifest and Beckn Subscriber record, and finds the new `catalog_index_urls` entry (§10.2).
+5. The DS fetches the catalog index, verifies the entry's signature, confirms `open-economy.nfh.global` has a reference record in `ion.nfh.global`'s membership registry, fetches and verifies the `CatalogFile` itself, and indexes the resulting `Catalog` object.
+6. A CN calls `POST /discover` against the DS exactly as it would today; the DS matches the intent against what it crawled and calls `POST /on_discover` on the CN's callback URI with the indexed `Catalog`. This leg, defined in `beckn.yaml`, is entirely unaffected by this RFC.
+7. `open-economy.nfh.global` later updates one item's price: it edits the catalog file (or emits a `CatalogChangeFile`), re-signs it, bumps the index entry's `entryVersion` and its `baseline`/`changes[]` version, and re-signs the entry. On its next pass, the DS's conditional fetch of the index detects the change, re-verifies, and re-indexes — no notification was sent or required (§10.6).
 
-**Vocabulary mapping (informative).** Finer-grained than the table above — every specific field and mode from today's catalog APIs, and where its job lands in this design:
-
-| Today (`beckn.yaml`) | In this design |
-|---|---|
-| `catalog/publish` with `Ack`/`Nack` | Saving files; validation at the edge, results in a feedback log (§10.5, design deferred) |
-| `publishDirectives.visibleTo` | Per-catalog `networkIds` in the catalog index — a DS-side relevance filter, not an access gate |
-| `publishDirectives.updateMode: MERGE` | A `CatalogChangeFile` (id-keyed upserts and removals) |
-| `publishDirectives.updateMode: FULL` | A fresh `CatalogFile` baseline |
-| `catalog/pull` mode `FULL` | The `CatalogFile` baseline |
-| `catalog/pull` mode `DELTA` | `CatalogChangeFile`s after the crawler's stored cursor |
-| `downloadManifest` (`sha256`, `sizeBytes`) | `digest` and `size` in the self-signed catalog-index entry |
-| Subscription filters (`networkIds`, `schemaTypes`) | Crawler-side filtering against the catalog index; no subscription API |
-| Subscription CRUD (`catalog/subscription`) | Not needed — a DS's crawl scope is its own configuration |
-| `catalog/search` | No fabric-mandated replacement; a DS MAY offer search over its own index |
-| `catalog/push` | DS-initiated crawl, with an out-of-band change signal as an optional accelerant |
-| `/catalog/on_pull` callback | Not needed — crawling is synchronous from the DS's own perspective |
-| Offer-only catalogs, query-time attachment | Unchanged — still resolved behind `/discover` exactly as today |
+Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subscription`, `/catalog/push`, `/catalog/pull`, `/catalog/search`, and their callbacks) are untouched by the steps above and remain exactly as `beckn.yaml` defines them today; this RFC introduces the flow alongside them. Retiring those endpoints, and the specific migration path for implementers currently depending on them, is scoped to the follow-up RFC referenced in Non-Goal NG6.
 
 ### Conformance Requirements
 
@@ -297,7 +421,7 @@ No change to `Catalog`, `/discover`, or `/on_discover` — nothing migrates on t
 | CON-TBD-02 | A PN MUST sign every `CatalogFile` and `CatalogChangeFile` it publishes, per the JCS-canonicalization convention in §Schema Changes. | MUST |
 | CON-TBD-03 | A PN MUST NOT publish a catalog-index entry whose `entryVersion` regresses relative to the entry it most recently published for that `catalogId`. | MUST |
 | CON-TBD-04 | A PN MUST NOT publish a catalog-index entry whose `baseline.version` or any `changes[].version` regresses relative to what it most recently published for that `catalogId`. | MUST |
-| CON-TBD-05 | A PN MUST set an entry's `status` to `RETIRED` and populate `retiredAt` before removing that catalog's files from its host. | MUST |
+| CON-TBD-05 | A PN MUST populate an entry's `retiredAt` before it stops publishing updates for that catalog, and MUST NOT unset it once populated. | MUST |
 | CON-TBD-06 | A DS MUST verify a fetched DeDi manifest's signature against the Registry-registered key for the crawled domain before trusting anything it lists. | MUST |
 | CON-TBD-07 | A DS MUST verify a fetched Beckn Subscriber record's digest against the value the manifest signs for it. | MUST |
 | CON-TBD-08 | A DS MUST verify each catalog-index entry's self-signature before indexing any file it references. | MUST |
@@ -305,48 +429,58 @@ No change to `Catalog`, `/discover`, or `/on_discover` — nothing migrates on t
 | CON-TBD-10 | A DS MUST NOT index a catalog file or catalog-index entry that fails any verification step in §10.2. | MUST NOT |
 | CON-TBD-11 | A DS MUST treat a regression in `entryVersion` or in content-lineage version, relative to its own stored per-catalog cursor, as a possible rollback and MUST NOT apply the regressed content. | MUST |
 | CON-TBD-12 | A DS MUST treat a mismatch between a catalog file's internal `catalogId`/`version` and its index entry's declared `catalogId`/`version` the same as a digest mismatch — discard, do not index. | MUST |
-| CON-TBD-13 | A DS MUST treat a catalog-index entry with `status: RETIRED` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`. | MUST |
+| CON-TBD-13 | A DS MUST treat a catalog-index entry carrying `retiredAt` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`. | MUST |
 | CON-TBD-14 | A DS MUST inherit a REGULAR resource's attributes from its declared MASTER resource, with the REGULAR resource's own fields taking precedence, per §10.3. | MUST |
 | CON-TBD-15 | A DS receiving an out-of-band change signal MUST still perform full verification per §10.2 before trusting any content; the signal itself MUST NOT be treated as verified. | MUST NOT |
 | CON-TBD-16 | This RFC's flows MUST NOT introduce, and no conforming implementation MUST provide, a restricted or access-gated catalog path. | MUST NOT |
 | CON-TBD-17 | Every `Resource`/`Offer` object inside a `CatalogChangeFile`'s `upserts[]` MUST be a complete, schema-valid object per the existing `Resource`/`Offer` schemas. | MUST |
 | CON-TBD-18 | A DS SHOULD use conditional HTTP requests (`ETag`/`If-Modified-Since`) when re-fetching a previously-seen DeDi manifest or catalog index. | SHOULD |
 | CON-TBD-19 | All new schema designs introduced by this RFC MUST comply with NFH-009 conformance requirements CON-005-01 through CON-005-15. | MUST |
+| CON-TBD-20 | A PN MUST NOT maintain a separate, per-provider catalog index inside a platform node; provider distinction within one node MUST be expressed via each catalog's own `provider` field. | MUST NOT |
+| CON-TBD-21 | A DS crawling on behalf of a specific network MUST check that a PN has a reference record in that network's membership registry before indexing the PN's catalogs under that network's banner. | MUST |
+| CON-TBD-22 | A PN MUST serialize a catalog file with stable key order and formatting on every publish, so a digest changes only when content changes. | MUST |
+| CON-TBD-23 | A PN MUST publish a new version of a catalog file at a new, immutable URL and MUST NOT overwrite a previously-published version in place. | MUST |
+| CON-TBD-24 | A DS MUST NOT treat a difference between a catalog file's own `next_update` and its index entry's `next_update` as an error. | MUST NOT |
+| CON-TBD-25 | A DS MUST NOT delete or stop tracking a catalog's previously-indexed content solely because its index entry's `isActive` becomes `false`; it MUST continue to be indexed, only excluded from what the DS treats as currently-transactable. | MUST NOT |
+| CON-TBD-26 | A PN MUST NOT re-list a `catalogId` that it has previously retired; a catalog offered again after retirement MUST be published under a new `catalogId`. | MUST NOT |
+| CON-TBD-27 | A DS MUST NOT treat a previously-indexed `catalogId`'s absence from a successfully-fetched, validly-signed index as evidence of retirement unless it had previously observed a `retiredAt` marker on that entry; absent that, it MUST treat the disappearance as a possible incomplete crawl and MUST NOT delete the catalog's previously-indexed content on that basis alone. | MUST NOT |
+| CON-TBD-28 | A DS that deduplicates `Resource`/`Offer` records by their globally-unique `id` across more than one catalog MUST NOT remove a deduplicated record from its own index while any catalog it treats as ACTIVE or PAUSED still references that `id`. | MUST NOT |
+| CON-TBD-29 | A DS MUST decompress a `.json.gz`-suffixed `CatalogFile`/`CatalogChangeFile` before computing or verifying its digest or signature, and MUST NOT compute either against the compressed bytes. | MUST |
+| CON-TBD-30 | A PN MUST populate a REGULAR catalog-index entry's `dependencies.masters[]` with an entry for every MASTER `catalogId` any of its resources currently extend via `resourceDirectives[].extends.masterResourceId`, and MUST keep it current as those references change. | MUST |
+| CON-TBD-31 | A DS MUST NOT treat a `dependencies.masters[].indexUrl` as authenticated; it MUST verify anything fetched from it exactly as it would via ordinary discovery (§10.2), and MUST fall back to standard DeDi resolution if the hint is stale, unreachable, or fails verification. | MUST NOT |
+| CON-TBD-32 | On compacting a catalog's baseline, a PN MUST continue to list the change files that led up to the new baseline in its catalog index — not merely continue hosting them — for at least the grace period for which it retains their underlying files. | MUST |
 
 ### Security and Interoperability Considerations
 
 Distinct from the per-mechanism analysis above, this RFC's aggregate effect on the protocol's trust and interoperability posture:
 
-- **New trust relationship: availability, not authenticity, now depends on the PN's chosen host.** Content is self-signed and independently verifiable regardless of where it's served from, but if a PN's storage becomes unreachable, no Fabric-operated mirror exists to fall back to. This is a deliberate trade against the CS's current single-mirror model, not an oversight.
+- **New trust relationship: availability, not authenticity, now depends on the PN's chosen host.** Content is self-signed and independently verifiable regardless of where it's served from, but if a PN's storage becomes unreachable, no Fabric-operated mirror exists to fall back to. This is a deliberate design trade, not an oversight.
 - **New failure mode: cross-DS index divergence.** Because there is no single shared index, two DSes crawling the same PN on different schedules, or applying different verification strictness, can legitimately disagree about whether a given catalog is currently discoverable. §Security Considerations item 3 already names this; it is restated here because it is a protocol-wide interoperability property, not a per-mechanism detail.
 - **No new cross-implementation ambiguity beyond what's already flagged as open** in §Open Questions (id-collision enforcement, MASTER-catalog-not-yet-crawled behavior) — both are named explicitly rather than left implicit, consistent with this section's purpose.
 
 ### Prior Art
 
 - **[nfh-trust-labs/DeDi PR #2](https://github.com/nfh-trust-labs/DeDi/pull/2), "Origin-hosted publishing"** — standardizes self-hosted, signed DeDi files plus a well-known manifest, at the protocol level, for every DeDi registry. Adopted directly for the manifest/Subscriber-record mechanism in §10.1; this RFC's `catalog_index_urls` field is the one addition on top of it.
-- **Debian APT `Pdiffs`** ([Debian repository format](https://wiki.debian.org/DebianRepository/Format#indices_difference_files_.28diffs.29)) — per-version diff files beside a full package index, with fallback to the full file when accumulated diffs grow too large. Adopted for the baseline-plus-change-file incremental model in `CatalogFile`/`CatalogChangeFile`.
-- **OpenStreetMap Planet.osm diffs** ([wiki.openstreetmap.org/wiki/Planet.osm/diffs](https://wiki.openstreetmap.org/wiki/Planet.osm/diffs)) — a numbered diff stream with periodic baselines, served as plain files over HTTP. Adopted alongside APT `Pdiffs` for the same reason: both independently arrived at sequence-numbered diffs over timestamps, which informed this RFC's decision to use monotonic integers for `version`/`entryVersion` rather than timestamps.
 - **RFC 8615 (Well-Known URIs)** — governs the fixed `/.well-known/dedi.json` path this RFC depends on unchanged; not modified, only relied upon.
 - **RFC 8785 (JSON Canonicalization Scheme, JCS)** — adopted for the signing-input canonicalization of every new self-signed artifact in this RFC, matching DeDi's own convention.
 - **RFC 7515 (JSON Web Signature, JWS)** — referenced as an available detached-signature encoding for catalog-index entries, as an alternative to the simpler `{keyId, value}` tuple this RFC's examples use; not mandated either way (see §Schema Changes).
 - **`did:web`** — cited as the closest external analogue to DeDi's manifest-at-well-known-path trust model (a domain's own TLS-served document is the root of trust for its keys). Not separately adopted; DeDi already follows this pattern and this RFC inherits it unchanged.
-- **The CS itself (`beckn.yaml`, current `Fabric API - Cataloging Service`)** — the design being replaced. Rejected for the reasons in §Motivation; retained in `beckn.yaml` until the follow-up edit in Non-Goal NG6.
+- **`beckn.yaml`'s existing `Fabric API - Cataloging Service` group** — the design this RFC supersedes. Considered and set aside for the reasons in §Motivation; its endpoints/schemas remain in `beckn.yaml` until the follow-up edit tracked in Non-Goal NG6.
 
 ## Conclusion
 
-If accepted, this RFC removes catalog discoverability's dependence on any Fabric-operated write API, closes an existing open question in NFH-007 about end-to-end PN-origin proof, and gives every PN a publishing path that costs it nothing beyond storage it likely already runs. The criteria for advancing this RFC to Candidate status: resolution of the Open Questions below, a companion `schemas` repository PR for the new named terms, and at least one reference crawler implementation exercised against a live PN fixture.
+If accepted, this RFC gives every PN a publishing path that costs it nothing beyond storage it likely already runs, and closes an existing open question in NFH-007 about end-to-end PN-origin proof. The criteria for advancing this RFC to Candidate status: resolution of the Open Questions below, a companion `schemas` repository PR for the new named terms, and at least one reference crawler implementation exercised against a live PN fixture.
 
 ### Open Questions
 
 1. **Catalog Index schema publication venue.** Where `CatalogFile`, `CatalogChangeFile`, and the Catalog Index schema are canonically published and versioned is not yet decided.
-2. **Multi-index representation.** Whether a PN's multiple catalog indexes (e.g., separating retail from mobility) are listed as a list-valued field on the Subscriber record (this RFC's current proposal) or directly in the DeDi manifest's own `files[]` is unresolved.
-3. **Id-collision enforcement.** What a DS does when a publisher's file declares an id outside its own domain, and how a collision within one publisher's own files is reported back, is not yet decided.
-4. **MASTER-catalog-not-yet-crawled behavior.** What a DS does when a REGULAR catalog references a MASTER catalog it has not yet crawled, or that belongs to a publisher outside its crawl set, is not yet decided.
-5. **Change-signal / relay service design.** What carries an out-of-band change signal (§10.6), who operates it, and how it's priced, are all undecided; only the rule that it must never be trusted as verified content is fixed.
-6. **Feedback-log design.** Where a PN's crawl-rejection feedback log (§10.5) lives, whether it's per-DS or aggregated, its format, and its retention are undecided.
-7. **Rego policy-as-code re-homing.** Where NFH-012's master-catalog policy validation (currently specified against the CS) runs once the CS is retired is explicitly out of this RFC's scope (Non-Goal NG2) and needs its own follow-up RFC.
-8. **Key-resolution-path convergence.** The transaction leg resolves Registry keys via a path that, after this RFC, differs slightly from the catalog-crawl path's key resolution (both via the Subscriber record, but reached differently) — whether these should be explicitly unified is open.
-9. **NFH-010 actor-list reconciliation.** §Roles and Actors uses `DS` and `NFO`, which are not on NFH-010 §9's current permissible-actors list. Whether NFH-010 needs amending, or whether this RFC needs an explicit exception, is open.
+2. **Id-collision enforcement.** What a DS does when a publisher's file declares an id outside its own domain, and how a collision within one publisher's own files is reported back, is not yet decided.
+3. **MASTER-catalog-not-yet-crawled behavior.** What a DS does when a REGULAR catalog references a MASTER catalog it has not yet crawled, or that belongs to a publisher outside its crawl set, is not yet decided.
+4. **Change-signal / relay service design.** What carries an out-of-band change signal (§10.6), who operates it, and how it's priced, are all undecided; only the rule that it must never be trusted as verified content is fixed.
+5. **Feedback-log design.** Where a PN's crawl-rejection feedback log (§10.5) lives, whether it's per-DS or aggregated, its format, and its retention are undecided.
+6. **Rego policy-as-code re-homing.** Where NFH-012's master-catalog policy validation runs once no centrally-operated indexing service exists is explicitly out of this RFC's scope (Non-Goal NG2) and needs its own follow-up RFC.
+7. **Key-resolution-path convergence.** The transaction leg resolves Registry keys via a path that, after this RFC, differs slightly from the catalog-crawl path's key resolution (both via the Subscriber record, but reached differently) — whether these should be explicitly unified is open.
+8. **NFH-010 actor-list reconciliation.** §Roles and Actors uses `DS` and `NFO`, which are not on NFH-010 §9's current permissible-actors list. Whether NFH-010 needs amending, or whether this RFC needs an explicit exception, is open.
 
 ## Acknowledgements
 
@@ -357,16 +491,14 @@ This RFC synthesizes design discussion carried out over several working sessions
 **Normative References**
 - [Keyword Definitions](./Keyword_Definitions.md) [NFH-002] — governs interpretation of MUST/SHOULD/MAY throughout this RFC.
 - [Authentication and Trust](./Authentication_and_Trust.md) [NFH-007] — governs Registry key resolution/revocation, relied upon unchanged; §Security Considerations resolves one of its open questions.
-- [Schema Design Guide](./Schema_Design_Guide.md) [NFH-012] — CON-012-19 is the conformance rule this RFC's Non-Goal NG2 explicitly declines to re-home.
+- [Schema Design Guide](./Schema_Design_Guide.md) [NFH-012] — names the master-catalog policy validation this RFC's Non-Goal NG2 explicitly declines to re-home.
 - [RFC Authoring Guide](./RFC_Authoring_Guide.md) [NFH-010] — governs this document's own structure; §9's actor list is flagged in Open Questions.
-- `api/v2.0.0/beckn.yaml` — defines the `Catalog`, `Resource`, `Offer` schemas reused unmodified, and the seven endpoints/nine schemas this RFC's Breaking Changes section identifies for retirement.
+- `api/v2.0.0/beckn.yaml` — defines the `Catalog`, `Resource`, `Offer` schemas reused unmodified, and the existing catalog endpoints referenced, unaffected, in §End-to-End Flow.
 - [nfh-trust-labs/DeDi PR #2](https://github.com/nfh-trust-labs/DeDi/pull/2) — defines the DeDi manifest and file format this RFC composes.
 - [RFC 8785 — JSON Canonicalization Scheme (JCS)](https://www.rfc-editor.org/rfc/rfc8785) — governs the signing-input canonicalization for every new self-signed artifact.
 - [RFC 8615 — Well-Known Uniform Resource Identifiers](https://www.rfc-editor.org/rfc/rfc8615) — governs the fixed manifest path this RFC depends on.
 
 **Informative References**
-- [Debian Repository Format — index difference files (Pdiffs)](https://wiki.debian.org/DebianRepository/Format#indices_difference_files_.28diffs.29)
-- [OpenStreetMap Planet.osm diffs](https://wiki.openstreetmap.org/wiki/Planet.osm/diffs)
 - [RFC 7515 — JSON Web Signature (JWS)](https://www.rfc-editor.org/rfc/rfc7515)
 - [W3C `did:web` Method Specification](https://w3c-ccg.github.io/did-method-web/)
 
@@ -374,7 +506,45 @@ This RFC synthesizes design discussion carried out over several working sessions
 
 All examples below are informative and non-normative. They have not yet been run through automated schema-validation tooling (`@redocly/cli lint` or equivalent) — see Appendix B.
 
-#### Example 1 — `CatalogFile`
+#### Example 1 — DeDi manifest, pointing at the Beckn Subscriber record
+
+```json
+{
+  "dedi_version": "0.1",
+  "type": "dedi-manifest",
+  "domain": "open-economy.nfh.global",
+  "keys": [{ "kid": "key-1", "kty": "OKP", "crv": "Ed25519", "x": "..." }],
+  "updated_at": "2026-01-05T00:00:00Z",
+  "next_update": "2026-08-05T00:00:00Z",
+  "files": [
+    {
+      "registry": "beckn-subscriber",
+      "url": "https://open-economy.nfh.global/dedi/beckn-subscriber.dedi.json",
+      "schema": "https://schema.beckn.org/dedi/Beckn_subscriber.json",
+      "digest": "sha-256:4a8b..."
+    }
+  ],
+  "proof": { "verification_method": "key-1", "canonicalization": "JCS", "jws": "..." }
+}
+```
+
+#### Example 2 — Beckn Subscriber record showing the new field
+
+```json
+{
+  "subscriber_id": "open-economy.nfh.global",
+  "url": "https://open-economy.nfh.global",
+  "type": "BPP",
+  "domain": "retail",
+  "countries": ["IDN"],
+  "signing_public_key": "...",
+  "catalog_index_urls": [
+    { "url": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
+  ]
+}
+```
+
+#### Example 3 — `CatalogFile`
 
 ```json
 {
@@ -408,7 +578,7 @@ All examples below are informative and non-normative. They have not yet been run
 }
 ```
 
-#### Example 2 — Catalog Index (excerpt, one entry)
+#### Example 4 — Catalog Index (excerpt, one ACTIVE, one PAUSED, one RETIRED entry)
 
 ```json
 {
@@ -419,46 +589,64 @@ All examples below are informative and non-normative. They have not yet been run
       "catalogId": "open-economy.nfh.global/electronics-2026",
       "entryVersion": 7,
       "catalogType": "REGULAR",
-      "status": "ACTIVE",
+      "dependencies": {
+        "masters": [
+          { "catalogId": "open-economy.nfh.global/electronics-master", "indexUrl": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
+        ]
+      },
+      "isActive": true,
       "networkIds": ["ion.nfh.global"],
       "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
       "baseline": {
         "version": 40,
-        "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v40.json",
-        "size": 1848320,
+        "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v40.json.gz",
+        "size": 412800,
         "digest": "sha-256:9f2c..."
       },
       "changes": [
         { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." }
       ],
       "signature": { "keyId": "key-1", "value": "..." }
+    },
+    {
+      "catalogId": "open-economy.nfh.global/diwali-specials-2026",
+      "entryVersion": 13,
+      "catalogType": "REGULAR",
+      "isActive": false,
+      "networkIds": ["ion.nfh.global"],
+      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
+      "baseline": {
+        "version": 3,
+        "url": "https://cdn.open-economy.nfh.global/beckn/diwali-specials-2026.v3.json",
+        "size": 62410,
+        "digest": "sha-256:7c4d..."
+      },
+      "changes": [],
+      "signature": { "keyId": "key-1", "value": "..." }
+    },
+    {
+      "catalogId": "open-economy.nfh.global/electronics-2025",
+      "entryVersion": 21,
+      "catalogType": "REGULAR",
+      "retiredAt": "2026-01-31T00:00:00Z",
+      "networkIds": ["ion.nfh.global"],
+      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
+      "signature": { "keyId": "key-1", "value": "..." }
     }
   ]
 }
 ```
 
-#### Example 3 — Beckn Subscriber record excerpt showing the new field
+The first entry's `baseline.url` ends in `.json.gz` — a DS decompresses it before verifying `digest`, and `size` (412,800 bytes) reflects the compressed transfer size, not the ~1.8 MB the same content took uncompressed in earlier drafts of this example. Its `dependencies.masters` tells a DS, before fetching anything, that this REGULAR catalog extends resources from `electronics-master`, and gives it `indexUrl` as a shortcut to the index that should contain it — useful for crawl ordering (§10.3) even if that MASTER catalog turns out not to be indexed yet; the DS still verifies whatever it fetches from that URL exactly as it would via ordinary discovery (CON-TBD-31), so a wrong or stale hint costs it a wasted fetch, not a false trust.
 
-```json
-{
-  "subscriber_id": "open-economy.nfh.global",
-  "url": "https://open-economy.nfh.global",
-  "type": "BPP",
-  "domain": "retail",
-  "countries": ["IDN"],
-  "signing_public_key": "...",
-  "catalog_index_urls": [
-    { "url": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
-  ]
-}
-```
+The second entry is a seasonal catalog paused out of season — still listed, still tracked by a DS, just not currently offered for transactions; `isActive` can flip back to `true` at any time. The third entry is retired: last year's electronics catalog, permanently superseded by `electronics-2026`. It carries no `isActive`, `baseline`, or `changes[]` — there is nothing left to fetch — only `retiredAt`, which is the positive fact a DS acts on. A PN MAY eventually drop this entry from the index entirely once it no longer needs to communicate the retirement, but a DS never depends on that happening; the tombstone above is what makes the catalog's status verifiable regardless.
 
 ## Appendix B — Pre-Submission Checklist
 
 This RFC has NOT completed the checklist and MUST remain in Draft status until it does. Current state, honestly assessed:
 
 **Document Identity and Completeness**
-- [x] ID field uses `NFH-TBD` as placeholder
+- [x] ID field assigned: `NFH-014`
 - [x] All Document Details fields populated, including Stress Test Report with `Untested: <reason>`
 - [x] Replaces / Relates to links to at least one RFC document
 - [ ] Feedback section links to a real Issue / Discussion / PR — placeholders only, no branch or issue exists yet
@@ -489,7 +677,7 @@ This RFC has NOT completed the checklist and MUST remain in Draft status until i
 **Cross-Artifact and Schema**
 - [ ] New schemas' compliance with NFH-009 CON-005-01–15 asserted (CON-TBD-19) but not individually verified line-by-line
 - [ ] Companion `schemas` repository PR — not yet opened
-- [x] §Breaking Changes and Migration is complete with specific paths
+- [x] Breaking Changes and Migration intentionally omitted: this RFC does not itself modify or remove any `beckn.yaml` artifact (see Non-Goal NG6); §End-to-End Flow is provided in its place, and the follow-up RFC will carry migration specifics
 
 **Examples**
 - [ ] Examples have NOT been run through `@redocly/cli lint` or equivalent
@@ -504,10 +692,10 @@ This RFC has NOT completed the checklist and MUST remain in Draft status until i
 **Process**
 - [ ] No GitHub Issue or NFH Fabric Support Forum discussion exists yet — this RFC predates both
 - [x] Open Questions section present and populated
-- [x] Version History (Appendix C) started with Draft-01
+- [x] Version History (Appendix C) present
 
 ## Appendix C — Version History
 
 | Version | Date | Changes |
 |---|---|---|
-| Draft-01 | 2026-08-05 | Initial publication. |
+| Initial version | 2026-08-05 | Initial publication. |
