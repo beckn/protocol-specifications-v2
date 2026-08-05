@@ -124,6 +124,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 - **NG4 — A specific crawler implementation.** This RFC specifies the artifacts and the verification contract a crawler MUST satisfy. It does not mandate specific software; an ONIX plugin implementation is anticipated as a reference, not required by this specification.
 - **NG5 — Changes to the DeDi protocol itself.** This RFC composes the existing, externally-governed DeDi manifest/file format (see GOVERNANCE.md's note on Registry protocols, governed by Linux Foundation Decentralized Trust) and proposes exactly one additive field on one existing DeDi schema (`Beckn_subscriber`). It does not modify DeDi's protocol and has no authority to.
 - **NG6 — Retiring the CS's endpoints and schemas from `beckn.yaml`, and the corresponding edits to NFH-001, NFH-006, and NFH-007.** Tracked as a fast-follow once this design is accepted; not performed by this RFC. This RFC's Breaking Changes and Migration section identifies exactly what those edits will need to be.
+- **NG7 — Collapsing `bapId`/`bppId`/`networkId`/`subscriberId` into a single domain-valued `nodeId`.** Design discussion that fed into this RFC explored replacing today's identity fields with one identifier whose value is a domain, since catalog discovery under this design is already anchored to a PN's domain. That collapse is a cross-cutting identity change affecting the transaction leg as much as the catalog leg, and is deliberately not adopted by this RFC — every flow and schema here keeps `PN`/`DS`/`CN`/`NFO` as Registry-anchored identities exactly as `beckn.yaml` defines them today. If pursued, it belongs in its own RFC; this RFC does not depend on it and would not need revision if it never happens.
 
 ### Roles and Actors
 
@@ -269,6 +270,24 @@ No field introduced by this RFC carries new PII. `catalog_index_urls` is a set o
 | `CatalogPublishAction`, `CatalogOnPublishAction`, `CatalogProcessingResult`, `CatalogSubscribeAction`, `CatalogSubscription`, `CatalogSearchAction`, `CatalogPullAction`, `CatalogPullCallbackAction`, `CatalogSubscriptionResponse` schemas | `CatalogFile`, `CatalogChangeFile`, Catalog Index schema (this RFC) | Retired alongside their endpoints. Not removed from `beckn.yaml` by this RFC (see Non-Goal NG6) — tracked as a fast-follow. | v2.1.0 |
 
 No change to `Catalog`, `/discover`, or `/on_discover` — nothing migrates on that surface.
+
+**Vocabulary mapping (informative).** Finer-grained than the table above — every specific field and mode from today's catalog APIs, and where its job lands in this design:
+
+| Today (`beckn.yaml`) | In this design |
+|---|---|
+| `catalog/publish` with `Ack`/`Nack` | Saving files; validation at the edge, results in a feedback log (§10.5, design deferred) |
+| `publishDirectives.visibleTo` | Per-catalog `networkIds` in the catalog index — a DS-side relevance filter, not an access gate |
+| `publishDirectives.updateMode: MERGE` | A `CatalogChangeFile` (id-keyed upserts and removals) |
+| `publishDirectives.updateMode: FULL` | A fresh `CatalogFile` baseline |
+| `catalog/pull` mode `FULL` | The `CatalogFile` baseline |
+| `catalog/pull` mode `DELTA` | `CatalogChangeFile`s after the crawler's stored cursor |
+| `downloadManifest` (`sha256`, `sizeBytes`) | `digest` and `size` in the self-signed catalog-index entry |
+| Subscription filters (`networkIds`, `schemaTypes`) | Crawler-side filtering against the catalog index; no subscription API |
+| Subscription CRUD (`catalog/subscription`) | Not needed — a DS's crawl scope is its own configuration |
+| `catalog/search` | No fabric-mandated replacement; a DS MAY offer search over its own index |
+| `catalog/push` | DS-initiated crawl, with an out-of-band change signal as an optional accelerant |
+| `/catalog/on_pull` callback | Not needed — crawling is synchronous from the DS's own perspective |
+| Offer-only catalogs, query-time attachment | Unchanged — still resolved behind `/discover` exactly as today |
 
 ### Conformance Requirements
 
