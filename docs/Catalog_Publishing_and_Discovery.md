@@ -22,7 +22,7 @@
 
 ## Abstract
 
-This RFC establishes a decentralized model for catalog publishing and discovery on the Beckn fabric. A Provider Node (PN) publishes catalog data by hosting self-signed files on infrastructure it already controls, discoverable through one new field on its existing Beckn Subscriber DeDi record. A Discovery Service (DS) builds its own index by crawling — resolving a PN's DeDi manifest, verifying signed catalog files and self-signed catalog-index entries, and applying incremental updates. Catalog access is uniformly public: any party with a file's URL can fetch it, and no download-gating mechanism exists in this design. A PN may organize its catalogs across one or more independently-versioned indexes, and a network operator's membership registry — not this RFC's mechanism — governs which catalogs a network-scoped DS trusts. `/discover` and `/on_discover` are unaffected; the existing `Catalog` schema is unaffected. Companion artifacts: new `CatalogFile`, `CatalogChangeFile`, and Catalog Index schemas, and one additive field on the existing DeDi `Beckn_subscriber` schema.
+This RFC establishes a decentralized model for catalog publishing and discovery on the Beckn fabric. A Provider Node (PN) publishes catalog data by hosting self-signed files on infrastructure it already controls, discoverable through a `catalog_index_urls` entry in its existing Beckn Subscriber DeDi record's `meta` section. A Discovery Service (DS) builds its own index by crawling — resolving a PN's DeDi manifest, verifying signed catalog files and self-signed catalog-index entries, and applying incremental updates. Catalog access is uniformly public: any party with a file's URL can fetch it, and no download-gating mechanism exists in this design. A PN may organize its catalogs across one or more independently-versioned indexes, and a network operator's membership registry — not this RFC's mechanism — governs which catalogs a network-scoped DS trusts. `/discover` and `/on_discover` are unaffected; the existing `Catalog` schema is unaffected; the existing `Beckn_subscriber` schema is unaffected. Companion artifacts: new `CatalogFile`, `CatalogChangeFile`, and Catalog Index schemas, and a proposed generic `meta` object on DeDi's self-hosted file format — mirroring one DeDi's own registry API already has — that carries `catalog_index_urls` without a Beckn-specific schema change.
 
 ## Table of Contents
 
@@ -112,7 +112,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Design Goals.**
 - **G1** (→ R1): Publishing is an act of writing signed files to self-controlled storage; it is never an API call.
 - **G2** (→ R2, R4): Every catalog file and every catalog-index entry carries its own detached signature, verifiable against the PN's Registry-anchored key, independent of any intermediary.
-- **G3** (→ R3): A DS discovers a PN's catalogs by resolving one new field on the PN's existing Beckn Subscriber DeDi record to one or more catalog indexes, then crawling from there — no subscription API required.
+- **G3** (→ R3): A DS discovers a PN's catalogs by resolving `catalog_index_urls`, in the PN's existing Beckn Subscriber DeDi record's `meta` section, to one or more catalog indexes, then crawling from there — no subscription API required.
 - **G4** (→ R6): A catalog's updates are expressed as an immutable baseline plus a chain of change files, so a DS fetches only what changed.
 - **G5** (→ R7): A catalog-index entry carries an explicit, one-way `retiredAt` tombstone; a DS treats retirement as verified only on positively observing it, never by inferring it from an entry's absence.
 - **G6** (→ R5): No change to `Catalog`, `/discover`, or `/on_discover`.
@@ -122,7 +122,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 - **NG2 — Re-homing Rego policy-as-code enforcement.** [NFH-012](./Schema_Design_Guide.md)'s master-catalog policy validation, currently specified against a centrally-operated indexing service, is out of scope for this RFC. Where that validation runs under this model is an open question — see Open Questions.
 - **NG3 — Master/Regular resource inheritance semantics.** `resourceDirectives[].extends.masterResourceId` and `variant` are reused as-is from today's `publishDirectives`; this RFC relocates where resolution happens (see §10.3) but does not redesign the semantics themselves.
 - **NG4 — A specific crawler implementation.** This RFC specifies the artifacts and the verification contract a crawler MUST satisfy. It does not mandate specific software; a reference crawling tool is anticipated as an implementation deliverable, not required by this specification.
-- **NG5 — Changes to the DeDi protocol itself.** This RFC composes the existing, externally-governed DeDi manifest/file format (see GOVERNANCE.md's note on Registry protocols, governed by Linux Foundation Decentralized Trust) and proposes exactly one additive field on one existing DeDi schema (`Beckn_subscriber`). It does not modify DeDi's protocol and has no authority to.
+- **NG5 — Beckn-specific changes to the DeDi protocol itself.** This RFC composes the existing, externally-governed DeDi manifest/file format (see GOVERNANCE.md's note on Registry protocols, governed by Linux Foundation Decentralized Trust) and does not modify, or propose modifying, `Beckn_subscriber.json` or any other Beckn-specific DeDi schema. It does propose one small, schema-agnostic addition to DeDi's own self-hosted file format — a generic `meta` object, mirroring one that already exists, normatively, in DeDi's registry API (§Schema Changes) — but that addition belongs to DeDi and benefits every registry type, not something scoped to Beckn's concerns. It has no authority to make that change unilaterally, and does not.
 - **NG6 — Editing `beckn.yaml`'s existing catalog endpoints/schemas, and the corresponding edits to NFH-001, NFH-006, and NFH-007.** Tracked as a fast-follow once this design is accepted; not performed by this RFC. §End-to-End Flow notes exactly which existing endpoints that follow-up will need to touch.
 - **NG7 — Collapsing `bapId`/`bppId`/`networkId`/`subscriberId` into a single domain-valued `nodeId`.** Design discussion that fed into this RFC explored replacing today's identity fields with one identifier whose value is a domain, since catalog discovery under this design is already anchored to a PN's domain. That collapse is a cross-cutting identity change affecting the transaction leg as much as the catalog leg, and is deliberately not adopted by this RFC — every flow and schema here keeps `PN`/`DS`/`CN`/`NFO` as Registry-anchored identities exactly as `beckn.yaml` defines them today. If pursued, it belongs in its own RFC; this RFC does not depend on it and would not need revision if it never happens.
 
@@ -130,7 +130,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 | Actor | Protocol Identity | Role in this RFC's Flows | Endpoints Invoked | Endpoints Implemented |
 |---|---|---|---|---|
-| PN | Registry-anchored domain identity (unchanged) | Self-hosts and self-signs its own catalog files, change files, and catalog index(es); adds `catalog_index_urls` to its existing Beckn Subscriber DeDi record | None new — HTTP GET against its own storage is not a protocol-defined invocation | None new — hosts static files; no server required for the flows this RFC defines |
+| PN | Registry-anchored domain identity (unchanged) | Self-hosts and self-signs its own catalog files, change files, and catalog index(es); adds `catalog_index_urls` to its existing Beckn Subscriber DeDi record's `meta` section | None new — HTTP GET against its own storage is not a protocol-defined invocation | None new — hosts static files; no server required for the flows this RFC defines |
 | DS | Registry-anchored domain identity (unchanged) | Resolves PNs' DeDi manifests and Beckn Subscriber records; crawls, verifies, and indexes catalog files; serves `/discover` from its own index | Conditional HTTP `GET` against PN-hosted DeDi and catalog files; existing DeDi lookup for Registry keys | `/discover`, `/on_discover` (unchanged from `beckn.yaml`) |
 | CN | Registry-anchored domain identity (unchanged) | Unaffected — calls `/discover` exactly as today | `/discover` | `/on_discover` |
 | NFO | Registry-anchored domain identity (unchanged) | Publishes and maintains the membership registry a DS uses for network-scoped trust; see below | None new | None new |
@@ -149,7 +149,7 @@ The CS does not appear in this table: catalog publishing and discovery under thi
 A node's publishing surface is four kinds of file across two layers. The DeDi layer — the manifest and the Beckn Subscriber record — follows DeDi's published format exactly and changes rarely. The catalog layer — the index and the catalog/change files — is where all publish-time churn lives, and neither is a DeDi file:
 
 1. The **DeDi manifest**, at the fixed, well-known path `/.well-known/dedi.json`, written once at onboarding. Lists the Beckn Subscriber record among the node's DeDi files.
-2. The **Beckn Subscriber record**, a normal DeDi file conforming to the existing `Beckn_subscriber` schema plus this RFC's one new field, `catalog_index_urls`. Changes only when an index URL is added, removed, or moved, or when the node's identity details change for reasons unrelated to catalogs.
+2. The **Beckn Subscriber record**, a normal DeDi file conforming to the existing, unmodified `Beckn_subscriber` schema. `catalog_index_urls` is not a field on that schema — it lives in the record's `meta` section (§Schema Changes), a generic, schema-agnostic slot this RFC proposes adding to DeDi's own self-hosted file format rather than to `Beckn_subscriber.json`. Changes only when an index URL is added, removed, or moved, or when the node's identity details change for reasons unrelated to catalogs.
 3. One or more **catalog indexes** — plain, self-signing files, updated on every publish. Not DeDi files; DeDi never ingests them.
 4. **Catalog files and change files** — the actual content, each self-signed; see §Schema Changes.
 
@@ -178,7 +178,7 @@ sequenceDiagram
     Note over PN: One-time, at onboarding
     PN->>PN: Confirm the Ed25519 key already registered on the Registry
     PN->>Store: Host catalog files, change files, and the catalog index
-    PN->>DeDi: Add catalog_index_urls to the Beckn Subscriber record and re-sign it
+    PN->>DeDi: Add catalog_index_urls to the Beckn Subscriber record's meta section and re-sign it
     Note over PN,DeDi: PN is now discoverable, no publish call was made
 
     Note over PN: On every content update
@@ -213,7 +213,7 @@ sequenceDiagram
     PN-->>DS: DeDi manifest, signed
     DS->>DS: Verify the manifest signature against the Registry-registered key
     DS->>PN: GET the Beckn Subscriber record referenced by the manifest
-    PN-->>DS: Subscriber record, including catalog_index_urls, signed
+    PN-->>DS: Subscriber record, including meta.catalog_index_urls, signed
     DS->>DS: Verify the Subscriber record digest against the manifest
     DS->>PN: GET each catalog_index_urls entry, conditionally
     PN-->>DS: Catalog index, self-signing per entry
@@ -379,9 +379,11 @@ Per catalog entry:
 
 A catalog index MAY additionally carry a whole-index signature, for PNs who want membership and ordering within a served copy covered as well — this is the one gap per-entry signing leaves open (§Security Considerations). An entry's `signature` MAY equally be encoded as a detached JWS (RFC 7515) instead of the `{keyId, value}` tuple shown in Appendix A, to match DeDi's own proof encoding — the encoding is a schema decision, not a semantic one. Signing keys MAY use either Ed25519 or ES256; ES256 matches the fabric's shipped signing guidance (OPA verifies it natively), Ed25519 matches DeDi's own examples. **Open, per §Open Questions:** the canonical publication location for this schema.
 
-#### `Beckn_subscriber` (modified, externally governed)
+#### `Beckn_subscriber` (unmodified) + `meta.catalog_index_urls` (new, on DeDi's own file format)
 
-One additive field, `catalog_index_urls` — an array of `{ url }` objects, assigned by the PN. Backward-compatible: existing records without this field are unaffected; a DS that does not find it simply has no catalog index to crawl for that node. Because this schema is governed under DeDi/Linux Foundation Decentralized Trust, not this repository's CWG (see GOVERNANCE.md), this change requires coordination with that governance process and is tracked as a dependency, not something this RFC can merge unilaterally.
+`Beckn_subscriber.json` itself is untouched — no field is added to it. Instead, `catalog_index_urls` (an array of `{ url }` objects, assigned by the PN) lives in a generic `meta` object alongside the record, the same place DeDi's own registry API already carries free-form, schema-agnostic data on every registry and record (`api/openapi.yaml`, `meta: { type: object }`, unconstrained). DeDi's newer, self-hosted publishing format — the one this RFC actually builds on (`dedi-file.schema.json`, from `nfh-trust-labs/DeDi` PR #2) — does not yet have an equivalent: each record there is strictly `{ record_name, details }` with `additionalProperties: false`, no `meta` sibling. This RFC proposes closing that gap: adding the same `meta: object` field, already normative on DeDi's API side, to the self-hosted file schema's record object.
+
+This is a materially smaller ask of DeDi's governance than modifying `Beckn_subscriber.json` would have been. `meta` is schema-agnostic — accepting it doesn't require DeDi's maintainers to evaluate Beckn-specific concerns, only to bring their file format in line with a pattern their own API already has. It also means this RFC, or any future one, never needs another DeDi-side schema change for an additive field again — there's already somewhere for it to go. Backward-compatible regardless: existing records with no `meta.catalog_index_urls` are unaffected; a DS that doesn't find it simply has no catalog index to crawl for that node.
 
 **Cross-artifact alignment.** `catalog_index_urls`, `entryVersion`, and the Catalog Index's field names are new named terms with no existing `context.jsonld`/`vocab.jsonld` entries. A companion PR in the `schemas` repository is required before this RFC can leave Draft status; not yet opened.
 
@@ -405,8 +407,8 @@ A worked walkthrough, tying §10.1 through §10.4 together into one concrete sce
 
 1. `open-economy.nfh.global` (a PN) authors a `Catalog` for its electronics line, wraps it in a `CatalogFile`, signs it, and hosts it at a URL on its own CDN (§10.1).
 2. It writes a catalog index listing that catalog's entry — `catalogId`, `entryVersion`, `catalogType`, `baseline` — signs the entry, and hosts the index alongside the file.
-3. It adds `catalog_index_urls`, pointing at that index, to its existing Beckn Subscriber record, and re-signs the record (§Publishing Artifacts and Layering). No call was made to any Fabric-operated service at any point in these three steps.
-4. `ion-discovery.nfh.global` (a DS scoped to the `ion.nfh.global` network) enumerates candidate PNs from the Registry, resolves `open-economy.nfh.global`'s DeDi manifest and Beckn Subscriber record, and finds the new `catalog_index_urls` entry (§10.2).
+3. It adds `catalog_index_urls`, pointing at that index, to its existing Beckn Subscriber record's `meta` section, and re-signs the record (§Publishing Artifacts and Layering). No call was made to any Fabric-operated service at any point in these three steps.
+4. `ion-discovery.nfh.global` (a DS scoped to the `ion.nfh.global` network) enumerates candidate PNs from the Registry, resolves `open-economy.nfh.global`'s DeDi manifest and Beckn Subscriber record, and finds `meta.catalog_index_urls` (§10.2).
 5. The DS fetches the catalog index, verifies the entry's signature, confirms `open-economy.nfh.global` has a reference record in `ion.nfh.global`'s membership registry, fetches and verifies the `CatalogFile` itself, and indexes the resulting `Catalog` object.
 6. A CN calls `POST /discover` against the DS exactly as it would today; the DS matches the intent against what it crawled and calls `POST /on_discover` on the CN's callback URI with the indexed `Catalog`. This leg, defined in `beckn.yaml`, is entirely unaffected by this RFC.
 7. `open-economy.nfh.global` later updates one item's price: it edits the catalog file (or emits a `CatalogChangeFile`), re-signs it, bumps the index entry's `entryVersion` and its `baseline`/`changes[]` version, and re-signs the entry. On its next pass, the DS's conditional fetch of the index detects the change, re-verifies, and re-indexes — no notification was sent or required (§10.6).
@@ -449,6 +451,7 @@ Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subsc
 | CON-TBD-30 | A PN MUST populate a REGULAR catalog-index entry's `dependencies.masters[]` with an entry for every MASTER `catalogId` any of its resources currently extend via `resourceDirectives[].extends.masterResourceId`, and MUST keep it current as those references change. | MUST |
 | CON-TBD-31 | A DS MUST NOT treat a `dependencies.masters[].indexUrl` as authenticated; it MUST verify anything fetched from it exactly as it would via ordinary discovery (§10.2), and MUST fall back to standard DeDi resolution if the hint is stale, unreachable, or fails verification. | MUST NOT |
 | CON-TBD-32 | On compacting a catalog's baseline, a PN MUST continue to list the change files that led up to the new baseline in its catalog index — not merely continue hosting them — for at least the grace period for which it retains their underlying files. | MUST |
+| CON-TBD-33 | A PN MUST place `catalog_index_urls` in its Beckn Subscriber record's `meta` object, and a DS MUST look for it there — neither MUST treat `Beckn_subscriber.json`'s own schema-defined fields (`details`) as the place to find or put it. | MUST |
 
 ### Security and Interoperability Considerations
 
@@ -460,7 +463,7 @@ Distinct from the per-mechanism analysis above, this RFC's aggregate effect on t
 
 ### Prior Art
 
-- **[nfh-trust-labs/DeDi PR #2](https://github.com/nfh-trust-labs/DeDi/pull/2), "Origin-hosted publishing"** — standardizes self-hosted, signed DeDi files plus a well-known manifest, at the protocol level, for every DeDi registry. Adopted directly for the manifest/Subscriber-record mechanism in §10.1; this RFC's `catalog_index_urls` field is the one addition on top of it.
+- **[nfh-trust-labs/DeDi PR #2](https://github.com/nfh-trust-labs/DeDi/pull/2), "Origin-hosted publishing"** — standardizes self-hosted, signed DeDi files plus a well-known manifest, at the protocol level, for every DeDi registry. Adopted directly for the manifest/Subscriber-record mechanism in §10.1; this RFC proposes one small addition on top of it — a generic `meta` object on the record schema, which `catalog_index_urls` then uses — rather than a Beckn-specific schema change (§Schema Changes).
 - **RFC 8615 (Well-Known URIs)** — governs the fixed `/.well-known/dedi.json` path this RFC depends on unchanged; not modified, only relied upon.
 - **RFC 8785 (JSON Canonicalization Scheme, JCS)** — adopted for the signing-input canonicalization of every new self-signed artifact in this RFC, matching DeDi's own convention.
 - **RFC 7515 (JSON Web Signature, JWS)** — referenced as an available detached-signature encoding for catalog-index entries, as an alternative to the simpler `{keyId, value}` tuple this RFC's examples use; not mandated either way (see §Schema Changes).
@@ -481,6 +484,7 @@ If accepted, this RFC gives every PN a publishing path that costs it nothing bey
 6. **Rego policy-as-code re-homing.** Where NFH-012's master-catalog policy validation runs once no centrally-operated indexing service exists is explicitly out of this RFC's scope (Non-Goal NG2) and needs its own follow-up RFC.
 7. **Key-resolution-path convergence.** The transaction leg resolves Registry keys via a path that, after this RFC, differs slightly from the catalog-crawl path's key resolution (both via the Subscriber record, but reached differently) — whether these should be explicitly unified is open.
 8. **NFH-010 actor-list reconciliation.** §Roles and Actors uses `DS` and `NFO`, which are not on NFH-010 §9's current permissible-actors list. Whether NFH-010 needs amending, or whether this RFC needs an explicit exception, is open.
+9. **DeDi self-hosted-file `meta` field, acceptance and scope.** This RFC depends on DeDi's self-hosted file schema (`dedi-file.schema.json`) gaining a generic `meta: object` field on each record, mirroring what already exists on DeDi's registry API (§Schema Changes). Whether DeDi's maintainers accept this, at the record level, the registry level, or both, and on what timeline, is entirely outside this RFC's control; until it lands, `meta.catalog_index_urls` cannot be published on a self-hosted file that validates against the current schema.
 
 ## Acknowledgements
 
@@ -528,21 +532,28 @@ All examples below are informative and non-normative. They have not yet been run
 }
 ```
 
-#### Example 2 — Beckn Subscriber record showing the new field
+#### Example 2 — Beckn Subscriber record, `details` unmodified, `catalog_index_urls` in `meta`
 
 ```json
 {
-  "subscriber_id": "open-economy.nfh.global",
-  "url": "https://open-economy.nfh.global",
-  "type": "BPP",
-  "domain": "retail",
-  "countries": ["IDN"],
-  "signing_public_key": "...",
-  "catalog_index_urls": [
-    { "url": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
-  ]
+  "record_name": "beckn-subscriber",
+  "details": {
+    "subscriber_id": "open-economy.nfh.global",
+    "url": "https://open-economy.nfh.global",
+    "type": "BPP",
+    "domain": "retail",
+    "countries": ["IDN"],
+    "signing_public_key": "..."
+  },
+  "meta": {
+    "catalog_index_urls": [
+      { "url": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
+    ]
+  }
 }
 ```
+
+`details` is exactly what `Beckn_subscriber.json` already defines today, unmodified. `meta` is not part of that schema at all — it's the generic object this RFC proposes adding to DeDi's self-hosted record format (§Schema Changes), the same slot DeDi's own registry API already uses for schema-agnostic data. A DS unwraps `details` for anything it checks against `Beckn_subscriber.json`, and separately looks in `meta` for `catalog_index_urls` — the two never need to be reconciled against each other.
 
 #### Example 3 — `CatalogFile`
 
