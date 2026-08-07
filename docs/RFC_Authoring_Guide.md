@@ -277,7 +277,7 @@ Protocol concepts MUST be interpreted consistently across domains, regions, and 
 
 > **RFC authorship test:** Read every normative term in the RFC in the context of three different industries and three different regions. If the term acquires a different meaning in any of those contexts, it is NOT yet precise enough and MUST be redefined.
 
-> **Failure mode:** Using the term "subscription" without qualification when it could mean a CN's catalog subscription, a commercial service subscription, or a pub/sub channel registration depending on the domain.
+> **Failure mode:** Using the term "subscription" without qualification when it could mean a commercial service subscription or a pub/sub channel registration depending on the domain.
 
 ---
 
@@ -375,9 +375,9 @@ The Abstract MUST NOT use forward references to sections of the RFC body. It MUS
 
 #### ✓ Preferred — Abstract
 
-> This RFC introduces an asynchronous catalog pull mechanism for Beckn Protocol v2.0.0, motivated by the NFH Fabric's shift to event-driven catalog delivery. Currently, subscribers receiving catalog updates must poll a download endpoint to retrieve results, which imposes unnecessary load on the Catalog Service and delays delivery of time-sensitive catalog changes. This RFC specifies a subscription-scoped `POST /catalog/pull` endpoint and a corresponding `POST /catalog/on_pull` callback, allowing a CN to request a catalog snapshot and receive it asynchronously. The synchronous download endpoint is replaced by an `objectUrl` field in the callback payload. This RFC does NOT address real-time streaming of catalog updates, catalog filtering beyond subscription scope, or CN-to-PN direct catalog queries. It MUST be read alongside the companion schema changes in PR #NNN.
+> This RFC establishes a decentralized model for catalog publishing and discovery for Beckn Protocol v2.0.0. Currently, a Provider Node depends on a centrally-operated Cataloging Service to make its catalogs discoverable, which is a single point of failure for catalog reach and gives a Discovery Service no independent way to verify a catalog's origin. This RFC specifies that a Provider Node self-hosts signed catalog files and a signed catalog index on infrastructure it already controls, discoverable through one field on its existing Registry record; a Discovery Service crawls and independently verifies that data to build its own index. This RFC does NOT address restricted or access-gated catalogs, a specific crawler implementation, or changes to `/discover`/`/on_discover`. It MUST be read alongside the companion schema changes in PR #NNN.
 
-The problem is stated. The Fabric motivation is named. The mechanism is specified. The out-of-scope is explicit. The companion artifact is referenced.
+The problem is stated. The motivation is named. The mechanism is specified. The out-of-scope is explicit. The companion artifact is referenced.
 
 #### ✗ Avoid — Abstract
 
@@ -461,7 +461,7 @@ This describes what changed, NOT why.
 
 Every actor participating in any flow introduced or modified by this RFC MUST be defined in a table stating: the actor's protocol identity, their role in this RFC's flows, which endpoints they invoke, and which endpoints they implement. Any actor whose identity is established through a specific mechanism MUST have that mechanism stated here.
 
-Permissible actors in core protocol RFCs targeting this repository are: CN, PN, CS, Fabric. The BG (Beckn Gateway) has been removed from the v2.0.0 architecture and MUST NOT appear in new RFCs targeting this repository.
+Permissible actors in core protocol RFCs targeting this repository are: CN, PN, DS, NFO, CS, Fabric. The BG (Beckn Gateway) has been removed from the v2.0.0 architecture and MUST NOT appear in new RFCs targeting this repository.
 
 ---
 
