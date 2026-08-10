@@ -163,20 +163,22 @@ sequenceDiagram
 **PN specification.**
 - MUST sign every catalog file and every change file it publishes (§Schema Changes, `CatalogFile`/`CatalogChangeFile`).
 - MUST NOT publish a catalog-index entry whose `entryVersion`, or whose `baseline.version`/`changes[].version`, regresses relative to the entry it most recently published for that `catalogId`.
-- **Canonical serialization and immutable URLs:** MUST serialize a catalog file with a stable key order and formatting on every publish, so a digest changes only when content changes. MUST publish a new version of a catalog file at a new, immutable URL; MUST NOT overwrite a previously-published version in place.
+- **Canonical serialization and immutable URLs:** MUST serialize a catalog file with a stable key order and formatting on every publish, so a digest changes only when content changes. For `baseline` and every `changes[]` entry specifically, MUST publish a new version at a new, immutable URL; MUST NOT overwrite a previously-published version in place. (`latest`, below, is a deliberate, narrowly-scoped exception to this rule — not a relaxation of it.)
 - **Key rotation:** MUST NOT remove a signing key from its manifest's `keys[]` while any currently-listed catalog-index entry, baseline, or change file it has published is signed with that key — except when retiring that key specifically because it was compromised. Ordinary rotation requires no eager re-signing: a PN adds its new key to `keys[]`, starts signing new content with it, and lets old, still-current content age out naturally through ordinary publishing or compaction before removing the old key. Compromise-driven revocation is different: content signed by a key being revoked for compromise MUST be re-signed with a new key or accepted as unverifiable (§10.5).
 - **Compression:** MAY serve any `CatalogFile`/`CatalogChangeFile` gzip-compressed, signaled purely by the file's URL extension (`.json.gz` for compressed, `.json` for plain).
 - **Compaction:** MAY compact when a catalog's change-file chain exceeds a threshold it chooses — count, combined size relative to baseline, or a schedule — by emitting a fresh baseline at a new URL and pointing the index at it. MAY also compact at the change-file level alone, squashing several small change files into one spanning the same version range, without touching the baseline. On compacting the baseline, MUST retain and continue to list, not merely host, the superseded change files for at least one full `next_update` cycle after the compaction — i.e., until the `next_update` timestamp in effect at the time of compaction has passed; MAY retain them longer, MUST NOT retain them for less.
+- **Full-file consumption:** MAY publish and maintain a `latest` entry (§Schema Changes) — a full `CatalogFile` at a stable URL, overwritten in place on every update, explicitly exempt from the immutable-URL rule above — for consumers who want fully-current content without ever applying `changes[]`. If published, MUST keep the index's declared `latest.digest` in sync with what's actually at `latest.url`.
 
 **DS specification.**
 - MUST decompress a `.json.gz` file before parsing it, and MUST compute or verify its digest and signature against the canonical, decompressed content — never the compressed bytes.
 - **Cutover rule:** if the combined `size` of a catalog's pending change files exceeds a threshold fraction of its baseline `size`, SHOULD fetch the baseline instead of the accumulated changes. Crawl logic needs no special handling for compaction specifically — it always resolves to this same rule, regardless of why or when a PN compacted; the retention obligation above is entirely on the publish side.
+- **Full-file consumption (informative):** any consumer — an incremental DS choosing to skip the complexity, or a standalone tool (a QA/moderation crawler, say) that never implements `changes[]` application at all — MAY fetch and verify `latest`, or `baseline` if a PN doesn't publish one, directly, and MAY use `crawlHint` to decide how often to re-fetch it. No separate mode, flag, or schema is involved: this is the same published index entry and the same `CatalogFile` verification already defined, just read partially.
 
 **Rationale.**
 - *Compression:* gzip output isn't guaranteed byte-stable across tool versions for identical input, so signing the compressed form would make a legitimate re-publish indistinguishable from tampering — hence decompress-then-verify, always. The index entry's `size` reflects the file's actually-served size (compressed, when `.json.gz` is used), since that's what the cutover rule and egress budgeting actually care about.
 - *Key rotation vs. revocation:* treating every rotation as if it were a compromise would force a PN to re-sign its entire historical catalog surface before ever retiring a key — an unreasonable operational burden most PNs would fail to meet correctly. Separating "routine" from "compromised" lets an old key stay verifiable for exactly as long as anything still depends on it, without weakening the response to an actual compromise, which still requires the same hard cutover any signature-based trust model needs.
 - *Compaction trigger choice:* entirely the PN's own operational choice with no interoperability impact. A size-based trigger pairs naturally with the cutover rule's own threshold, keeping a PN's storage and index proportionate to what a DS would prefer anyway.
-- *No separate "latest complete version" URL:* deliberate. A PN that wants one always available simply compacts more often, even after every single update. A dedicated always-current-snapshot field would mean either publishing a full snapshot on every change (defeating the reason change files exist) or computing one on demand server-side (a running service, which G1 excludes) — compaction already gives a PN this capability, on its own schedule, without either cost.
+- *Why `latest` is a deliberate, narrow exception to immutability, not a weakening of it:* `baseline`/`changes[]` stay strictly immutable because incremental, cursor-tracking DSes depend on that for caching and version-diffing correctness. `latest` serves a different audience that doesn't care about lineage at all, only current content — for that audience, a stable, overwritten URL is strictly more useful than an ever-changing set of immutable ones. The one cost is that a fetch landing mid-overwrite can see a digest mismatch against what the index just declared; this is treated exactly like any other digest mismatch (§10.5) — MUST NOT be indexed — except a consumer MAY treat it as a transient, self-correcting publish race and simply retry, rather than as evidence of tampering, since `latest` is expected to change underfoot in a way `baseline`/`changes[]` never should.
 - *Why the compaction grace period is anchored to `next_update` specifically:* a DS that re-crawls at least as often as `next_update` requires is guaranteed to observe a compaction while the superseded chain is still listed, and can complete its transition via the cutover rule without ever being stranded — it keeps applying "changes after my cursor" in sequence, arriving at content identical to the new baseline without ever fetching the baseline snapshot. This replaces a vaguer "cover your slowest crawler" judgment call with a concrete minimum tied to a value the PN already publishes for exactly this kind of freshness promise. `changes[]` is consequently longer for a while after a compaction than under a hard reset, shrinking back once the cycle elapses — some of compaction's index-payload benefit is deferred, not eliminated.
 
 #### 10.2 Discovery crawl
@@ -289,6 +291,7 @@ stateDiagram-v2
 | Registry manifest or Subscriber record signing key not present in the manifest's current `keys[]` | DS, during manifest/record verification | Registry's own verification failure (out of this RFC's scope) | MUST treat everything signed with that key as unverifiable; MUST NOT index |
 | `catalogId` domain prefix does not match the crawled node's own domain | DS, during entry verification | No response schema | Behavior open — see Open Questions ("id-collision enforcement") |
 | A previously-indexed `catalogId` is absent from a successfully-fetched, validly-signed index, with no `retiredAt` ever observed on it | DS, comparing fetched index to its own prior state | No response schema | MUST treat as a possible incomplete crawl, not a removal; MUST log; MUST NOT delete the catalog's previously-indexed content; MUST re-verify on its next crawl cycle |
+| `latest`'s fetched content does not match the index entry's declared `latest.digest` | Consumer, during fetch | Same as the general digest-mismatch row | MUST NOT index the mismatched content; MAY treat this specific case as a transient publish race rather than tampering, and retry by re-fetching the index and `latest` again — unlike a mismatch on `baseline`/`changes[]`, which are never expected to change underfoot |
 
 #### 10.6 Async trigger conditions
 
@@ -391,8 +394,9 @@ Per catalog entry:
 | `isActive` | PN | Mirrors `catalog.isActive` (unchanged, pre-existing field) so a DS can pre-filter on activity from the index alone, without fetching the file. Freely reversible in either direction (§10.4, ACTIVE↔PAUSED); a change here bumps `entryVersion` like any other edit. Meaningless once `retiredAt` is set. |
 | `baseline` (`version`, `url`, `size`, `digest`) | PN | Where to fetch the current full snapshot and how to verify it; present as long as the catalog is not retired. `url` MAY end in `.json.gz` for a gzip-compressed file (§10.1) — a DS decompresses before verifying `digest`. `size` reflects the file's actual served size (compressed, if `.json.gz`), which is what makes the cutover rule (§10.1) computable before downloading anything. |
 | `changes[]` (`version`, `url`, `size`, `digest`) | PN | Where to fetch each incremental delta since the baseline and how to verify each; a DS applies only the ones after its own stored cursor. Same `.json`/`.json.gz` and compressed-`size` convention as `baseline`. Dropped once `retiredAt` is set. |
+| `latest` (`version`, `url`, `size`, `digest`) | PN | Optional. A full, self-signed `CatalogFile` — same shape and verification as `baseline` — that a PN overwrites in place on every update, so a consumer can fetch and verify one URL for fully-current content without ever applying `changes[]`. Unlike `baseline`/`changes[]`, `latest.url` is explicitly exempt from the immutable-URL rule (CON-TBD-23); `version` always reflects whichever content-lineage version is currently published there. Dropped once `retiredAt` is set, same as `baseline`. |
 | `retiredAt` | PN | Absent for an ACTIVE or PAUSED catalog; once populated, it *is* the tombstone (§10.4) — a positive fact a DS verifies on the signed entry itself, never inferred from the entry's absence. One-way: never unset. `baseline`/`changes` are dropped once this is set. |
-| `crawlHint` | PN | Optional suggested crawl frequency (comparable to a sitemap's `changefreq`); a DS MAY honor it, but stays in control of its own schedule and budget regardless. |
+| `crawlHint` | PN | Optional suggested crawl frequency (comparable to a sitemap's `changefreq`); any consumer — an incremental DS or a full-file-only reader of `latest`/`baseline` — MAY honor it, but stays in control of its own schedule and budget regardless. |
 | `signature` | PN | Detached signature over the entire entry minus itself, covering every field above together as one unit. |
 
 - A catalog index MAY additionally carry a whole-index signature, for PNs who want membership and ordering within a served copy covered as well (§Security Considerations).
@@ -425,7 +429,7 @@ This RFC's flows conform to [NFH-007](./Authentication_and_Trust.md)'s general m
 ### Privacy Considerations
 
 - No field introduced by this RFC carries new PII.
-- `catalog_index_urls` is a set of URLs pointing to a node's own hosted infrastructure; `entryVersion`, `next_update`, `isActive`, `retiredAt`, `networkIds`, `schemaTypes`, and the catalog-index/file signature fields carry no personal data.
+- `catalog_index_urls` is a set of URLs pointing to a node's own hosted infrastructure; `entryVersion`, `next_update`, `isActive`, `retiredAt`, `networkIds`, `schemaTypes`, `latest`, and the catalog-index/file signature fields carry no personal data.
 - `Catalog.provider` (business/contact details) is unchanged and unaffected — its existing privacy posture is not altered by relocating where the surrounding `Catalog` object is hosted.
 
 ### End-to-End Flow (Informative)
@@ -458,11 +462,12 @@ Grouped by which actor each requirement falls on, so a PN implementer or a DS im
 | CON-TBD-17 | Every `Resource`/`Offer` object inside a `CatalogChangeFile`'s `upserts[]` MUST be a complete, schema-valid object per the existing `Resource`/`Offer` schemas. | MUST |
 | CON-TBD-20 | A PN MUST NOT maintain a separate, per-provider catalog index inside a platform node; provider distinction within one node MUST be expressed via each catalog's own `provider` field. | MUST NOT |
 | CON-TBD-22 | A PN MUST serialize a catalog file with stable key order and formatting on every publish, so a digest changes only when content changes. | MUST |
-| CON-TBD-23 | A PN MUST publish a new version of a catalog file at a new, immutable URL and MUST NOT overwrite a previously-published version in place. | MUST |
+| CON-TBD-23 | For `baseline` and every `changes[]` entry, a PN MUST publish a new version at a new, immutable URL and MUST NOT overwrite a previously-published version in place. (`latest` is explicitly exempt — see CON-TBD-36.) | MUST |
 | CON-TBD-26 | A PN MUST NOT re-list a `catalogId` that it has previously retired; a catalog offered again after retirement MUST be published under a new `catalogId`. | MUST NOT |
 | CON-TBD-30 | A PN MUST populate a REGULAR catalog-index entry's `dependencies.masters[]` with an entry for every MASTER `catalogId` any of its resources currently extend via `resourceDirectives[].extends.masterResourceId`, and MUST keep it current as those references change. | MUST |
 | CON-TBD-32 | On compacting a catalog's baseline, a PN MUST retain and continue to list the superseded change files in its catalog index — not merely continue hosting them — for at least one full `next_update` cycle after the compaction, and MUST NOT retain them for less. | MUST |
 | CON-TBD-34 | A PN MUST NOT remove a signing key from its manifest's `keys[]` while any currently-listed catalog-index entry, baseline, or change file it has published is signed with that key, unless that key is being retired because it was compromised. | MUST NOT |
+| CON-TBD-36 | If a PN publishes a `latest` entry, it MUST keep the index's declared `latest.digest` in sync with what is actually being served at `latest.url`; `latest.url` is exempt from CON-TBD-23's immutability requirement. | MUST |
 
 #### DS requirements
 
@@ -487,6 +492,7 @@ Grouped by which actor each requirement falls on, so a PN implementer or a DS im
 | CON-TBD-29 | A DS MUST decompress a `.json.gz`-suffixed `CatalogFile`/`CatalogChangeFile` before computing or verifying its digest or signature, and MUST NOT compute either against the compressed bytes. | MUST |
 | CON-TBD-31 | A DS MUST NOT treat a `dependencies.masters[].indexUrl` as authenticated; it MUST verify anything fetched from it exactly as it would via ordinary discovery (§10.2), and MUST fall back to standard Registry resolution if the hint is stale, unreachable, or fails verification. | MUST NOT |
 | CON-TBD-35 | A DS SHOULD stop serving a catalog via `/on_discover` for the duration of a possible-incomplete-crawl condition (CON-TBD-27) — without deleting its previously-indexed content — until the catalog is either re-confirmed present or a `retiredAt` marker is observed. | SHOULD |
+| CON-TBD-37 | A consumer MUST NOT index content fetched from `latest` that fails to match the index's declared `latest.digest`; it MAY treat this specific mismatch as a transient publish race and retry, rather than as evidence of tampering. | MUST NOT |
 
 #### Joint / general requirements
 
@@ -630,6 +636,12 @@ Read this before Example 4 — the index is what a DS fetches first, and its `ba
       "changes": [
         { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." }
       ],
+      "latest": {
+        "version": 41,
+        "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.latest.json.gz",
+        "size": 418900,
+        "digest": "sha-256:2e7f..."
+      },
       "signature": { "keyId": "key-1", "value": "..." }
     },
     {
@@ -661,7 +673,7 @@ Read this before Example 4 — the index is what a DS fetches first, and its `ba
 }
 ```
 
-- Entry 1's `baseline.url` ends in `.json.gz` — a DS decompresses it before verifying `digest`; `size` (412,800 bytes) reflects the compressed transfer size. Its `dependencies.masters` tells a DS, before fetching anything, that this REGULAR catalog extends resources from `electronics-master`, with `indexUrl` as a shortcut to the index that should contain it — the DS still verifies whatever it fetches from that URL as it would via ordinary discovery (CON-TBD-31). Its `baseline` (Example 4) and `changes[]` (Example 5) are exactly the files worked through next.
+- Entry 1's `baseline.url` ends in `.json.gz` — a DS decompresses it before verifying `digest`; `size` (412,800 bytes) reflects the compressed transfer size. Its `dependencies.masters` tells a DS, before fetching anything, that this REGULAR catalog extends resources from `electronics-master`, with `indexUrl` as a shortcut to the index that should contain it — the DS still verifies whatever it fetches from that URL as it would via ordinary discovery (CON-TBD-31). Its `baseline` (Example 4) and `changes[]` (Example 5) are exactly the files worked through next. Its `latest` points to a separate, PN-overwritten URL reflecting version 41 (baseline 40 plus the one change already applied) — a full-file consumer fetches and verifies just this one field, ignoring `changes[]` entirely, and never needs to know a compaction hasn't happened.
 - Entry 2 is a seasonal catalog paused out of season — still listed, still tracked, just not currently offered; `isActive` can flip back to `true` at any time.
 - Entry 3 is retired — permanently superseded by `electronics-2026`. It carries no `isActive`, `baseline`, or `changes[]`, only `retiredAt`, the positive fact a DS acts on. A PN MAY eventually drop this entry from the index entirely, but a DS never depends on that happening.
 
