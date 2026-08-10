@@ -160,28 +160,24 @@ sequenceDiagram
     Note over PN,Reg: The manifest and Subscriber record are untouched by this step
 ```
 
-- A PN MUST sign every catalog file and every change file it publishes (§Schema Changes, `CatalogFile`/`CatalogChangeFile`).
-- A PN MUST NOT publish a catalog-index entry whose `entryVersion`, or whose `baseline.version`/`changes[].version`, regresses relative to the entry it most recently published for that `catalogId`.
+**PN specification.**
+- MUST sign every catalog file and every change file it publishes (§Schema Changes, `CatalogFile`/`CatalogChangeFile`).
+- MUST NOT publish a catalog-index entry whose `entryVersion`, or whose `baseline.version`/`changes[].version`, regresses relative to the entry it most recently published for that `catalogId`.
+- **Canonical serialization and immutable URLs:** MUST serialize a catalog file with a stable key order and formatting on every publish, so a digest changes only when content changes. MUST publish a new version of a catalog file at a new, immutable URL; MUST NOT overwrite a previously-published version in place.
+- **Key rotation:** MUST NOT remove a signing key from its manifest's `keys[]` while any currently-listed catalog-index entry, baseline, or change file it has published is signed with that key — except when retiring that key specifically because it was compromised. Ordinary rotation requires no eager re-signing: a PN adds its new key to `keys[]`, starts signing new content with it, and lets old, still-current content age out naturally through ordinary publishing or compaction before removing the old key. Compromise-driven revocation is different: content signed by a key being revoked for compromise MUST be re-signed with a new key or accepted as unverifiable (§10.5).
+- **Compression:** MAY serve any `CatalogFile`/`CatalogChangeFile` gzip-compressed, signaled purely by the file's URL extension (`.json.gz` for compressed, `.json` for plain).
+- **Compaction:** MAY compact when a catalog's change-file chain exceeds a threshold it chooses — count, combined size relative to baseline, or a schedule — by emitting a fresh baseline at a new URL and pointing the index at it. MAY also compact at the change-file level alone, squashing several small change files into one spanning the same version range, without touching the baseline. On compacting the baseline, MUST retain and continue to list, not merely host, the superseded change files for at least one full `next_update` cycle after the compaction — i.e., until the `next_update` timestamp in effect at the time of compaction has passed; MAY retain them longer, MUST NOT retain them for less.
 
-**Canonical serialization and immutable URLs.**
-- A PN MUST serialize a catalog file with a stable key order and formatting on every publish, so a digest changes only when content changes.
-- A PN MUST publish a new version of a catalog file at a new, immutable URL; it MUST NOT overwrite a previously-published version in place.
+**DS specification.**
+- MUST decompress a `.json.gz` file before parsing it, and MUST compute or verify its digest and signature against the canonical, decompressed content — never the compressed bytes.
+- **Cutover rule:** if the combined `size` of a catalog's pending change files exceeds a threshold fraction of its baseline `size`, SHOULD fetch the baseline instead of the accumulated changes. Crawl logic needs no special handling for compaction specifically — it always resolves to this same rule, regardless of why or when a PN compacted; the retention obligation above is entirely on the publish side.
 
-**Compression.**
-- A PN MAY serve any `CatalogFile`/`CatalogChangeFile` gzip-compressed, signaled purely by the file's URL extension: `.json.gz` for compressed, `.json` for plain.
-- A DS MUST decompress a `.json.gz` file before parsing it, and MUST compute or verify its digest and signature against the canonical, decompressed content — never the compressed bytes.
-  - *Why:* gzip output isn't guaranteed byte-stable across tool versions for identical input; signing the compressed form would make a legitimate re-publish indistinguishable from tampering.
-- The index entry's `size` reflects the file's actually-served size (compressed, when `.json.gz` is used) — this is what the cutover rule and egress budgeting care about.
-
-**Compaction.**
-- When a catalog's change-file chain exceeds a threshold the PN chooses — count, combined size relative to baseline, or a schedule — a PN MAY compact: emit a fresh baseline at a new URL and point the index at it.
-- A PN MAY also compact at the change-file level alone, squashing several small change files into one spanning the same version range, without touching the baseline.
-- Which trigger to use is entirely the PN's own operational choice with no interoperability impact — a DS's crawl logic is identical regardless of why or when a PN compacted.
-  - *Informative:* a size-based trigger pairs naturally with the cutover rule's own threshold, keeping a PN's storage and index proportionate to what a DS would prefer anyway.
-- Compacting the baseline MUST NOT strand a DS that is mid-lineage: a PN MUST continue to list, not merely host, the change files that led up to the new baseline, for at least the same grace period (PN-chosen, covering its slowest expected crawler) for which it retains the underlying files.
-  - *Why:* a DS resuming from an old cursor simply keeps applying "changes after my cursor" in sequence, arriving at content identical to the new baseline without ever fetching the baseline snapshot. `changes[]` is consequently longer for a while after a compaction than under a hard reset, shrinking back once the grace period elapses — some of compaction's index-payload benefit is deferred, not eliminated; a PN tunes its trigger and grace period against that trade-off. A DS's crawl logic itself needs no special handling for compaction — the obligation above is entirely on the publish side.
-
-**Cutover rule.** If the combined `size` of a catalog's pending change files exceeds a threshold fraction of its baseline `size`, a DS SHOULD fetch the baseline instead of the accumulated changes.
+**Rationale.**
+- *Compression:* gzip output isn't guaranteed byte-stable across tool versions for identical input, so signing the compressed form would make a legitimate re-publish indistinguishable from tampering — hence decompress-then-verify, always. The index entry's `size` reflects the file's actually-served size (compressed, when `.json.gz` is used), since that's what the cutover rule and egress budgeting actually care about.
+- *Key rotation vs. revocation:* treating every rotation as if it were a compromise would force a PN to re-sign its entire historical catalog surface before ever retiring a key — an unreasonable operational burden most PNs would fail to meet correctly. Separating "routine" from "compromised" lets an old key stay verifiable for exactly as long as anything still depends on it, without weakening the response to an actual compromise, which still requires the same hard cutover any signature-based trust model needs.
+- *Compaction trigger choice:* entirely the PN's own operational choice with no interoperability impact. A size-based trigger pairs naturally with the cutover rule's own threshold, keeping a PN's storage and index proportionate to what a DS would prefer anyway.
+- *No separate "latest complete version" URL:* deliberate. A PN that wants one always available simply compacts more often, even after every single update. A dedicated always-current-snapshot field would mean either publishing a full snapshot on every change (defeating the reason change files exist) or computing one on demand server-side (a running service, which G1 excludes) — compaction already gives a PN this capability, on its own schedule, without either cost.
+- *Why the compaction grace period is anchored to `next_update` specifically:* a DS that re-crawls at least as often as `next_update` requires is guaranteed to observe a compaction while the superseded chain is still listed, and can complete its transition via the cutover rule without ever being stranded — it keeps applying "changes after my cursor" in sequence, arriving at content identical to the new baseline without ever fetching the baseline snapshot. This replaces a vaguer "cover your slowest crawler" judgment call with a concrete minimum tied to a value the PN already publishes for exactly this kind of freshness promise. `changes[]` is consequently longer for a while after a compaction than under a hard reset, shrinking back once the cycle elapses — some of compaction's index-payload benefit is deferred, not eliminated.
 
 #### 10.2 Discovery crawl
 
@@ -224,10 +220,7 @@ sequenceDiagram
 
 #### 10.3 Master/Regular catalog resolution
 
-- Resolution of a REGULAR catalog resource's `resourceDirectives[].extends.masterResourceId` reference happens at the DS, during indexing: a DS MUST inherit attributes from the named MASTER resource into the REGULAR resource, with the REGULAR resource's own fields taking precedence, using the same merge semantics `publishDirectives` already defines.
-- A DS MAY use a catalog-index entry's `catalogType` to order its crawl — indexing MASTER catalogs before resolving REGULAR catalogs that reference them — without fetching every file first.
-
-**`dependencies` gives this away earlier still.** `catalogType` alone tells a DS *that* a REGULAR catalog extends something, not *which* MASTER catalog(s) or where to find them. A REGULAR catalog's index entry instead carries `dependencies.masters` (§Schema Changes) directly:
+A REGULAR catalog's index entry carries `dependencies.masters` (§Schema Changes) pointing at the MASTER catalog(s) its resources extend:
 
 ```json
 "dependencies": {
@@ -237,20 +230,25 @@ sequenceDiagram
 }
 ```
 
-- A PN MUST keep this current with what its resources actually extend.
-- A DS uses `catalogId` to check whether a MASTER dependency is already crawled and indexed, and `indexUrl` as a shortcut to the index that should contain it — particularly valuable when the MASTER catalog belongs to a node the DS isn't crawling yet.
-- **`indexUrl` is a locator hint, not a trust delegation:** it is not itself signed. A DS MUST verify whatever it fetches from it exactly as it would via ordinary discovery, and MUST fall back to standard Registry resolution (§10.2) if the hint is stale, unreachable, or fails verification.
-- What a DS should do when a declared dependency has not yet been crawled (fetch out of order, index partially, or wait) remains an open question; `dependencies` makes the condition cheaply detectable, but does not settle the policy.
+**PN specification.**
+- MUST keep `dependencies.masters[]` current with what its resources actually extend via `resourceDirectives[].extends.masterResourceId`.
 
-**A resource or offer's `id` MAY appear in more than one catalog, not only through `extends` (informative).**
-- `Resource.id` and `Offer.id` are globally unique in `beckn.yaml`, not catalog-scoped — the same id can legitimately be published from two independently-signed catalogs, whether or not one `extends` the other.
-- Each catalog's `resources`/`offers` are part of that catalog's own signed content and lifecycle; there is no structural link between two catalogs that happen to list the same id outside the explicit Master/Regular relationship.
-- Retiring, pausing, or removing one catalog has no effect on any other catalog's own independently-signed listing of the same id.
-- A DS that deduplicates records by `id` across catalogs (e.g., to avoid showing a consumer the same product twice) MUST reference-count: a deduplicated record MUST remain in the DS's index as long as any catalog the DS treats as ACTIVE or PAUSED (§10.4) still contains that id, and MUST be removed only once every catalog referencing it has been retired.
+**DS specification.**
+- MUST inherit attributes from a REGULAR resource's declared MASTER resource, with the REGULAR resource's own fields taking precedence, using the same merge semantics `publishDirectives` already defines.
+- MAY use a catalog-index entry's `catalogType` to order its crawl — indexing MASTER catalogs before resolving REGULAR catalogs that reference them — without fetching every file first.
+- MAY use `dependencies.masters[].catalogId` to check whether a MASTER dependency is already crawled and indexed, and `.indexUrl` as a shortcut to the index that should contain it.
+- MUST verify whatever it fetches via `indexUrl` exactly as it would via ordinary discovery, and MUST fall back to standard Registry resolution (§10.2) if the hint is stale, unreachable, or fails verification — `indexUrl` is not itself signed.
+- What a DS should do when a declared dependency has not yet been crawled (fetch out of order, index partially, or wait) remains an open question.
+- `Resource.id` and `Offer.id` are globally unique in `beckn.yaml`, not catalog-scoped — the same id can legitimately be published from two independently-signed catalogs, whether or not one `extends` the other; each catalog's `resources`/`offers` are part of that catalog's own signed content and lifecycle, with no structural link between two catalogs that happen to list the same id outside the explicit Master/Regular relationship. A DS that deduplicates records by `id` across catalogs (e.g., to avoid showing a consumer the same product twice) MUST reference-count: a deduplicated record MUST remain in the DS's index as long as any catalog the DS treats as ACTIVE or PAUSED (§10.4) still contains that id, and MUST be removed only once every catalog referencing it has been retired.
+
+**Rationale.**
+- *Why `dependencies` exists at all:* `catalogType` alone tells a DS *that* a REGULAR catalog extends something, not *which* MASTER catalog(s) or where to find them — previously that required fetching the file, inspecting every `extends.masterResourceId` individually, and, if the MASTER belonged to a different PN, resolving that PN's manifest and Subscriber record from scratch just to locate its index. `dependencies.masters` answers both questions from the index alone.
+- *Why `indexUrl` is a hint, not a trust delegation:* a malicious REGULAR-catalog publisher could otherwise point it at a dead, wrong, or attacker-controlled URL; treating it as an unauthenticated locator caps the damage at a wasted fetch, never a false trust (§Security Considerations item 3).
+- *Why reference-counting, not simple deletion:* retiring, pausing, or removing one catalog has no effect on any other catalog's own independently-signed listing of the same id — a DS that deletes a shared resource the moment any one referencing catalog disappears would wrongly stop showing something still legitimately offered elsewhere.
 
 #### 10.4 Catalog entry lifecycle
 
-**Terminology note — "listed" is not a state.** A catalog-index entry existing at all is a precondition for having a lifecycle state, not itself a state. A DS cannot reliably verify absence — a partial crawl, one failed fetch among several `catalog_index_urls`, or a truncated response all look identical to a real removal. So a DS MUST NOT treat an entry's disappearance, by itself, as meaningful. The complete lifecycle is the three states below, each verified by something a DS can positively observe on a fetched, signed entry — never by something's absence.
+A catalog-index entry existing at all is a precondition for having a lifecycle state, not itself a state. The complete lifecycle is the three states below, each verified by something a DS can positively observe on a fetched, signed entry — never by something's absence.
 
 ```mermaid
 stateDiagram-v2
@@ -261,21 +259,23 @@ stateDiagram-v2
     PAUSED --> RETIRED: PN populates retiredAt
 ```
 
-**Active vs. paused.**
-- `isActive` (mirrored from the untouched `catalog.isActive`, §Schema Changes) is an ordinary, freely-reversible content attribute.
-- Toggling it in either direction is just another entry edit: `entryVersion` bumps, `baseline`/`changes[]` are untouched.
-- A DS MUST NOT delete or stop tracking a catalog's previously-indexed content solely because `isActive` becomes `false` — a paused catalog stays fully indexed, just excluded from whatever the DS treats as currently-transactable.
-
-**Retired.**
-- A PN MUST populate an entry's `retiredAt` before it stops publishing updates for that catalog.
-- Retirement is one-way: a PN MUST NOT unset `retiredAt` once populated.
+**PN specification.**
+- `isActive` (mirrored from the untouched `catalog.isActive`, §Schema Changes) MAY be toggled in either direction at any time — just another entry edit: `entryVersion` bumps, `baseline`/`changes[]` are untouched.
+- MUST populate an entry's `retiredAt` before it stops publishing updates for that catalog. Retirement is one-way: MUST NOT unset `retiredAt` once populated.
 - `baseline`/`changes[]` are dropped from the entry once `retiredAt` is set, since there is nothing left to fetch.
-- A DS MUST treat a catalog-index entry carrying `retiredAt` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`.
-- This is the only condition under which a DS retires a catalog from its own index — a positive fact verified on a signed entry, never an inference from absence.
+- MAY eventually drop a long-retired entry from the index entirely, as its own storage hygiene.
 
-**Absence, on its own, proves nothing.**
-- If a DS previously indexed a `catalogId` and a later, successfully-fetched, validly-signed index no longer includes it, and the DS never observed a `retiredAt` marker beforehand, the DS MUST treat this as a possible incomplete crawl (§10.5) — log it, re-verify next cycle — and MUST NOT delete the catalog's previously-indexed content on that basis alone.
-- A PN MAY eventually drop a long-retired entry from its index as its own storage hygiene, but a DS is never required to observe or rely on that; the tombstone, while the entry is still served, is what a DS acts on.
+**DS specification.**
+- MUST NOT delete or stop tracking a catalog's previously-indexed content solely because `isActive` becomes `false` — a paused catalog stays fully indexed, just excluded from whatever the DS treats as currently-transactable.
+- MUST treat a catalog-index entry carrying `retiredAt` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`. This is the only condition under which a DS retires a catalog from its own index.
+- MUST NOT treat an entry's disappearance, by itself, as meaningful. If a previously-indexed `catalogId` is missing from a later, successfully-fetched, validly-signed index, and no `retiredAt` was observed beforehand, MUST treat this as a possible incomplete crawl (§10.5) — log it, re-verify next cycle — and MUST NOT delete the catalog's previously-indexed content on that basis alone.
+- SHOULD, for the duration of that uncertainty, stop surfacing the catalog via `/on_discover` — not deleting it, just not serving it — until it is either re-confirmed present on a later crawl or a `retiredAt` marker is observed.
+- Is never required to observe or rely on a PN eventually dropping a long-retired entry; the tombstone, while the entry is still served, is what a DS acts on.
+
+**Rationale.**
+- *Why "listed" isn't modeled as a state:* a DS cannot reliably verify absence — a partial crawl, one failed fetch among several `catalog_index_urls`, or a truncated response all look identical to a real removal from the outside. Building the lifecycle only out of things a DS can positively observe (an `isActive` flag, a `retiredAt` marker) avoids ever needing to trust a negative.
+- *Why `isActive=false` means keep, not delete:* it's a reversible business decision, not an existence question. Deleting on every pause would force a full baseline re-fetch the moment a PN reactivates a seasonal catalog — exactly the cost incremental crawling exists to avoid.
+- *Why "don't show, don't discard" for unconfirmed absence:* it keeps a DS's results trustworthy — never showing something it can't currently vouch for — without paying the cost of premature deletion if the absence turns out to have been a partial crawl rather than a real removal.
 
 #### 10.5 Error flows
 
@@ -292,10 +292,11 @@ stateDiagram-v2
 
 #### 10.6 Async trigger conditions
 
-- The crawl in §10.2 is DS-initiated and pull-only; there is no PN-initiated delivery in this RFC's core mechanism.
-- A PN MAY additionally operate an out-of-band change-signal mechanism to invite a DS to crawl sooner than its own schedule.
-- A DS receiving such a signal MUST still perform the full verification in §10.2 before trusting anything — an unsolicited signal MUST NOT be treated as verified content.
-- The design, ownership, and pricing of any such signal mechanism is out of scope (see Open Questions).
+The crawl in §10.2 is DS-initiated and pull-only; there is no PN-initiated delivery in this RFC's core mechanism.
+
+**PN specification.** MAY additionally operate an out-of-band change-signal mechanism to invite a DS to crawl sooner than its own schedule. The design, ownership, and pricing of any such signal mechanism is out of scope (see Open Questions).
+
+**DS specification.** A DS receiving such a signal MUST still perform the full verification in §10.2 before trusting anything — an unsolicited signal MUST NOT be treated as verified content.
 
 #### 10.7 AI Agent exercisability
 
@@ -310,24 +311,25 @@ No flow in this RFC requires human-in-the-loop confirmation.
 
 Three independent layers, each with its own scope, kept distinct because they answer different questions.
 
+**Versioning model.**
 - **No whole-index version field.** Whether a catalog index has changed at all is answered by ordinary conditional HTTP (`ETag`/`If-Modified-Since`, §10.2).
-  - *Why:* a catalog index as a whole is not signed (only its entries are), so a plain, unsigned document-level counter would let a hostile host set it to anything regardless of what it actually served. Rollback detection belongs one layer down, where the signed data actually is.
 - **`entryVersion` — has anything changed.** Each catalog entry carries `entryVersion`, an integer a PN MUST bump on *any* change to the entry — content or metadata (`networkIds`, `schemaTypes`, `catalogType`, `dependencies`, `isActive`, `retiredAt` all live in the entry and can change independent of the underlying resources/offers). A DS's cheapest first check: unchanged since the last crawl means skip the entry entirely.
 - **`baseline.version` / `changes[].version` — what's current.** A DS's per-catalog cursor for which change files it still needs. `entryVersion` MUST NOT be conflated with these: `entryVersion` bumps on every edit, but `baseline`/`changes[]` versions bump only when a corresponding file is actually published.
-  - *Why keep them separate:* forcing a metadata-only edit to also bump `baseline.version` would send a DS looking for a file that doesn't exist, or introduce gaps that break the "fetch changes after my cursor" contiguity the incremental scheme depends on.
 - **File-level versioning.** `CatalogFile` and `CatalogChangeFile` carry `catalogId`, a version marker, and `next_update` inside the file itself, not only in the index entry pointing at it — so a DS can fetch a file directly (a known URL, an out-of-band reference, a storage listing) and verify it entirely on its own.
-- **Version numbers are monotonic integers, not timestamps.** Deliberate, not left open:
-  - Exactly one PN publishes any given catalog, making an integer counter trivially safe with no coordination or collision risk.
-  - A timestamp-as-version would duplicate what `next_update` already carries for staleness.
-  - Clock skew or a corrected system clock can make a legitimate republish look like a rollback under a timestamp scheme, which a counter cannot.
+- **Version numbers are monotonic integers, not timestamps.** Deliberate, not left open (see Rationale).
 
-**Rules governing the relationship between file and index levels:**
+**Rules governing the relationship between file and index levels.**
 - A file's own fields are covered by its own signature (signing input is the whole document minus `signature`) — no separate binding step is needed.
 - A mismatch between an index entry's declared `catalogId`/version and a fetched file's own internal `catalogId`/version MUST be treated exactly like a digest mismatch: discard, don't index, log. Neither side is authoritative over the other.
 - `next_update` inside a file and on the index it's listed from are not required to agree, and a DS MUST NOT treat a difference as an error — they are independent freshness leases for the two access paths (index-first vs. direct-file).
 - `isActive` is not a version-lineage field: a PN MAY toggle it in either direction at will, requiring only an `entryVersion` bump. This is unlike `retiredAt`, which is one-way — different operations, not degrees of the same one.
 - A PN MUST NOT unset `retiredAt` once populated, and MUST NOT re-list a `catalogId` that has been retired — a catalog offered again after retirement MUST be published under a new `catalogId`.
-  - *Why:* a DS MAY retain version-lineage state for a retired catalog indefinitely, so re-listing the same `catalogId` risks its version numbers looking like a rollback (§10.5) rather than a fresh start.
+
+**Rationale.**
+- *Why no whole-index version field:* a catalog index as a whole is not signed (only its entries are), so a plain, unsigned document-level counter would let a hostile host set it to anything regardless of what it actually served. Rollback detection belongs one layer down, where the signed data actually is.
+- *Why `entryVersion` and `baseline`/`changes[]` versions are kept separate:* forcing a metadata-only edit to also bump `baseline.version` would send a DS looking for a file that doesn't exist, or introduce gaps that break the "fetch changes after my cursor" contiguity the incremental scheme depends on.
+- *Why monotonic integers, not timestamps:* exactly one PN publishes any given catalog, making an integer counter trivially safe with no coordination or collision risk; a timestamp-as-version would duplicate what `next_update` already carries for staleness; and clock skew or a corrected system clock can make a legitimate republish look like a rollback under a timestamp scheme, which a counter cannot.
+- *Why a retired `catalogId` can never be reused:* a DS MAY retain version-lineage state for a retired catalog indefinitely, so re-listing the same `catalogId` risks its version numbers looking like a rollback (§10.5) rather than a fresh start.
 
 ### Schema Changes
 
@@ -418,6 +420,7 @@ This RFC's flows conform to [NFH-007](./Authentication_and_Trust.md)'s general m
    - *Mitigation:* `next_update` forces refresh on a short cadence, monotonic version fields expose rollback to any DS with history, and the optional whole-index signature closes the remaining gap for PNs who want it. This residual risk is accepted on the basis that stale discovery data is caught again at transaction time, where the authoritative leg validates independently. It is also why §10.4 requires a DS to treat a catalog's disappearance, absent a prior `retiredAt`, as a possible incomplete crawl rather than a verified removal.
 2. **Validation is independent per DS, not centrally enforced once.** A catalog's schema and signature validity are checked at crawl time, independently, by every DS that chooses to crawl a given PN — there is no single, shared verdict the way one centrally-operated validator would produce. This is an accepted property of the design, restated in §Security and Interoperability Considerations because it is protocol-wide.
 3. **`dependencies.masters[].indexUrl` is an unauthenticated locator, not a trust delegation.** A malicious REGULAR-catalog publisher cannot forge a MASTER catalog's content this way (CON-TBD-31 requires the fetched entry's own signature to verify against its claimed `catalogId`'s Registry-anchored key), but could point the hint at a dead, wrong, or slow URL to waste a DS's crawl budget — a nuisance-level risk, not a trust break.
+4. **Key rotation is safe without eager re-signing; key revocation is not.** CON-TBD-34 requires a PN to keep a rotated-out key listed in `keys[]` for as long as anything currently-listed still depends on it, so ordinary rotation never orphans previously-signed content. This does not weaken revocation: a key retired because it was compromised is removed regardless, and everything only it signed becomes unverifiable per the existing manifest-key error flow (§10.5) — the same outcome as if this RFC had never distinguished the two cases, just without paying that cost on every routine rotation too.
 
 ### Privacy Considerations
 
@@ -432,14 +435,18 @@ A worked walkthrough, tying §10.1 through §10.4 together into one concrete sce
 1. `open-economy.nfh.global` (a PN) authors a `Catalog` for its electronics line, wraps it in a `CatalogFile`, signs it, and hosts it at a URL on its own CDN (§10.1).
 2. It writes a catalog index listing that catalog's entry — `catalogId`, `entryVersion`, `catalogType`, `baseline` — signs the entry, and hosts the index alongside the file.
 3. It adds `catalog_index_urls`, pointing at that index, to its Beckn Subscriber record's `meta` section, and re-signs the record (§Publishing Artifacts and Layering). No call was made to any beckn-operated service at any point in these three steps.
-4. `ion-discovery.nfh.global` (a DS scoped to the `ion.nfh.global` network) enumerates candidate PNs from the Registry, resolves `open-economy.nfh.global`'s Registry manifest and Beckn Subscriber record, and finds `meta.catalog_index_urls` (§10.2).
-5. The DS fetches the catalog index, verifies the entry's signature, confirms `open-economy.nfh.global` has a reference record in `ion.nfh.global`'s membership registry, fetches and verifies the `CatalogFile` itself, and indexes the resulting `Catalog` object.
+4. `nfo-discovery.nfh.global` (a DS scoped to the `nfo.nfh.global` network) enumerates candidate PNs from the Registry, resolves `open-economy.nfh.global`'s Registry manifest and Beckn Subscriber record, and finds `meta.catalog_index_urls` (§10.2).
+5. The DS fetches the catalog index, verifies the entry's signature, confirms `open-economy.nfh.global` has a reference record in `nfo.nfh.global`'s membership registry, fetches and verifies the `CatalogFile` itself, and indexes the resulting `Catalog` object.
 6. A CN calls `POST /discover` against the DS exactly as it would today; the DS matches the intent against what it crawled and calls `POST /on_discover` on the CN's callback URI with the indexed `Catalog`. This leg, defined in `beckn.yaml`, is entirely unaffected by this RFC.
 7. `open-economy.nfh.global` later updates one item's price: it edits the catalog file (or emits a `CatalogChangeFile`), re-signs it, bumps the index entry's `entryVersion` and its `baseline`/`changes[]` version, and re-signs the entry. On its next pass, the DS's conditional fetch of the index detects the change, re-verifies, and re-indexes — no notification was sent or required (§10.6).
 
 Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subscription`, `/catalog/push`, `/catalog/pull`, `/catalog/search`, and their callbacks) are untouched and remain exactly as `beckn.yaml` defines them; this RFC introduces the flow alongside them. Their migration path is scoped to a follow-up RFC.
 
 ### Conformance Requirements
+
+Grouped by which actor each requirement falls on, so a PN implementer or a DS implementer can read only their own table. A handful apply jointly, or to neither actor specifically; those are listed last.
+
+#### PN requirements
 
 | ID | Requirement | Level |
 |---|---|---|
@@ -448,6 +455,19 @@ Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subsc
 | CON-TBD-03 | A PN MUST NOT publish a catalog-index entry whose `entryVersion` regresses relative to the entry it most recently published for that `catalogId`. | MUST |
 | CON-TBD-04 | A PN MUST NOT publish a catalog-index entry whose `baseline.version` or any `changes[].version` regresses relative to what it most recently published for that `catalogId`. | MUST |
 | CON-TBD-05 | A PN MUST populate an entry's `retiredAt` before it stops publishing updates for that catalog, and MUST NOT unset it once populated. | MUST |
+| CON-TBD-17 | Every `Resource`/`Offer` object inside a `CatalogChangeFile`'s `upserts[]` MUST be a complete, schema-valid object per the existing `Resource`/`Offer` schemas. | MUST |
+| CON-TBD-20 | A PN MUST NOT maintain a separate, per-provider catalog index inside a platform node; provider distinction within one node MUST be expressed via each catalog's own `provider` field. | MUST NOT |
+| CON-TBD-22 | A PN MUST serialize a catalog file with stable key order and formatting on every publish, so a digest changes only when content changes. | MUST |
+| CON-TBD-23 | A PN MUST publish a new version of a catalog file at a new, immutable URL and MUST NOT overwrite a previously-published version in place. | MUST |
+| CON-TBD-26 | A PN MUST NOT re-list a `catalogId` that it has previously retired; a catalog offered again after retirement MUST be published under a new `catalogId`. | MUST NOT |
+| CON-TBD-30 | A PN MUST populate a REGULAR catalog-index entry's `dependencies.masters[]` with an entry for every MASTER `catalogId` any of its resources currently extend via `resourceDirectives[].extends.masterResourceId`, and MUST keep it current as those references change. | MUST |
+| CON-TBD-32 | On compacting a catalog's baseline, a PN MUST retain and continue to list the superseded change files in its catalog index — not merely continue hosting them — for at least one full `next_update` cycle after the compaction, and MUST NOT retain them for less. | MUST |
+| CON-TBD-34 | A PN MUST NOT remove a signing key from its manifest's `keys[]` while any currently-listed catalog-index entry, baseline, or change file it has published is signed with that key, unless that key is being retired because it was compromised. | MUST NOT |
+
+#### DS requirements
+
+| ID | Requirement | Level |
+|---|---|---|
 | CON-TBD-06 | A DS MUST verify a fetched Registry manifest's signature against the Registry-registered key for the crawled domain before trusting anything it lists. | MUST |
 | CON-TBD-07 | A DS MUST verify a fetched Beckn Subscriber record's digest against the value the manifest signs for it. | MUST |
 | CON-TBD-08 | A DS MUST verify each catalog-index entry's self-signature before indexing any file it references. | MUST |
@@ -458,23 +478,22 @@ Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subsc
 | CON-TBD-13 | A DS MUST treat a catalog-index entry carrying `retiredAt` as no longer offered and MUST NOT continue serving previously-indexed content for it via `/on_discover`. | MUST |
 | CON-TBD-14 | A DS MUST inherit a REGULAR resource's attributes from its declared MASTER resource, with the REGULAR resource's own fields taking precedence, per §10.3. | MUST |
 | CON-TBD-15 | A DS receiving an out-of-band change signal MUST still perform full verification per §10.2 before trusting any content; the signal itself MUST NOT be treated as verified. | MUST NOT |
-| CON-TBD-16 | This RFC's flows MUST NOT introduce, and no conforming implementation MUST provide, a restricted or access-gated catalog path. | MUST NOT |
-| CON-TBD-17 | Every `Resource`/`Offer` object inside a `CatalogChangeFile`'s `upserts[]` MUST be a complete, schema-valid object per the existing `Resource`/`Offer` schemas. | MUST |
 | CON-TBD-18 | A DS SHOULD use conditional HTTP requests (`ETag`/`If-Modified-Since`) when re-fetching a previously-seen Registry manifest or catalog index. | SHOULD |
-| CON-TBD-19 | All new schema designs introduced by this RFC MUST comply with NFH-009 conformance requirements CON-005-01 through CON-005-15. | MUST |
-| CON-TBD-20 | A PN MUST NOT maintain a separate, per-provider catalog index inside a platform node; provider distinction within one node MUST be expressed via each catalog's own `provider` field. | MUST NOT |
 | CON-TBD-21 | A DS crawling on behalf of a specific network MUST check that a PN has a reference record in that network's membership registry before indexing the PN's catalogs under that network's banner. | MUST |
-| CON-TBD-22 | A PN MUST serialize a catalog file with stable key order and formatting on every publish, so a digest changes only when content changes. | MUST |
-| CON-TBD-23 | A PN MUST publish a new version of a catalog file at a new, immutable URL and MUST NOT overwrite a previously-published version in place. | MUST |
 | CON-TBD-24 | A DS MUST NOT treat a difference between a catalog file's own `next_update` and its index entry's `next_update` as an error. | MUST NOT |
 | CON-TBD-25 | A DS MUST NOT delete or stop tracking a catalog's previously-indexed content solely because its index entry's `isActive` becomes `false`; it MUST continue to be indexed, only excluded from what the DS treats as currently-transactable. | MUST NOT |
-| CON-TBD-26 | A PN MUST NOT re-list a `catalogId` that it has previously retired; a catalog offered again after retirement MUST be published under a new `catalogId`. | MUST NOT |
 | CON-TBD-27 | A DS MUST NOT treat a previously-indexed `catalogId`'s absence from a successfully-fetched, validly-signed index as evidence of retirement unless it had previously observed a `retiredAt` marker on that entry; absent that, it MUST treat the disappearance as a possible incomplete crawl and MUST NOT delete the catalog's previously-indexed content on that basis alone. | MUST NOT |
 | CON-TBD-28 | A DS that deduplicates `Resource`/`Offer` records by their globally-unique `id` across more than one catalog MUST NOT remove a deduplicated record from its own index while any catalog it treats as ACTIVE or PAUSED still references that `id`. | MUST NOT |
 | CON-TBD-29 | A DS MUST decompress a `.json.gz`-suffixed `CatalogFile`/`CatalogChangeFile` before computing or verifying its digest or signature, and MUST NOT compute either against the compressed bytes. | MUST |
-| CON-TBD-30 | A PN MUST populate a REGULAR catalog-index entry's `dependencies.masters[]` with an entry for every MASTER `catalogId` any of its resources currently extend via `resourceDirectives[].extends.masterResourceId`, and MUST keep it current as those references change. | MUST |
 | CON-TBD-31 | A DS MUST NOT treat a `dependencies.masters[].indexUrl` as authenticated; it MUST verify anything fetched from it exactly as it would via ordinary discovery (§10.2), and MUST fall back to standard Registry resolution if the hint is stale, unreachable, or fails verification. | MUST NOT |
-| CON-TBD-32 | On compacting a catalog's baseline, a PN MUST continue to list the change files that led up to the new baseline in its catalog index — not merely continue hosting them — for at least the grace period for which it retains their underlying files. | MUST |
+| CON-TBD-35 | A DS SHOULD stop serving a catalog via `/on_discover` for the duration of a possible-incomplete-crawl condition (CON-TBD-27) — without deleting its previously-indexed content — until the catalog is either re-confirmed present or a `retiredAt` marker is observed. | SHOULD |
+
+#### Joint / general requirements
+
+| ID | Requirement | Level |
+|---|---|---|
+| CON-TBD-16 | This RFC's flows MUST NOT introduce, and no conforming implementation MUST provide, a restricted or access-gated catalog path. | MUST NOT |
+| CON-TBD-19 | All new schema designs introduced by this RFC MUST comply with NFH-009 conformance requirements CON-005-01 through CON-005-15. | MUST |
 | CON-TBD-33 | A PN MUST place `catalog_index_urls` in its Beckn Subscriber record's `meta` object, and a DS MUST look for it there — neither MUST treat `Beckn_subscriber.json`'s own schema-defined fields (`details`) as the place to find or put it. | MUST |
 
 ### Security and Interoperability Considerations
@@ -509,6 +528,7 @@ If accepted, this RFC gives every PN a publishing path that costs it nothing bey
 7. **Key-resolution-path convergence.** The transaction leg resolves Registry keys via a path that, after this RFC, differs slightly from the catalog-crawl path's key resolution (both via the Subscriber record, but reached differently) — whether these should be explicitly unified is open.
 8. **NFH-010 actor-list reconciliation.** §Roles and Actors uses `DS` and `NFO`, which are not on NFH-010 §9's current permissible-actors list. Whether NFH-010 needs amending, or whether this RFC needs an explicit exception, is open.
 9. **Registry self-hosted-file `meta` field, acceptance and scope.** This RFC depends on the Registry's self-hosted file schema (`dedi-file.schema.json`) gaining a generic `meta: object` field on each record, mirroring what already exists on the Registry's own API (§Schema Changes). Whether that gets accepted, at the record level, the registry level, or both, and on what timeline, is entirely outside this RFC's control; until it lands, `meta.catalog_index_urls` cannot be published on a self-hosted file that validates against the current schema.
+10. **How long "currently-listed" persists, for key-rotation purposes (CON-TBD-34).** A PN MUST keep a rotated-out key listed while anything currently-listed still depends on it, but this RFC does not define a maximum bound on how long a PN may take to let old content age out before dropping the old key — in the extreme, a PN that rarely compacts or republishes could keep an old key listed indefinitely. Whether a cap is needed, and if so what it should be, is undecided.
 
 ## Acknowledgements
 
@@ -580,7 +600,72 @@ All examples below are informative and non-normative. They have not yet been run
 
 `details` is exactly what `Beckn_subscriber.json` already defines today, unmodified. `meta` is not part of that schema at all. A DS unwraps `details` for anything it checks against `Beckn_subscriber.json`, and separately looks in `meta` for `catalog_index_urls` — the two never need to be reconciled against each other.
 
-#### Example 3 — `CatalogFile`
+#### Example 3 — Catalog Index (excerpt, one ACTIVE, one PAUSED, one RETIRED entry)
+
+Read this before Example 4 — the index is what a DS fetches first, and its `baseline`/`changes[]` entries are what point at the catalog and change files that follow.
+
+```json
+{
+  "nodeId": "open-economy.nfh.global",
+  "next_update": "2026-07-24T09:00:00Z",
+  "catalogs": [
+    {
+      "catalogId": "open-economy.nfh.global/electronics-2026",
+      "entryVersion": 7,
+      "catalogType": "REGULAR",
+      "dependencies": {
+        "masters": [
+          { "catalogId": "open-economy.nfh.global/electronics-master", "indexUrl": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
+        ]
+      },
+      "isActive": true,
+      "networkIds": ["nfo.nfh.global"],
+      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
+      "baseline": {
+        "version": 40,
+        "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v40.json.gz",
+        "size": 412800,
+        "digest": "sha-256:9f2c..."
+      },
+      "changes": [
+        { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." }
+      ],
+      "signature": { "keyId": "key-1", "value": "..." }
+    },
+    {
+      "catalogId": "open-economy.nfh.global/diwali-specials-2026",
+      "entryVersion": 13,
+      "catalogType": "REGULAR",
+      "isActive": false,
+      "networkIds": ["nfo.nfh.global"],
+      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
+      "baseline": {
+        "version": 3,
+        "url": "https://cdn.open-economy.nfh.global/beckn/diwali-specials-2026.v3.json",
+        "size": 62410,
+        "digest": "sha-256:7c4d..."
+      },
+      "changes": [],
+      "signature": { "keyId": "key-1", "value": "..." }
+    },
+    {
+      "catalogId": "open-economy.nfh.global/electronics-2025",
+      "entryVersion": 21,
+      "catalogType": "REGULAR",
+      "retiredAt": "2026-01-31T00:00:00Z",
+      "networkIds": ["nfo.nfh.global"],
+      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
+      "signature": { "keyId": "key-1", "value": "..." }
+    }
+  ]
+}
+```
+
+- Entry 1's `baseline.url` ends in `.json.gz` — a DS decompresses it before verifying `digest`; `size` (412,800 bytes) reflects the compressed transfer size. Its `dependencies.masters` tells a DS, before fetching anything, that this REGULAR catalog extends resources from `electronics-master`, with `indexUrl` as a shortcut to the index that should contain it — the DS still verifies whatever it fetches from that URL as it would via ordinary discovery (CON-TBD-31). Its `baseline` (Example 4) and `changes[]` (Example 5) are exactly the files worked through next.
+- Entry 2 is a seasonal catalog paused out of season — still listed, still tracked, just not currently offered; `isActive` can flip back to `true` at any time.
+- Entry 3 is retired — permanently superseded by `electronics-2026`. It carries no `isActive`, `baseline`, or `changes[]`, only `retiredAt`, the positive fact a DS acts on. A PN MAY eventually drop this entry from the index entirely, but a DS never depends on that happening.
+
+#### Example 4 — `CatalogFile` (the baseline Example 3 points to)
 
 ```json
 {
@@ -594,6 +679,8 @@ All examples below are informative and non-normative. They have not yet been run
       "id": "open-economy.nfh.global/provider",
       "descriptor": { "name": "Open Economy" }
     },
+    "bppId": "open-economy.nfh.global",
+    "bppUri": "https://open-economy.nfh.global",
     "resources": [
       {
         "id": "open-economy.nfh.global/item-laptop-xps-15",
@@ -614,68 +701,88 @@ All examples below are informative and non-normative. They have not yet been run
 }
 ```
 
-#### Example 4 — Catalog Index (excerpt, one ACTIVE, one PAUSED, one RETIRED entry)
+`catalog.provider` and `catalog.bppId`/`bppUri` answer different questions and are not interchangeable: `provider` is the catalog-level business entity a resource belongs to (what a CN displays, what `resourceDirectives` scopes by); `bppId`/`bppUri` are the same transaction-leg identity fields `context` already carries on `/discover`↔`/on_discover` — unchanged by this RFC, included here so a DS can populate them correctly when it unwraps `.catalog` back onto the wire, without having to infer them from `provider`, which they need not match (a platform node's `bppId` covers many providers; see §Publishing Artifacts and Layering).
+
+#### Example 5 — `CatalogChangeFile` (a change Example 3 points to)
 
 ```json
 {
-  "nodeId": "open-economy.nfh.global",
-  "next_update": "2026-07-24T09:00:00Z",
-  "catalogs": [
-    {
-      "catalogId": "open-economy.nfh.global/electronics-2026",
-      "entryVersion": 7,
-      "catalogType": "REGULAR",
-      "dependencies": {
-        "masters": [
-          { "catalogId": "open-economy.nfh.global/electronics-master", "indexUrl": "https://cdn.open-economy.nfh.global/beckn/catalog-index.json" }
-        ]
-      },
-      "isActive": true,
-      "networkIds": ["ion.nfh.global"],
-      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
-      "baseline": {
-        "version": 40,
-        "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v40.json.gz",
-        "size": 412800,
-        "digest": "sha-256:9f2c..."
-      },
-      "changes": [
-        { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." }
-      ],
-      "signature": { "keyId": "key-1", "value": "..." }
-    },
-    {
-      "catalogId": "open-economy.nfh.global/diwali-specials-2026",
-      "entryVersion": 13,
-      "catalogType": "REGULAR",
-      "isActive": false,
-      "networkIds": ["ion.nfh.global"],
-      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
-      "baseline": {
-        "version": 3,
-        "url": "https://cdn.open-economy.nfh.global/beckn/diwali-specials-2026.v3.json",
-        "size": 62410,
-        "digest": "sha-256:7c4d..."
-      },
-      "changes": [],
-      "signature": { "keyId": "key-1", "value": "..." }
-    },
-    {
-      "catalogId": "open-economy.nfh.global/electronics-2025",
-      "entryVersion": 21,
-      "catalogType": "REGULAR",
-      "retiredAt": "2026-01-31T00:00:00Z",
-      "networkIds": ["ion.nfh.global"],
-      "schemaTypes": ["https://schema.beckn.org/retail/schema/1.1.0/context.jsonld"],
-      "signature": { "keyId": "key-1", "value": "..." }
-    }
-  ]
+  "catalogId": "open-economy.nfh.global/electronics-2026",
+  "fromVersion": 40,
+  "toVersion": 41,
+  "next_update": "2026-08-06T09:00:00Z",
+  "resources": {
+    "upserts": [
+      {
+        "id": "open-economy.nfh.global/item-laptop-xps-15",
+        "descriptor": { "name": "Dell XPS 15" },
+        "resourceAttributes": {
+          "@context": "https://schema.beckn.org/retail/schema/1.1.0/context.jsonld",
+          "@type": "ElectronicsItem",
+          "brand": "Dell",
+          "inStock": true
+        }
+      }
+    ],
+    "removals": ["open-economy.nfh.global/item-laptop-xps-13-discontinued"]
+  },
+  "offers": {
+    "upserts": [],
+    "removals": []
+  },
+  "signature": { "keyId": "key-1", "canonicalization": "JCS", "value": "9pQ2mR7vXs...==" }
 }
 ```
 
-- Entry 1's `baseline.url` ends in `.json.gz` — a DS decompresses it before verifying `digest`; `size` (412,800 bytes) reflects the compressed transfer size. Its `dependencies.masters` tells a DS, before fetching anything, that this REGULAR catalog extends resources from `electronics-master`, with `indexUrl` as a shortcut to the index that should contain it — the DS still verifies whatever it fetches from that URL as it would via ordinary discovery (CON-TBD-31).
-- Entry 2 is a seasonal catalog paused out of season — still listed, still tracked, just not currently offered; `isActive` can flip back to `true` at any time.
-- Entry 3 is retired — permanently superseded by `electronics-2026`. It carries no `isActive`, `baseline`, or `changes[]`, only `retiredAt`, the positive fact a DS acts on. A PN MAY eventually drop this entry from the index entirely, but a DS never depends on that happening.
+This delta takes the catalog from `version` 40 (Example 4) to 41: the XPS 15 resource is re-published (a DS replaces it by id, not by position — same content shown here just re-affirms it's still current), and a discontinued XPS 13 variant is removed by id. A DS with a stored cursor at 40 fetches and applies exactly this one file to reach 41, without re-fetching the baseline.
+
+#### Example 6 — Compaction, before and after
+
+Continuing the same catalog: three more updates land after Example 5 (versions 42, 43, 44), each as its own small change file. The PN then compacts. Before compacting, the index entry looks like this:
+
+```json
+{
+  "catalogId": "open-economy.nfh.global/electronics-2026",
+  "entryVersion": 16,
+  "baseline": {
+    "version": 40,
+    "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v40.json.gz",
+    "size": 412800,
+    "digest": "sha-256:9f2c..."
+  },
+  "changes": [
+    { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." },
+    { "version": 42, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v42.changes.json", "size": 21120, "digest": "sha-256:6c2b..." },
+    { "version": 43, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v43.changes.json", "size": 19870, "digest": "sha-256:7d3c..." },
+    { "version": 44, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v44.changes.json", "size": 22430, "digest": "sha-256:8e4d..." }
+  ],
+  "signature": { "keyId": "key-1", "value": "..." }
+}
+```
+
+Immediately after compacting — still inside the grace period §10.1 requires:
+
+```json
+{
+  "catalogId": "open-economy.nfh.global/electronics-2026",
+  "entryVersion": 17,
+  "baseline": {
+    "version": 44,
+    "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v44.json.gz",
+    "size": 431200,
+    "digest": "sha-256:1a2b..."
+  },
+  "changes": [
+    { "version": 41, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v41.changes.json", "size": 18240, "digest": "sha-256:5b1a..." },
+    { "version": 42, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v42.changes.json", "size": 21120, "digest": "sha-256:6c2b..." },
+    { "version": 43, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v43.changes.json", "size": 19870, "digest": "sha-256:7d3c..." },
+    { "version": 44, "url": "https://cdn.open-economy.nfh.global/beckn/electronics-2026.v44.changes.json", "size": 22430, "digest": "sha-256:8e4d..." }
+  ],
+  "signature": { "keyId": "key-1", "value": "..." }
+}
+```
+
+`baseline.version` jumped from 40 straight to 44 — the new baseline already contains everything changes 41–44 applied. The `changes[]` array is untouched: a DS resuming from any cursor in `[40, 44)` — say, one that had only applied up through 42 — filters to "changes after my cursor" as usual, finds 43 and 44 still listed, fetches only those two, and lands on content identical to the new baseline, never touching the baseline file itself. A fresh DS with no cursor just takes `baseline` (44) directly; entries 41–44 don't apply forward from there, so it costs that DS nothing extra. Once the grace period elapses, the PN drops 41–44 from `changes[]` (and MAY stop hosting the files); a DS that hasn't caught up by then falls back to fetching the baseline.
 
 ## Appendix B — Pre-Submission Checklist
 
