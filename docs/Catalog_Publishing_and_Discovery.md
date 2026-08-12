@@ -525,7 +525,7 @@ Grouped by which actor each requirement falls on, so a PN implementer or a DS im
 |---|---|---|
 | CON-TBD-16 | This RFC's flows MUST NOT introduce, and no conforming implementation MUST provide, a restricted or access-gated catalog path. | MUST NOT |
 | CON-TBD-19 | All new schema designs introduced by this RFC MUST comply with NFH-009 conformance requirements CON-005-01 through CON-005-15. | MUST |
-| CON-TBD-33 | A PN MUST place `catalog_index_urls` in its Beckn Subscriber record's `meta` object, and a DS MUST look for it there — neither MUST treat `Beckn_subscriber.json`'s own schema-defined fields (`details`) as the place to find or put it. | MUST |
+| CON-TBD-33 | A PN MUST place `catalog_index_urls` in its Beckn Subscriber record's `meta` object, and a DS MUST look for it there — neither MUST treat `Beckn_subscriber.json`'s own schema-defined fields (`details`) as the place to find or put it. Contingent on the Registry's self-hosted file schema gaining the `meta` field this depends on (Open Question 9) — not yet satisfiable on a self-hosted file validating against the current schema. | MUST |
 
 ### Security and Interoperability Considerations
 

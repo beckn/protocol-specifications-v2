@@ -302,7 +302,7 @@ This RFC emphasizes trust-layer controls including signature verification, key r
 
 ### Migration notes
 
-The original migration to RFC format introduced no new wire-level protocol behavior. The subsequent removal of the Cataloging Service (CS) actor does not change `/discover`/`/on_discover` or any other transaction-leg endpoint either — it changes how a DS obtains catalog data to serve those endpoints from, per [NFH-014](./Catalog_Publishing_and_Discovery.md). Implementers currently depending on `beckn.yaml`'s `/catalog/*` endpoints are unaffected by this document; those endpoints' own retirement and migration path is tracked separately (NFH-014 Non-Goal NG6).
+The original migration to RFC format introduced no new wire-level protocol behavior. The subsequent removal of the Cataloging Service (CS) actor does not change `/discover`/`/on_discover` or any other transaction-leg endpoint either — it changes how a DS obtains catalog data to serve those endpoints from, per [NFH-014](./Catalog_Publishing_and_Discovery.md). Implementers currently depending on `beckn.yaml`'s `/catalog/*` endpoints are unaffected by this document; those endpoints are marked `deprecated: true` pointing at NFH-014, but their actual retirement and migration path is not yet defined anywhere and is scoped to a follow-up RFC.
 
 ## Conclusion
 
