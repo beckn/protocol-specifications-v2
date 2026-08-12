@@ -461,7 +461,7 @@ This describes what changed, NOT why.
 
 Every actor participating in any flow introduced or modified by this RFC MUST be defined in a table stating: the actor's protocol identity, their role in this RFC's flows, which endpoints they invoke, and which endpoints they implement. Any actor whose identity is established through a specific mechanism MUST have that mechanism stated here.
 
-Permissible actors in core protocol RFCs targeting this repository are: CN, PN, DS, NFO, CS, Fabric. The BG (Beckn Gateway) has been removed from the v2.0.0 architecture and MUST NOT appear in new RFCs targeting this repository.
+Permissible actors in core protocol RFCs targeting this repository are: CN, PN, DS, NFO, Fabric. The BG (Beckn Gateway) has been removed from the v2.0.0 architecture and MUST NOT appear in new RFCs targeting this repository. The CS (Cataloging Service) is deprecated per NFH-014's decentralized catalog model and MUST NOT be designed around in new RFCs; it MAY still appear in RFC text discussing the deprecated `beckn.yaml` endpoints it's associated with.
 
 ---
 

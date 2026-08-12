@@ -26,7 +26,7 @@ info:
 
     4. **Provider Node (PN)** — A verified, on-fabric application that onboards providers or provider-facing agents as clients by creating or verifying their identity on the fabric. Its network-facing API MUST implement the Beckn Protocol endpoints that receive value-exchange requests from calling CNs and respond to them via asynchronous callback endpoints implemented by the CNs. It MUST provide an addressable endpoint to routing incoming messages to the respective providers it has onboarded. It SHOULD provide a client-facing interface for publishing and managing catalogs, contracts, fulfillments, ratings, feedback, and providing support to CNs.
 
-    5. **Discovery Service (DS)**: — A verified on-fabric application that enables discovery of catalogs only accessible via CNs. Its network-facing API MUST implement the Beckn Protocol API endpoints that receive catalog discovery requests from CNs and asynchronously respond with catalogs from various providers. It MUST subscribe to updates from the fabric cataloging service (see next section), and ensure the catalog it has is the most recent. It MAY be implemented as an independent SaaS for CNs to consume, or implemented by the CNs themselves.
+    5. **Discovery Service (DS)**: — A verified on-fabric application that enables discovery of catalogs only accessible via CNs. Its network-facing API MUST implement the Beckn Protocol API endpoints that receive catalog discovery requests from CNs and asynchronously respond with catalogs from various providers. It MUST ensure the catalog it has is the most recent, either by subscribing to updates from the fabric cataloging service (see next section — deprecated, see NFH-014) or by crawling and independently verifying PN-hosted catalog files per NFH-014's decentralized publishing model. It MAY be implemented as an independent SaaS for CNs to consume, or implemented by the CNs themselves.
 
     6. **Network Facilitator Organization (NFO)** — Entity that manages a subnet on the fabric consisting of CNs, PNs, and DSes. 
 
@@ -41,7 +41,7 @@ info:
 
     2. **GRR** (Global Root Registry) — Global identity and address lookup service used by all NPs.
     
-    3. **CS** (Cataloging Service) — Common service provided to all NPs for programmable catalog discoverability.
+    3. **CS** (Cataloging Service) — Common service provided to all NPs for programmable catalog discoverability. Deprecated: superseded by the decentralized catalog publishing and discovery model in NFH-014; remains available for existing implementations.
 
     **Note:** Both the Namespacing Service and Global Root Registry service MUST be consumed using dedi protocol API. The API for consuming the Namespacing and Global Root Registry services are out of scope of this API specification and can be found in the dedi protocol documentation. 
 
@@ -129,9 +129,11 @@ paths:
       summary: Discover catalogs on a network
       description: "The CN sends a discovery request to the DS (Discovery Service),\
         \ which searches its indexed catalog store for resources and offers matching\
-        \ the supplied intent.\n\nFabric context: The DS maintains a synchronized catalog\
-        \ index by subscribing to the CS (Cataloging Service) on the Fabric. The CN\
-        \ does not interact directly with the Fabric for discovery.\n\nThe message\
+        \ the supplied intent.\n\nFabric context: The DS maintains its catalog index\
+        \ either by subscribing to the CS (Cataloging Service) on the Fabric (deprecated,\
+        \ see NFH-014), or by crawling and independently verifying PN-hosted catalog\
+        \ files per NFH-014's decentralized model. The CN does not interact directly\
+        \ with the Fabric for discovery.\n\nThe message\
         \ MUST contain an Intent object. The Intent carries textSearch, JSONPath filter\
         \ expressions per RFC 9535, spatial constraints, and media search inputs that\
         \ the DS evaluates against its indexed catalog store.\n\nCallback relationship:\

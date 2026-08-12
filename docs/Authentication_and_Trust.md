@@ -626,6 +626,8 @@ This RFC establishes a bilateral, non-repudiable authentication model for Beckn 
 ### Open Questions
 
 1. **Explicit keyId trust model:** Should the spec provide a standard mechanism for NPs to publish their list of trusted external registries, or leave this to operator configuration?
+2. **Challenge-response for deprecated CS callbacks.** Cost-effective verification of large `catalog/pull` payloads delivered by the (deprecated, still-supported) Cataloging Service to a DS is unresolved; out of scope for NFH-014, which addresses only the crawl-based model.
+3. **End-to-end PN-origin proof for the deprecated CS path.** A DS receiving a catalog via the CS sees a CS-signed payload, not a PN-signed one, providing no independent means to verify the content matches what the PN originally submitted. NFH-014 closes this gap for its own decentralized model (self-signed catalog files); it remains open for implementations still using the deprecated CS flow.
 
 ## Acknowledgements
 

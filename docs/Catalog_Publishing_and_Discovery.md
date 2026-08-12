@@ -22,7 +22,7 @@
 
 ## Abstract
 
-This RFC specifies decentralized catalog publishing and discovery on the beckn enabled network. A Provider Node (PN) self-hosts signed catalog files and a signed catalog index on infrastructure it controls, and points to that index via `catalog_index_urls` in its Beckn Subscriber Registry record's `meta` section. A Discovery Service (DS) resolves that pointer, crawls and independently verifies every file, and builds its own index. Catalog access is uniformly public — any party with a file's URL can fetch it — and a network operator's membership registry, not this RFC's mechanism, governs which catalogs a network-scoped DS trusts. See [NFH-003](./The_Beckn_Protocol_Stack.md) for network topology and actor definitions.
+This RFC specifies decentralized catalog publishing and discovery on the beckn enabled network. A Provider Node (PN) self-hosts signed catalog files and a signed catalog index on infrastructure it controls, and points to that index via `catalog_index_urls` in its Beckn Subscriber Registry record's `meta` section. A Discovery Service (DS) resolves that pointer, crawls and independently verifies every file, and builds its own index. Catalog access is uniformly public — any party with a file's URL can fetch it — and a network operator's membership registry, not this RFC's mechanism, governs which catalogs a network-scoped DS trusts. This RFC does NOT address restricted or access-gated catalogs (CON-TBD-16), a specific crawler implementation, or changes to `/discover`/`/on_discover`; it also does not remove or migrate `beckn.yaml`'s existing Cataloging Service endpoints, only marks them deprecated (§End-to-End Flow). The companion `schemas` repository PR for this RFC's new named terms has not yet been opened (§Schema Changes, "Cross-artifact alignment"). See [NFH-003](./The_Beckn_Protocol_Stack.md) for network topology and actor definitions.
 
 ## Table of Contents
 
@@ -33,6 +33,7 @@ This RFC specifies decentralized catalog publishing and discovery on the beckn e
   - [Introduction](#introduction)
   - [Specification](#specification)
     - [Definitions](#definitions)
+    - [Motivation](#motivation)
     - [Requirements](#requirements)
     - [Roles and Actors](#roles-and-actors)
     - [Publishing Artifacts and Layering](#publishing-artifacts-and-layering)
@@ -91,6 +92,14 @@ Actor definitions and network topology are in [NFH-003](./The_Beckn_Protocol_Sta
 - **Compaction:** the act of a PN folding an accumulated chain of change files into a fresh baseline, published alongside — not in place of — the change files that led up to it, which stay listed for a grace period so a DS mid-lineage can still reach the new baseline by applying diffs (§10.1).
 - **Normative:** requirements that define conformance and interoperability behavior.
 - **Informative:** explanatory guidance that does not by itself define conformance.
+
+### Motivation
+
+**Current State.** `beckn.yaml`'s Fabric API - Cataloging Service group (`/catalog/publish`, `/catalog/subscribe`, `/catalog/pull`, `/catalog/push`, `/catalog/search`, and their callbacks) is today's catalog-publishing mechanism: a PN submits its catalog to a centrally-operated Cataloging Service (CS), which validates, indexes, and relays it to subscribing DSes.
+
+**Identified Problems.** (1) A DS trusts the CS's relayed copy of a catalog, not a PN-signed one — it has no independent way to verify the content matches what the PN actually submitted (§Security Considerations resolves this for the new model; it remains an open question for the CS path, per [NFH-007](./Authentication_and_Trust.md)). (2) Every PN and every DS depends on one shared, centrally-operated service being available and correctly run; the CS is a single point of failure and a single operational bottleneck for the entire discovery phase. (3) A PN has no sovereignty over how or where its own catalog data is hosted, verified, or served — publishing requires calling a service it doesn't control.
+
+**Why the Current Design Cannot Be Extended.** Adding self-signing to catalogs relayed through the CS would not remove the CS from the trust or availability path — a DS would still be verifying the CS's relay, not the PN's origin, unless the CS is bypassed entirely. The problems above are structural to routing catalog data through a shared intermediary, not fixable by hardening that intermediary; only removing it from the path (self-hosting and direct DS verification) addresses R1–R5 below.
 
 ### Requirements
 
@@ -289,7 +298,7 @@ stateDiagram-v2
 - *Why "listed" isn't modeled as a state:* a DS cannot reliably verify absence — a partial crawl, one failed fetch among several `catalog_index_urls`, or a truncated response all look identical to a real removal from the outside. Building the lifecycle only out of things a DS can positively observe (an `isActive` flag, a `retiredAt` marker) avoids ever needing to trust a negative.
 - *Why `isActive=false` means keep, not delete:* it's a reversible business decision, not an existence question. Deleting on every pause would force a full baseline re-fetch the moment a PN reactivates a seasonal catalog — exactly the cost incremental crawling exists to avoid.
 - *Why "don't show, don't discard" for unconfirmed absence:* it keeps a DS's results trustworthy — never showing something it can't currently vouch for — without paying the cost of premature deletion if the absence turns out to have been a partial crawl rather than a real removal.
-- *Why `latest` alone carries its own `retiredAt`:* the same "never trust a negative" principle applies to the direct-fetch path, not just the index-based one. `baseline`/`changes[]` are immutable, versioned snapshots nobody expects to reflect later events, so they need no tombstone of their own. `latest` is the one file a consumer might cache and keep re-fetching directly, indefinitely, without ever revisiting the index — if a PN simply stopped updating or deleted it on retirement, that consumer would face exactly the absence-vs-unreachable ambiguity R7 exists to prevent, just one layer lower than the index.
+- *Why `latest` alone carries its own `retiredAt`:* the same "never trust a negative" principle applies to the direct-fetch path, not just the index-based one. `baseline`/`changes[]` are immutable, versioned snapshots nobody expects to reflect later events, so they need no tombstone of their own. `latest` is the one file a consumer might cache and keep re-fetching directly, indefinitely, without ever revisiting the index — if a PN simply stopped updating or deleted it on retirement, that consumer would face exactly the absence-vs-unreachable ambiguity R5 exists to prevent, just one layer lower than the index.
 
 #### 10.5 Error flows
 
@@ -457,7 +466,7 @@ A worked walkthrough, tying §10.1 through §10.4 together into one concrete sce
 6. A CN calls `POST /discover` against the DS exactly as it would today; the DS matches the intent against what it crawled and calls `POST /on_discover` on the CN's callback URI with the indexed `Catalog`. This leg, defined in `beckn.yaml`, is entirely unaffected by this RFC.
 7. `open-economy.nfh.global` later updates one item's price: it edits the catalog file (or emits a `CatalogChangeFile`), re-signs it, bumps the index entry's `entryVersion` and its `baseline`/`changes[]` version, and re-signs the entry. On its next pass, the DS's conditional fetch of the index detects the change, re-verifies, and re-indexes — no notification was sent or required (§10.6).
 
-Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subscription`, `/catalog/push`, `/catalog/pull`, `/catalog/search`, and their callbacks) are untouched and remain exactly as `beckn.yaml` defines them; this RFC introduces the flow alongside them. Their migration path is scoped to a follow-up RFC.
+Today's `beckn.yaml` catalog endpoints (`POST /catalog/publish`, `/catalog/subscription`, `/catalog/push`, `/catalog/pull`, `/catalog/search`, and their callbacks) keep their existing request/response schemas unchanged; this RFC introduces the flow alongside them and marks them `deprecated: true` in `beckn.yaml`, pointing at this RFC. No endpoint, schema, required field, or example is removed. Their actual retirement path — if and when they're removed — is scoped to a follow-up RFC.
 
 ### Conformance Requirements
 
@@ -548,7 +557,7 @@ If accepted, this RFC gives every PN a publishing path that costs it nothing bey
 5. **Feedback-log design.** Where a PN's crawl-rejection feedback log (§10.5) lives, whether it's per-DS or aggregated, its format, and its retention are undecided.
 6. **Rego policy-as-code re-homing.** Where NFH-012's master-catalog policy validation runs once no centrally-operated indexing service exists is undecided and needs its own follow-up RFC.
 7. **Key-resolution-path convergence.** The transaction leg resolves Registry keys via a path that, after this RFC, differs slightly from the catalog-crawl path's key resolution (both via the Subscriber record, but reached differently) — whether these should be explicitly unified is open.
-8. **NFH-010 actor-list reconciliation.** §Roles and Actors uses `DS` and `NFO`, which are not on NFH-010 §9's current permissible-actors list. Whether NFH-010 needs amending, or whether this RFC needs an explicit exception, is open.
+8. ~~NFH-010 actor-list reconciliation.~~ Resolved by this RFC: NFH-010 §9's permissible-actors list now includes `DS` and `NFO` alongside `CS`'s removal as a designable actor.
 9. **Registry self-hosted-file `meta` field, acceptance and scope.** This RFC depends on the Registry's self-hosted file schema (`dedi-file.schema.json`) gaining a generic `meta: object` field on each record, mirroring what already exists on the Registry's own API (§Schema Changes). Whether that gets accepted, at the record level, the registry level, or both, and on what timeline, is entirely outside this RFC's control; until it lands, `meta.catalog_index_urls` cannot be published on a self-hosted file that validates against the current schema.
 10. **How long "currently-listed" persists, for key-rotation purposes (CON-TBD-34).** A PN MUST keep a rotated-out key listed while anything currently-listed still depends on it, but this RFC does not define a maximum bound on how long a PN may take to let old content age out before dropping the old key — in the extreme, a PN that rarely compacts or republishes could keep an old key listed indefinitely. Whether a cap is needed, and if so what it should be, is undecided.
 
@@ -850,7 +859,7 @@ This RFC has NOT completed the checklist and MUST remain in Draft status until i
 **Cross-Artifact and Schema**
 - [ ] New schemas' compliance with NFH-009 CON-005-01–15 asserted (CON-TBD-19) but not individually verified line-by-line
 - [ ] Companion `schemas` repository PR — not yet opened
-- [x] Breaking Changes and Migration intentionally omitted: this RFC does not itself modify or remove any `beckn.yaml` artifact; §End-to-End Flow is provided in its place, and a follow-up RFC will carry migration specifics
+- [x] Breaking Changes and Migration intentionally omitted: this RFC does not remove or change the meaning of any `beckn.yaml` schema, required field, or example — it only flags the superseded endpoints `deprecated: true`, a non-breaking marker; §End-to-End Flow is provided in its place, and a follow-up RFC will carry actual retirement/migration specifics
 
 **Examples**
 - [ ] Examples have NOT been run through `@redocly/cli lint` or equivalent
