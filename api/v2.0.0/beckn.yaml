@@ -26,7 +26,7 @@ info:
 
     4. **Provider Node (PN)** — A verified, on-fabric application that onboards providers or provider-facing agents as clients by creating or verifying their identity on the fabric. Its network-facing API MUST implement the Beckn Protocol endpoints that receive value-exchange requests from calling CNs and respond to them via asynchronous callback endpoints implemented by the CNs. It MUST provide an addressable endpoint to routing incoming messages to the respective providers it has onboarded. It SHOULD provide a client-facing interface for publishing and managing catalogs, contracts, fulfillments, ratings, feedback, and providing support to CNs.
 
-    5. **Discovery Service (DS)**: — A verified on-fabric application that enables discovery of catalogs only accessible via CNs. Its network-facing API MUST implement the Beckn Protocol API endpoints that receive catalog discovery requests from CNs and asynchronously respond with catalogs from various providers. It MUST subscribe to updates from the fabric cataloging service (see next section), and ensure the catalog it has is the most recent. It MAY be implemented as an independent SaaS for CNs to consume, or implemented by the CNs themselves.
+    5. **Discovery Service (DS)**: — A verified on-fabric application that enables discovery of catalogs only accessible via CNs. Its network-facing API MUST implement the Beckn Protocol API endpoints that receive catalog discovery requests from CNs and asynchronously respond with catalogs from various providers. It MUST ensure the catalog it has is the most recent, either by subscribing to updates from the fabric cataloging service (see next section — deprecated, see NFH-014) or by crawling and independently verifying PN-hosted catalog files per NFH-014's decentralized publishing model. It MAY be implemented as an independent SaaS for CNs to consume, or implemented by the CNs themselves.
 
     6. **Network Facilitator Organization (NFO)** — Entity that manages a subnet on the fabric consisting of CNs, PNs, and DSes. 
 
@@ -41,7 +41,7 @@ info:
 
     2. **GRR** (Global Root Registry) — Global identity and address lookup service used by all NPs.
     
-    3. **CS** (Cataloging Service) — Common service provided to all NPs for programmable catalog discoverability.
+    3. **CS** (Cataloging Service) — Common service provided to all NPs for programmable catalog discoverability. Deprecated: superseded by the decentralized catalog publishing and discovery model in NFH-014; remains available for existing implementations.
 
     **Note:** Both the Namespacing Service and Global Root Registry service MUST be consumed using dedi protocol API. The API for consuming the Namespacing and Global Root Registry services are out of scope of this API specification and can be found in the dedi protocol documentation. 
 
@@ -110,7 +110,11 @@ tags:
 - name: Post-Fulfillment
   description: Rate and support completed contracts
 - name: Fabric API - Cataloging Service
-  description: Publish catalogs to the Cataloging Service (CS) on the Fabric and subscribe to catalog updates. 
+  description: >-
+    Publish catalogs to the Cataloging Service (CS) on the Fabric and subscribe to catalog updates.
+
+
+    Deprecated: superseded by the decentralized catalog publishing and discovery model in NFH-014. These endpoints remain fully defined and supported for existing implementations; new integrations SHOULD use NFH-014 instead. 
 security: []
 servers:
 - url: https://{subscriberUrl}
@@ -125,9 +129,11 @@ paths:
       summary: Discover catalogs on a network
       description: "The CN sends a discovery request to the DS (Discovery Service),\
         \ which searches its indexed catalog store for resources and offers matching\
-        \ the supplied intent.\n\nFabric context: The DS maintains a synchronized catalog\
-        \ index by subscribing to the CS (Cataloging Service) on the Fabric. The CN\
-        \ does not interact directly with the Fabric for discovery.\n\nThe message\
+        \ the supplied intent.\n\nFabric context: The DS maintains its catalog index\
+        \ either by subscribing to the CS (Cataloging Service) on the Fabric (deprecated,\
+        \ see NFH-014), or by crawling and independently verifying PN-hosted catalog\
+        \ files per NFH-014's decentralized model. The CN does not interact directly\
+        \ with the Fabric for discovery.\n\nThe message\
         \ MUST contain an Intent object. The Intent carries textSearch, JSONPath filter\
         \ expressions per RFC 9535, spatial constraints, and media search inputs that\
         \ the DS evaluates against its indexed catalog store.\n\nCallback relationship:\
@@ -1244,10 +1250,7 @@ paths:
       description: "The PN submits one or more Catalog objects to the CS (Cataloging\
         \ Service) for validation and indexing so that CNs may discover them via /discover.\n\
         \nAdditional preconditions: At least one Catalog object MUST be present in\
-        \ the message.\n\nFabric context: This endpoint is hosted by the CS, a Fabric\
-        \ service that receives, validates, and indexes submitted catalogs; network-specific\
-        \ policy enforcement is a Fabric-level capability that may apply to published\
-        \ catalogs.\n\nThe message MUST contain a CatalogPublishAction with a non-empty catalogs array.\
+        \ the message.\n\nThe message MUST contain a CatalogPublishAction with a non-empty catalogs array.\
         \ Each Catalog MUST include an id, descriptor, and provider.\n\nCallback relationship:\
         \ After indexing each submitted catalog, the CS sends a /catalog/on_publish\
         \ callback to the PN carrying a CatalogOnPublishAction with per-catalog processing\
@@ -1260,6 +1263,7 @@ paths:
         \ is missing or invalid. A 500 ServerError indicates an unexpected CS failure;\
         \ the PN SHOULD retry."
       operationId: catalogPublish
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1493,8 +1497,7 @@ paths:
         \ per-catalog processing results for each catalog submitted in a prior /catalog/publish\
         \ request.\n\nAdditional preconditions: A /catalog/publish request MUST have\
         \ been sent by the PN and accepted (200 Ack) by the CS before this callback\
-        \ is triggered.\n\nFabric context: This callback is sent by the CS after completing\
-        \ indexing for each submitted catalog.\n\nThe message MUST contain a CatalogOnPublishAction\
+        \ is triggered.\n\nThe message MUST contain a CatalogOnPublishAction\
         \ with a results array. Each result carries the catalogId and a processing\
         \ status of ACCEPTED, REJECTED, or PARTIAL, along with any per-item errors.\n\
         \nCallback relationship: Triggered by the CS after indexing each catalog from\
@@ -1503,6 +1506,7 @@ paths:
         \ or PARTIAL results by correcting and resubmitting affected catalogs.\n\n\
         Response codes: Ack, NackBadRequest, NackUnauthorized, ServerError."
       operationId: catalogOnPublish
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1546,10 +1550,7 @@ paths:
         \ to deliver catalog updates that match an active subscription.\n\
         \nAdditional preconditions: An active subscription MUST exist for the DS\
         \ matching the catalog's networkId and schema types. The DS MUST\
-        \ have a valid endpoint registered in the network.\n\nFabric\
-        \ context: This endpoint is implemented by the DS. The CS\
-        \ signs the request and delivers it to the DS's registered\
-        \ endpoint.\n\nAuthentication note: This endpoint uses AuthorizationHeader\
+        \ have a valid endpoint registered in the network.\n\nAuthentication note: This endpoint uses AuthorizationHeader\
         \ (not CallbackAuthorizationHeader) because the CS initiates the push\
         \ autonomously when a subscription matches — there is no prior DS request\
         \ whose signature could be chained via request-signature. This is analogous\
@@ -1562,6 +1563,7 @@ paths:
         \ subscriptions). A 500 ServerError indicates an unexpected failure at the\
         \ DS."
       operationId: catalogPush
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1609,9 +1611,7 @@ paths:
         \ catalogs are indexed.\n\nAdditional preconditions: At least one networkId\
         \ or schemaType MUST be provided (anyOf). An empty schemaTypes array is treated\
         \ as a wildcard matching all schema types for the specified networks. The\
-        \ DS identity is extracted from the Authorization header.\n\nFabric context:\
-        \ This endpoint is hosted by the CS. The CS validates the caller's identity\
-        \ from the Authorization header and persists the subscription.\n\nThe message\
+        \ DS identity is extracted from the Authorization header.\n\nThe message\
         \ MUST contain a CatalogSubscribeAction with a subscription object specifying\
         \ networkIds and optional schemaTypes.\n\nA 200 response returns the created\
         \ or updated CatalogSubscription in a CatalogSubscriptionResponse envelope.\
@@ -1625,6 +1625,7 @@ paths:
         \ active for this subscriber. A 500 ServerError indicates an unexpected CS\
         \ failure."
       operationId: catalogSubscribe
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1698,6 +1699,7 @@ paths:
     delete:
       summary: DS deactivates a catalog subscription on the CS
       operationId: catalogSubscriptionDeactivate
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       description: "The DS deactivates an existing subscription on the CS (Cataloging\
@@ -1705,8 +1707,6 @@ paths:
         \nAdditional preconditions: The subscriptionId query parameter MUST be provided.\
         \ The caller MUST be the subscription owner — the signing key identity in\
         \ the Authorization header MUST match the identity used when the subscription\
-        \ was created.\n\nFabric context: This endpoint is hosted by the CS. The\
-        \ CS verifies that the caller's identity to match those used when the subscription\
         \ was created.\n\nA 200 response returns the deactivated CatalogSubscription \
         \ in a CatalogSubscriptionResponse envelope.\
         \ This endpoint is synchronous — no callback is delivered. The subscription\
@@ -1752,9 +1752,7 @@ paths:
         \ Service), optionally filtered by subscription ID or status, with support\
         \ for pagination.\n\nAdditional preconditions: The caller's identity\
         \ is extracted from the Authorization header. Only subscriptions owned\
-        \ by the calling DS are returned.\n\nFabric context: This endpoint is hosted\
-        \ by the CS. The CS returns only subscriptions belonging to the calling DS,\
-        \ with pagination metadata.\n\nA 200 response\
+        \ by the calling DS are returned.\n\nA 200 response\
         \ returns a CatalogSubscriptionResponse envelope containing the matching subscriptions\
         \ and pagination metadata. When subscriptionId is provided, at most one subscription\
         \ is returned. When status is omitted, subscriptions of all statuses are returned.\
@@ -1764,6 +1762,7 @@ paths:
         \ is returned when a specific subscriptionId was requested but does not exist.\
         \ A 500 ServerError indicates an unexpected CS failure."
       operationId: catalogSubscribeList
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1828,9 +1827,7 @@ paths:
         \ networkIds and schemaTypes determine which catalogs are returned — they\
         \ are not specified on this request.\n\nAdditional preconditions: context.version,\
         \ context.action, context.transactionId, and message.subscriptionId MUST be\
-        \ supplied.\n\nFabric context: This endpoint is hosted by the CS. The CS\
-        \ queues the pull request for asynchronous processing and delivers results\
-        \ to the DS via /catalog/on_pull.\n\nThe message MUST contain a CatalogPullAction. The mode field\
+        \ supplied.\n\nThe message MUST contain a CatalogPullAction. The mode field\
         \ MUST be either FULL (returns the latest version of each matching catalog)\
         \ or INCREMENTAL (returns all catalog versions published between fromDate and\
         \ toDate inclusive).\n\nCallback\
@@ -1849,6 +1846,7 @@ paths:
         \ does not exist. A 500 ServerError indicates an unexpected CS failure; the\
         \ DS SHOULD retry."
       operationId: catalogPull
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1909,9 +1907,7 @@ paths:
         \ request.\n\nAdditional preconditions: A /catalog/pull request MUST have\
         \ been sent by the DS and accepted (200 Ack) by the CS before this callback\
         \ is triggered. The DS MUST use context.messageId to correlate\
-        \ this callback with the originating /catalog/pull request.\n\nFabric context: This\
-        \ callback is sent by the CS after processing the pull request. The CS delivers\
-        \ the results to the DS's registered endpoint.\n\n
+        \ this callback with the originating /catalog/pull request.\n\n
         \ The message MUST contain a CatalogPullCallbackAction with \
         \ a status of COMPLETED or FAILED,\
         \ and either an inline catalogs array (small payload) or a downloadManifest\
@@ -1921,6 +1917,7 @@ paths:
         \ is returned when the Authorization header (callback) signature is invalid.\
         \ A 500 ServerError indicates an unexpected DS failure."
       operationId: catalogOnPull
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -1967,9 +1964,7 @@ paths:
         \ optional. Omitting filters.type defaults to MASTER. Omitting\
         \ or leaving filters.networkIds empty matches all networks. Omitting or leaving\
         \ filters.schemaTypes empty matches all schema types. limit MUST be between\
-        \ 1 and 100 (default 20); offset MUST be non-negative (default 0).\n\nFabric\
-        \ context: This endpoint is hosted by the CS. The CS queries its catalog\
-        \ index and returns matching items synchronously.\n\nThe message MUST contain\
+        \ 1 and 100 (default 20); offset MUST be non-negative (default 0).\n\nThe message MUST contain\
         \ a CatalogSearchAction with optional filters and optional pagination parameters.\
         \ All responses are wrapped in a Beckn envelope with action set to\
         \ \"catalog/on_search\".\n\nA 200 response returns the matching catalog items\
@@ -1979,6 +1974,7 @@ paths:
         \ A 429 NackTooManyRequests is returned when the request rate exceeds the\
         \ CS rate limit. A 500 ServerError indicates an unexpected CS failure."
       operationId: catalogSearch
+      deprecated: true
       tags:
       - Fabric API - Cataloging Service
       parameters:
@@ -2106,14 +2102,13 @@ components:
         - contract
 
     CatalogPublishAction:
+      deprecated: true
       description: "The real-world act by which a PN submits one or more catalogs\
         \ to the CS (Cataloging Service) for indexing so that CNs may subsequently\
         \ discover them.\n\nThis schema appears in the Catalog Publishing phase of\
         \ the value-exchange lifecycle. The PN produces it as the message payload\
         \ of a /catalog/publish request; the CS consumes it to index the provided\
-        \ catalogs into its catalog store.\n\nFabric context: This schema is processed\
-        \ by the CS, which validates and indexes each submitted Catalog object.\n\n\
-        Relationship: Composes one or more Catalog schemas in the catalogs array.\
+        \ catalogs into its catalog store.\n\nRelationship: Composes one or more Catalog schemas in the catalogs array.\
         \ The optional publishDirectives array controls per-catalog processing —\
         \ catalog type, update mode, resource inheritance, and visibility."
       required:
@@ -2747,9 +2742,8 @@ components:
         \ value-exchange lifecycle. The PN produces them and publishes them to the\
         \ CS (Cataloging Service) via CatalogPublishAction; the CS indexes them and\
         \ synchronizes them to the DS, which serves them to CNs in OnDiscoverAction\
-        \ responses.\n\nFabric context: Catalogs are managed by the CS, which indexes\
-        \ them for discovery and synchronizes them to the DS for delivery to subscribing\
-        \ CNs. The CS also stores and serves canonical master catalog items.\n\nRelationship:\
+        \ responses. The CS also stores and serves canonical master catalog items\
+        \ directly.\n\nRelationship:\
         \ Composes Provider, Resource, and Offer schemas. MUST include at least one\
         \ of a resources array or an offers array. The validity field constrains the\
         \ temporal window during which the catalog is active, expressed as a TimePeriod."
@@ -2803,14 +2797,14 @@ components:
       additionalProperties: false
 
     CatalogOnPublishAction:
+      deprecated: true
       description: "The real-world act by which the CS (Cataloging Service) communicates\
         \ per-catalog processing outcomes to the PN after completing indexing for\
         \ each catalog submitted in a publish request.\n\nThis schema appears in the\
         \ Catalog Publishing phase of the value-exchange lifecycle. The CS produces\
         \ it as the message payload of a /catalog/on_publish callback; the PN consumes\
         \ it to determine which submitted catalogs were successfully indexed and which\
-        \ require correction and resubmission.\n\nFabric context: Produced exclusively\
-        \ by the CS as the outcome of its indexing pipeline.\n\nRelationship: Composes\
+        \ require correction and resubmission.\n\nRelationship: Composes\
         \ one or more CatalogProcessingResult schemas in the required results array,\
         \ one per submitted catalog."
       type: object
@@ -2824,13 +2818,13 @@ components:
             $ref: '#/components/schemas/CatalogProcessingResult'
 
     CatalogProcessingResult:
+      deprecated: true
       description: "The outcome record produced by the CS (Cataloging Service) for\
         \ a single catalog submission, indicating whether the catalog was accepted,\
         \ rejected, or partially indexed, along with any per-item or per-catalog errors.\n\
         \nThis schema appears in the CatalogOnPublishAction and is produced by the\
         \ CS. The PN consumes it to identify catalogues that require correction.\n\
-        \nFabric context: Produced exclusively by the CS as part of its indexing result\
-        \ reporting.\n\nRelationship: Composes zero or more Error schemas in the errors\
+        \nRelationship: Composes zero or more Error schemas in the errors\
         \ array when status is REJECTED or PARTIAL. An optional stats object provides\
         \ counts of accepted items, providers, and categories."
       type: object
@@ -4401,15 +4395,13 @@ components:
 
     CatalogSubscribeAction:
       type: object
+      deprecated: true
       description: "The real-world act by which a DS declares interest in receiving\
         \ ongoing catalog/push callbacks from the CS (Cataloging Service) for catalogs\
         \ matching specified networks and schema types.\n\nThis schema appears in\
         \ the Catalog Subscription phase. The DS produces it as the message payload\
         \ of a POST /catalog/subscription request; the CS consumes it to create or\
-        \ update the subscription record.\n\nFabric context: Processed by the CS,\
-        \ which validates the subscription criteria and persists the subscription\
-        \ to determine which subscribers receive catalog/push callbacks when new catalogs\
-        \ are published.\n\nRelationship: Composes a subscription\
+        \ update the subscription record.\n\nRelationship: Composes a subscription\
         \ object specifying networkIds and optional schemaTypes. At least one of\
         \ networkIds or schemaTypes MUST be provided — providing neither results in\
         \ 400 NackBadRequest. Updating an inactive subscription reactivates it."
@@ -4445,15 +4437,14 @@ components:
 
     CatalogSubscription:
       type: object
+      deprecated: true
       description: "The persisted subscription record held by the CS (Cataloging Service),\
         \ representing a subscriber's (DS) declared interest in receiving catalog/push callbacks\
         \ for specific networks and schema types, along with its current lifecycle\
         \ status.\n\nCatalogSubscription appears in the Catalog Subscription phase.\
         \ The CS produces it as a response to POST /catalog/subscription (creation\
         \ or update) and GET /catalog/subscription (listing). The subscriber (DS) consumes\
-        \ it to confirm subscription state.\n\nFabric context: Managed exclusively\
-        \ by the CS, which uses ACTIVE subscriptions to determine which subscribers\
-        \ receive catalog/push callbacks when catalogs are published. The identity\
+        \ it to confirm subscription state. The identity\
         \ of the subscriber (DS) is derived by the CS from the signing key in the Beckn\
         \ HTTP Signature Authorization header on each request.\n\nRelationship:\
         \ The status field MUST be one of ACTIVE (the subscriber receives catalog/push\
@@ -4542,14 +4533,13 @@ components:
 
     CatalogSearchAction:
       type: object
+      deprecated: true
       description: "The real-world act by which a caller queries the CS (Cataloging\
         \ Service) for indexed catalogs, applying optional catalog type, network,\
         \ and schema type filters with pagination control.\n\nThis schema appears\
         \ in the Catalog Search phase. The PN produces it as the message\
         \ payload of a POST /catalog/search request; the CS consumes it to filter\
-        \ and return matching catalogs with pagination metadata.\n\nFabric context:\
-        \ Processed by the CS, which queries its catalog index and returns matching\
-        \ items synchronously.\n\nRelationship: Composed as the message payload of\
+        \ and return matching catalogs with pagination metadata.\n\nRelationship: Composed as the message payload of\
         \ the /catalog/search request body."
       additionalProperties: false
       properties:
@@ -4596,6 +4586,7 @@ components:
 
     CatalogPullAction:
       type: object
+      deprecated: true
       description: "The real-world act by which a subscriber (DS) initiates an asynchronous\
         \ bulk catalog retrieval from the CS (Cataloging Service), scoped to an active\
         \ subscription, specifying whether to retrieve the latest version of each\
@@ -4604,9 +4595,7 @@ components:
         \ subscriber (DS) produces it as the message payload of a /catalog/pull request;\
         \ the CS consumes it to process the pull request asynchronously and deliver\
         \ results via a callback to the subscriber's (DS) /catalog/on_pull endpoint.\n\n\
-        Fabric context: Processed by the CS, which uses the referenced subscription's\
-        \ networkIds and schemaTypes to determine which catalogs to retrieve and deliver\
-        \ asynchronously.\n\nRelationship: Composed as the message payload of the\
+        Relationship: Composed as the message payload of the\
         \ /catalog/pull request body. References a CatalogSubscription by subscriptionId."
       additionalProperties: false
       required:
@@ -4657,13 +4646,13 @@ components:
 
     CatalogPullCallbackAction:
       type: object
+      deprecated: true
       description: "The real-world act by which the CS (Cataloging Service) delivers\
         \ the results of a previously accepted /catalog/pull request to the subscriber's (DS)\
         \ /catalog/on_pull callback endpoint.\n\nThis schema appears in the Catalog\
         \ Pull phase. The CS produces it as the message payload of the async callback;\
-        \ the subscriber (DS) consumes it to retrieve the requested catalog data.\n\nFabric\
-        \ context: Produced by the CS after processing the pull request.\
-        \ When the result is small it is returned inline in `catalogs`; when the\
+        \ the subscriber (DS) consumes it to retrieve the requested catalog data.\n\n\
+        When the result is small it is returned inline in `catalogs`; when the\
         \ result is too large to return inline the callback carries a `downloadManifest`\
         \ for downloading the result.\n\nRelationship: Composed as the message payload\
         \ of the /catalog/on_pull callback. The DS MUST use context.messageId\
@@ -4749,13 +4738,14 @@ components:
           $ref: '#/components/schemas/Error'
 
     CatalogSubscriptionResponse:
+      deprecated: true
       description: "The response envelope returned synchronously by the CS (Cataloging\
         \ Service) for subscription management operations — create, update, list,\
         \ and deactivate.\n\nThis schema appears in the Catalog Subscription phase.\
         \ The CS produces it as the synchronous response to POST /catalog/subscription\
         \ (creation or update), GET /catalog/subscription (listing), and DELETE\
         \ /catalog/subscription (deactivation). The DS consumes it to confirm subscription\
-        \ state.\n\nFabric context: Produced synchronously by the CS; no async callback\
+        \ state. No async callback\
         \ is delivered for subscription management operations. The context.action\
         \ is always catalog/on_subscription.\n\nRelationship: Composes one or more\
         \ CatalogSubscription records in the message.subscriptions array, and an\
