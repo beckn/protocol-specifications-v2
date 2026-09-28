@@ -51,7 +51,8 @@
         "IEC_AC": "beckn:ConnectorTypeIECAC",
         "IEC_60309": "beckn:ConnectorTypeIEC60309",
         "Anderson": "beckn:ConnectorTypeAnderson",
-        "Type6": "beckn:ConnectorTypeType6"
+        "Type6": "beckn:ConnectorTypeType6",
+        "Type7": "beckn:ConnectorTypeType7"
       }
     },
     "powerType": {

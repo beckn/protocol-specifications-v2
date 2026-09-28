@@ -55,6 +55,9 @@
                 },
                 {
                     "@id": "beckn:ConnectorTypeType1"
+                },
+                {
+                    "@id": "beckn:ConnectorTypeType7"
                 }
             ]
         },
@@ -164,6 +167,13 @@
             "schema:name": "Type6",
             "schema:identifier": "Type6",
             "rdfs:comment": "IEC 62196-6 or IS 17017-2-6 (Type 6) connector, typically referenced in LEV charging contexts."
+        },
+        {
+            "@id": "beckn:ConnectorTypeType7",
+            "@type": "beckn:ConnectorType",
+            "schema:name": "Type7",
+            "schema:identifier": "Type7",
+            "rdfs:comment": "DC fast charging connector for 2-wheeler EVs (e-scooters and e-motorcycles)."
         }
     ]
 }
