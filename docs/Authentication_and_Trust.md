@@ -150,14 +150,19 @@ Every Beckn HTTP Signature carries a `keyId` field that uniquely identifies the 
 ```
 
 - `{namespace_id}` — the NP's namespace on the fabric, as registered via the Namespacing Service.
-- `{registry_id}` — the registry within that namespace that holds the key record.
+- `{registry_id}` — the registry within that namespace that holds the key record. This is not a fixed literal; it is whichever registry the NP's key record has been published to. The NFH reference implementation and current ONIX deployments use `subscribers.beckn.one` as this registry, with the key material carried inside the NP's subscriber record (see the [NFH onboarding guide](https://docs.nfh.global/build/creating-a-network/onboarding-participants#step-5-verify-your-key-lookup)); an NP MAY instead publish keys to a dedicated registry of its own choosing.
 - `{record_id}` — the specific record identifier within the registry.
 - `{algorithm}` — MUST be `ed25519`.
 - The three path components are separated by `/`; the algorithm is separated from the path by `|`.
 
 An implicit keyId MUST be resolvable via the fabric's Global Root Registry only. Verifying NPs MUST treat an implicit keyId as residing at `https://fabric.nfh.global/registry` and MUST NOT attempt to resolve it against any other registry.
 
-**Example:**
+**Example (NFH/ONIX `subscribers.beckn.one` registry convention):**
+```
+example-bap.beckn.io/subscribers.beckn.one/example-bap.beckn.io|ed25519
+```
+
+**Example (NP-defined dedicated key registry):**
 ```
 example-bap.beckn.io/keys/signing-key-001|ed25519
 ```
@@ -174,10 +179,16 @@ https://{registry_domain}/{namespace_id}/{registry_id}/{record_id}|{algorithm}
 
 An explicit keyId instructs the verifier to resolve the public key from the specified registry URL rather than from the GRR. The target URL MUST be a dedi protocol-compliant registry. NPs MAY choose not to trust registries outside `fabric.nfh.global/registry`; in that case they MUST reject signatures carrying explicit keyIds from untrusted registries with a `401 NackUnauthorized`.
 
-**Example:**
+**Example (NFO-operated registry):**
 ```
 https://registry.example-nfo.io/example-bpp.beckn.io/keys/signing-key-001|ed25519
 ```
+
+**Example (self-hosted subscriber record):** An NP that operates its own dedi-compliant registry rather than relying on an NFO or the GRR MAY publish an explicit keyId resolving to its own domain:
+```
+https://registry.example-bpp.beckn.io/example-bpp.beckn.io/subscribers.beckn.one/example-bpp.beckn.io|ed25519
+```
+This is only usable if the verifying NP has configured `registry.example-bpp.beckn.io` as a trusted registry (see CON-004-14); otherwise it MUST be rejected with `401 NackUnauthorized`.
 
 ##### 2.3 Key Lookup Procedure
 
@@ -191,7 +202,12 @@ https://fabric.nfh.global/registry/dedi/lookup/{keyId}
 
 where `{keyId}` is the full implicit keyId string — including the `|algorithm` suffix — appended to the path **without URL-encoding**. The `|` and `/` characters MUST be transmitted as literal characters in the path.
 
-**Example lookup URL:**
+**Example lookup URL (NFH/ONIX `subscribers.beckn.one` registry convention):**
+```
+https://fabric.nfh.global/registry/dedi/lookup/example-bap.beckn.io/subscribers.beckn.one/example-bap.beckn.io|ed25519
+```
+
+**Example lookup URL (NP-defined dedicated key registry):**
 ```
 https://fabric.nfh.global/registry/dedi/lookup/example-bap.beckn.io/keys/signing-key-001|ed25519
 ```
@@ -199,6 +215,11 @@ https://fabric.nfh.global/registry/dedi/lookup/example-bap.beckn.io/keys/signing
 ###### For explicit keyIds
 
 The verifying NP MUST extract the URL portion (everything before `|`) and issue an HTTP GET to that URL to retrieve the key record.
+
+**Example lookup URL (self-hosted subscriber record):** for the self-hosted explicit keyId in §2.2, the verifying NP issues the GET directly against the NP's own registry rather than the GRR:
+```
+https://registry.example-bpp.beckn.io/example-bpp.beckn.io/subscribers.beckn.one/example-bpp.beckn.io
+```
 
 In both cases, the verifying NP MUST:
 
@@ -642,6 +663,7 @@ Builds on BECKN-006 Signing Beckn APIs in HTTP Draft-01 and the broader dedi pro
 - **RFC 4648** — The Base16, Base32, and Base64 Data Encodings. IETF.
 - **draft-cavage-http-signatures-12** — Signing HTTP Messages. IETF (expired draft, used as basis for Beckn HTTP Signature format).
 - **dedi protocol** — Decentralized Directory Protocol specification. Networks for Humanity Foundation.
+- **NFH onboarding guide — key lookup verification:** Click [here](https://docs.nfh.global/build/creating-a-network/onboarding-participants#step-5-verify-your-key-lookup). Documents the `subscribers.beckn.one` registry convention referenced in §2.1–§2.3.
 - **Identity and Addressing:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/draft/docs/Identity_and_Addressing.md) (drafted on `draft` branch, undergoing review).
 - **Error Codes:** Click [here](https://github.com/beckn/protocol-specifications-v2/blob/draft/docs/Error_Codes.md) (drafted on `draft` branch, undergoing review).
 - **BECKN-006** — Signing Beckn APIs in HTTP Draft-01 (superseded by this RFC).
