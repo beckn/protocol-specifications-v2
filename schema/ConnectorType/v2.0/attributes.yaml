@@ -30,6 +30,7 @@ components:
         - Anderson
         - Type6
         - Type1
+        - Type7
       description: >
         Physical connector type supported by the EVSE/charger.
       example: "CCS2"

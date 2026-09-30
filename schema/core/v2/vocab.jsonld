@@ -602,6 +602,7 @@
         { "@id": "beckn:PaymentFailed" },
         { "@id": "beckn:PaymentCancelled" },
         { "@id": "beckn:PaymentRefunded" },
+        { "@id": "beckn:PaymentRefundInitiated" },
         { "@id": "beckn:PaymentPartiallyRefunded" },
         { "@id": "beckn:PaymentChargeback" },
         { "@id": "beckn:PaymentDisputed" },
@@ -685,6 +686,15 @@
       ],
       "schema:name": "REFUNDED",
       "schema:identifier": "REFUNDED"
+    },
+    {
+      "@id": "beckn:PaymentRefundInitiated",
+      "@type": [
+        "beckn:PaymentStatus",
+        "schema:Enumeration"
+      ],
+      "schema:name": "REFUND_INITIATED",
+      "schema:identifier": "REFUND_INITIATED"
     },
     {
       "@id": "beckn:PaymentPartiallyRefunded",

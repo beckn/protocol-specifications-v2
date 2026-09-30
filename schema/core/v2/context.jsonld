@@ -171,6 +171,7 @@
         "CANCELLED": "beckn:PaymentCancelled",
         "CANCELED": "beckn:PaymentCancelled",
         "REFUNDED": "beckn:PaymentRefunded",
+        "REFUND_INITIATED": "beckn:PaymentRefundInitiated",
         "PARTIALLY_REFUNDED": "beckn:PaymentPartiallyRefunded",
         "PARTIALLY-REFUNDED": "beckn:PaymentPartiallyRefunded",
         "CHARGEBACK": "beckn:PaymentChargeback",

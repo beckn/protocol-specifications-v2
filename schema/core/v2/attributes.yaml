@@ -844,7 +844,7 @@ components:
         beckn:paymentStatus:
           type: string
           description: Payment lifecycle status (Pending | Authorized | Captured | Failed | Refunded | PartialRefund …)
-          enum: ["INITIATED","PENDING","AUTHORIZED","CAPTURED","COMPLETED","FAILED","CANCELLED","REFUNDED","PARTIALLY_REFUNDED","CHARGEBACK","DISPUTED","EXPIRED","REVERSED","VOIDED","SETTLED","ON_HOLD","ADJUSTED"]
+          enum: ["INITIATED","PENDING","AUTHORIZED","CAPTURED","COMPLETED","FAILED","CANCELLED","REFUNDED","REFUND_INITIATED","PARTIALLY_REFUNDED","CHARGEBACK","DISPUTED","EXPIRED","REVERSED","VOIDED","SETTLED","ON_HOLD","ADJUSTED"]
           x-jsonld: { "@id": "beckn:paymentStatus" }
         beckn:amount:
           type: object
