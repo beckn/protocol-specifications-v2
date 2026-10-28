@@ -3920,7 +3920,9 @@ components:
         \ details and, when a ticket has been created, the ticket reference.\n\nRelationship:\
         \ Composed within the SupportAction and OnSupportAction schemas as the primary\
         \ carrier. The channels field composes Attributes schemas to express domain-specific\
-        \ channel details such as phone, email, or chat endpoints."
+        \ channel details such as phone, email, or chat endpoints. The supportAttributes\
+        \ field composes an Attributes schema to carry network-defined details of\
+        \ the support request."
       title: Support
       type: object
       properties:
@@ -3936,6 +3938,9 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/Attributes'
+        supportAttributes:
+          description: Network-defined attributes of the support request, such as a grievance event, expressed as a linked data JSON object
+          $ref: '#/components/schemas/Attributes'
       additionalProperties: false
 
     SpatialConstraint:
