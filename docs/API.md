@@ -51,7 +51,7 @@ This RFC explains the Beckn v2.0.0 endpoint surface, covering action and callbac
 
 Beckn v2 defines a broad action surface across discovery, transaction, fulfillment, post-fulfillment, and catalog infrastructure. Without a normalized interpretation guide, implementations can diverge on action semantics, callback behavior, envelope handling, and transport trust expectations even when they use the same OpenAPI contract. This document consolidates lifecycle and endpoint behavior so implementations remain interoperable while preserving the canonical contract in `api/v2.0.0/beckn.yaml`.
 
-Within this document, the canonical OpenAPI contract is `api/v2.0.0/beckn.yaml`, action and callback pairing refers to a forward action endpoint and its corresponding `on_*` asynchronous callback endpoint, an envelope is the standard transport container carrying `context` and `message`, the ACK/NACK model refers to the immediate acknowledgement response families (`Ack`, `AckNoCallback`, `Nack*`, and `ServerError`), the synchronous response `Signature` header is the signed receipt the responding node returns to chain its receipt to the inbound request as defined in [NFH-007 §5](./Authentication_and_Trust.md), and catalog infrastructure endpoints cover publish, subscription, pull, and master resource search flows.
+Within this document, the canonical OpenAPI contract is `api/v2.0.0/beckn.yaml`, action and callback pairing refers to a forward action endpoint and its corresponding `on_*` asynchronous callback endpoint, an envelope is the standard transport container carrying `context` and an outcome field (`message` for forward requests and exactly one of `message` or `error` for asynchronous callbacks), the ACK/NACK model refers to the immediate acknowledgement response families (`Ack`, `AckNoCallback`, `Nack*`, and `ServerError`), the synchronous response `Signature` header is the signed receipt the responding node returns to chain its receipt to the inbound request as defined in [NFH-007 §5](./Authentication_and_Trust.md), and catalog infrastructure endpoints cover publish, subscription, pull, and master resource search flows.
 
 Implementations are expected to preserve three design foundations throughout this endpoint surface: the OpenAPI contract remains the source of endpoint and payload truth, forward actions and `on_*` callbacks remain semantically paired, and the async-first interaction model with request signatures and the synchronous `Signature` response header on every acknowledgement remains intact wherever the contract defines it.
 
@@ -73,7 +73,9 @@ To be added
 
 ### Common envelope semantics and acknowledgements
 
-Most request operations use `context` and `message` envelopes.
+Forward requests use `context` and `message` envelopes. Asynchronous callback envelopes carry `context` and exactly one of `message` for success or `error` for a processing failure.
+
+A callback carrying `error` terminates the callback sequence associated with its `context.messageId`; the sender MUST NOT send another callback with that `messageId`. A retry requires a new forward request with a new `messageId`. This terminates only the individual request–callback exchange, not the transaction identified by `context.transactionId`.
 
 Standard response families are:
 

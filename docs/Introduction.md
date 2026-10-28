@@ -90,8 +90,8 @@ The following protocol behaviors are preserved from v1.x and MUST remain stable.
 **Async request / callback pattern**
 Every forward request returns a synchronous `Ack` or `Nack`, and the business outcome is delivered asynchronously via the corresponding `on_*` callback. This pattern is unchanged.
 
-**Context + message envelope**
-All request bodies carry `context` and `message` at the top level. `context` carries correlation identifiers (`transactionId`, `messageId`), action semantics, and version. This envelope structure is unchanged.
+**Context + outcome envelope**
+All request bodies carry `context` at the top level. Forward requests also carry `message`; asynchronous callbacks carry exactly one of `message` for a successful outcome or `error` for a processing failure. The use of top-level envelope fields is preserved from v1.x, with v2 making callback outcome exclusivity explicit.
 
 **Core transaction lifecycle**
 The sequence `discover → select → init → confirm → [status / update / cancel]* → rate → support` is unchanged. The actions and their semantic roles are the same as in v1.x.

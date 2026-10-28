@@ -228,7 +228,7 @@ The trust layer provides identity and non-repudiation controls.
 
 The core data layer defines structural interoperability.
 
-- Payloads MUST preserve envelope fields such as `context` and `message`.
+- Payloads MUST preserve `context` and the applicable outcome field: `message` for forward requests, and exactly one of `message` or `error` for asynchronous callbacks.
 - Core objects MUST be validated with JSON Schema/OpenAPI constraints.
 - Callback correlation SHOULD use `inReplyTo`.
 

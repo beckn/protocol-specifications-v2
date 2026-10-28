@@ -188,9 +188,10 @@ paths:
       description: "The DS (Discovery Service) calls this endpoint on the CN, delivering\
         \ catalogs that match the intent submitted in a prior /discover request.\n\n\
         Additional preconditions: A /discover request MUST have been sent by the CN\
-        \ and accepted (200 Ack) by the DS before this callback is triggered.\n\nThe\
-        \ message MUST contain an OnDiscoverAction with one or more Catalog objects\
-        \ matching the original intent.\n\nCallback relationship: Triggered by the\
+        \ and accepted (200 Ack) by the DS before this callback is triggered.\n\nFor\
+        \ a successful outcome, the message MUST contain an OnDiscoverAction with one\
+        \ or more Catalog objects matching the original intent. For a failed outcome,\
+        \ the error field MUST contain an AsyncError.\n\nCallback relationship: Triggered by the\
         \ DS after evaluating the /discover request against its indexed catalog store.\
         \ The CN MUST use the messageId in Context to correlate this callback with\
         \ the originating /discover call.\n\nResponse codes: Ack, NackBadRequest,\
@@ -208,7 +209,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -220,6 +220,13 @@ paths:
                         const: on_discover
                 message:
                   $ref: '#/components/schemas/OnDiscoverAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -296,9 +303,10 @@ paths:
         \ computed from the resources and offers submitted in the preceding /select\
         \ request.\n\nAdditional preconditions: A /select request MUST have been sent\
         \ by the CN and accepted (200 Ack) by the PN before this callback is triggered.\n\
-        \nThe message MUST contain an OnSelectAction with a Contract object updated\
+        \nFor a successful outcome, the message MUST contain an OnSelectAction with a Contract object updated\
         \ to include offer-level considerations and a total priced quote. The CN uses\
-        \ this quote to decide whether to proceed to /init.\n\nCallback relationship:\
+        \ this quote to decide whether to proceed to /init. For a failed outcome,\
+        \ the error field MUST contain an AsyncError.\n\nCallback relationship:\
         \ This endpoint is triggered by the PN after evaluating the selection and\
         \ computing a priced quote. The CN MUST use the messageId in Context to correlate\
         \ this callback with the originating /select call and SHOULD present the returned\
@@ -317,7 +325,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -329,6 +336,13 @@ paths:
                         const: on_select
                 message:
                   $ref: '#/components/schemas/OnSelectAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -406,10 +420,11 @@ paths:
         \ and any settlement conditions.\n\nAdditional preconditions: A /init request\
         \ MUST have been sent by the CN and accepted (200 Ack) by the PN before\
         \ this callback is triggered. The PN MUST NOT request or collect payment\
-        \ before this stage.\n\nThe message MUST contain an OnInitAction with a Contract\
+        \ before this stage.\n\nFor a successful outcome, the message MUST contain an OnInitAction with a Contract\
         \ object that reflects the finalized draft state including payment terms, billing\
         \ confirmation, and settlement placeholders. The CN reviews these terms before\
-        \ proceeding to /confirm.\n\nCallback relationship: This endpoint is triggered\
+        \ proceeding to /confirm. For a failed outcome, the error field MUST contain\
+        \ an AsyncError.\n\nCallback relationship: This endpoint is triggered\
         \ by the PN after generating the final draft contract in response to /init.\
         \ The CN MUST use the messageId in Context to correlate this callback and\
         \ SHOULD present the payment terms to the consumer for acceptance before calling\
@@ -427,7 +442,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -439,6 +453,13 @@ paths:
                         const: on_init
                 message:
                   $ref: '#/components/schemas/OnInitAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -517,10 +538,11 @@ paths:
         \ after verifying payment and activating the commitment.\n\nAdditional preconditions:\
         \ A /confirm request MUST have been sent by the CN and accepted (200 Ack)\
         \ by the PN. The PN MUST have verified payment proof before triggering this\
-        \ callback.\n\nThe message MUST contain an OnConfirmAction with the Contract\
+        \ callback.\n\nFor a successful outcome, the message MUST contain an OnConfirmAction with the Contract\
         \ object whose status is set to ACTIVE, whose id field carries the PN-assigned\
         \ contract identifier, and whose performance array reflects the initial fulfillment\
-        \ state.\n\nCallback relationship: This endpoint is triggered by the PN after\
+        \ state. For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: This endpoint is triggered by the PN after\
         \ verifying payment and activating the contract in response to /confirm. The\
         \ CN MUST use the messageId in Context to correlate this callback and MUST\
         \ store the contract id for subsequent status, track, update, cancel, rate,\
@@ -539,7 +561,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -551,6 +572,13 @@ paths:
                         const: on_confirm
                 message:
                   $ref: '#/components/schemas/OnConfirmAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -632,9 +660,10 @@ paths:
         \ (200 Ack) by the PN, or the PN is sending a proactive push for a significant\
         \ state change on an already-confirmed contract. The PN MAY send proactive\
         \ /on_status callbacks without a preceding /status request for significant\
-        \ contract state transitions.\n\nThe message MUST contain an OnStatusAction\
+        \ contract state transitions.\n\nFor a successful outcome, the message MUST contain an OnStatusAction\
         \ with the full Contract object reflecting the current status and performance\
-        \ state.\n\nCallback relationship: This endpoint is triggered by the PN either\
+        \ state. For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: This endpoint is triggered by the PN either\
         \ in response to a /status request or proactively when a significant contract\
         \ state change occurs. The CN MUST use the messageId in Context to correlate\
         \ solicited callbacks and MUST handle unsolicited callbacks by updating the\
@@ -653,7 +682,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -665,6 +693,13 @@ paths:
                         const: on_status
                 message:
                   $ref: '#/components/schemas/OnStatusAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -743,10 +778,11 @@ paths:
         \ handle containing the URL or WebSocket endpoint through which the CN may\
         \ subscribe to real-time fulfillment position and progress updates.\n\nAdditional\
         \ preconditions: A /track request MUST have been sent by the CN and accepted\
-        \ (200 Ack) by the PN before this callback is triggered.\n\nThe message MUST\
-        \ contain an OnTrackAction with a Tracking object that includes a url for the\
+        \ (200 Ack) by the PN before this callback is triggered.\n\nFor a successful\
+        \ outcome, the message MUST contain an OnTrackAction with a Tracking object that includes a url for the\
         \ real-time data stream and a status field indicating whether tracking is ACTIVE\
-        \ or INACTIVE.\n\nCallback relationship: This endpoint is triggered by the\
+        \ or INACTIVE. For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: This endpoint is triggered by the\
         \ PN in response to a /track request. The CN MUST use the messageId in Context\
         \ to correlate this callback with the originating /track call and SHOULD connect\
         \ to the provided tracking URL or WebSocket endpoint to receive real-time updates.\n\
@@ -764,7 +800,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -776,6 +811,13 @@ paths:
                         const: on_track
                 message:
                   $ref: '#/components/schemas/OnTrackAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -863,10 +905,11 @@ paths:
         \nAdditional preconditions: Either an /update request MUST have been sent by\
         \ the CN and accepted (200 Ack) by the PN, or the PN is sending a proactive\
         \ update for a PN-initiated contract mutation on an already-confirmed\
-        \ contract.\n\nThe message MUST contain an OnUpdateAction with the Contract\
+        \ contract.\n\nFor a successful outcome, the message MUST contain an OnUpdateAction with the Contract\
         \ object. The context.try field echoes the value from the originating /update\
         \ request to allow the CN to interpret whether this is a preview or a committed\
-        \ change.\n\nCallback relationship: This endpoint is triggered by the PN either\
+        \ change. For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: This endpoint is triggered by the PN either\
         \ in response to an /update request or proactively for PN-initiated mutations.\
         \ The CN MUST use the messageId in Context to correlate solicited callbacks\
         \ and MUST handle unsolicited callbacks by updating the locally held contract\
@@ -884,7 +927,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -896,6 +938,13 @@ paths:
                         const: on_update
                 message:
                   $ref: '#/components/schemas/OnUpdateAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -981,11 +1030,12 @@ paths:
         \ the confirmed cancelled contract (when responding to a committed cancellation).\n\
         \nAdditional preconditions: A /cancel request MUST have been sent by the CN\
         \ and accepted (200 Ack) by the PN before this callback is triggered.\n\n\
-        The message MUST contain an OnCancelAction with the Contract object. When context.try\
+        For a successful outcome, the message MUST contain an OnCancelAction with the Contract object. When context.try\
         \ was true in the originating /cancel request, the Contract carries cancellation\
         \ policy, fees, and refund timeline without state change. When context.try\
         \ was false, the Contract carries status CANCELLED and updated settlement information\
-        \ reflecting any refunds or penalties.\n\nCallback relationship: This endpoint\
+        \ reflecting any refunds or penalties. For a failed outcome, the error field\
+        \ MUST contain an AsyncError.\n\nCallback relationship: This endpoint\
         \ is triggered by the PN in response to a /cancel request. The CN MUST use\
         \ the messageId in Context to correlate this callback. When this is a preview\
         \ response, the CN SHOULD present the cancellation terms to the consumer before\
@@ -1004,7 +1054,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -1016,6 +1065,13 @@ paths:
                         const: on_cancel
                 message:
                   $ref: '#/components/schemas/OnCancelAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1092,9 +1148,10 @@ paths:
         \ ratings have been recorded and optionally returning aggregate rating data.\n\
         \nAdditional preconditions: A /rate request MUST have been sent by the CN\
         \ and accepted (200 Ack) by the PN before this callback is triggered.\n\n\
-        The message MUST contain an OnRateAction with a ratings array carrying confirmation\
+        For a successful outcome, the message MUST contain an OnRateAction with a ratings array carrying confirmation\
         \ of the recorded ratings and MAY include aggregate rating snapshots for the\
-        \ rated entities.\n\nCallback relationship: This endpoint is triggered by the\
+        \ rated entities. For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: This endpoint is triggered by the\
         \ PN in response to a /rate request. The CN MUST use the messageId in Context\
         \ to correlate this callback with the originating /rate call.\n\nResponse codes:\
         \ Ack, NackBadRequest, NackUnauthorized, ServerError."
@@ -1111,7 +1168,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -1123,6 +1179,13 @@ paths:
                         const: on_rate
                 message:
                   $ref: '#/components/schemas/OnRateAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1199,9 +1262,10 @@ paths:
       description: "The PN calls this endpoint on the CN, delivering the full support\
         \ contact details including the created or linked ticket information.\n\nAdditional\
         \ preconditions: A /support request MUST have been sent by the CN and accepted\
-        \ (200 Ack) by the PN before this callback is triggered.\n\nThe message MUST\
-        \ contain an OnSupportAction with a Support object carrying support contact\
-        \ details and the created or linked ticket reference.\n\nCallback relationship:\
+        \ (200 Ack) by the PN before this callback is triggered.\n\nFor a successful\
+        \ outcome, the message MUST contain an OnSupportAction with a Support object\
+        \ carrying support contact details and the created or linked ticket reference.\
+        \ For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback relationship:\
         \ This endpoint is triggered by the PN in response to a /support request.\
         \ The CN MUST use the messageId in Context to correlate this callback with\
         \ the originating /support call and SHOULD present the support information\
@@ -1220,7 +1284,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -1232,6 +1295,13 @@ paths:
                         const: on_support
                 message:
                   $ref: '#/components/schemas/OnSupportAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1497,10 +1567,11 @@ paths:
         \ per-catalog processing results for each catalog submitted in a prior /catalog/publish\
         \ request.\n\nAdditional preconditions: A /catalog/publish request MUST have\
         \ been sent by the PN and accepted (200 Ack) by the CS before this callback\
-        \ is triggered.\n\nThe message MUST contain a CatalogOnPublishAction\
+        \ is triggered.\n\nFor a successful outcome, the message MUST contain a CatalogOnPublishAction\
         \ with a results array. Each result carries the catalogId and a processing\
         \ status of ACCEPTED, REJECTED, or PARTIAL, along with any per-item errors.\n\
-        \nCallback relationship: Triggered by the CS after indexing each catalog from\
+        \ For a failed outcome, the error field MUST contain an AsyncError.\n\nCallback\
+        \ relationship: Triggered by the CS after indexing each catalog from\
         \ /catalog/publish. The PN MUST use the messageId in Context to correlate\
         \ this callback with the originating publish request, and MUST handle REJECTED\
         \ or PARTIAL results by correcting and resubmitting affected catalogs.\n\n\
@@ -1519,7 +1590,6 @@ paths:
               type: object
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -1531,6 +1601,13 @@ paths:
                         const: catalog/on_publish
                 message:
                   $ref: '#/components/schemas/CatalogOnPublishAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -1908,10 +1985,11 @@ paths:
         \ been sent by the DS and accepted (200 Ack) by the CS before this callback\
         \ is triggered. The DS MUST use context.messageId to correlate\
         \ this callback with the originating /catalog/pull request.\n\n
-        \ The message MUST contain a CatalogPullCallbackAction with \
+        \ For a successful outcome, the message MUST contain a CatalogPullCallbackAction with \
         \ a status of COMPLETED or FAILED,\
         \ and either an inline catalogs array (small payload) or a downloadManifest\
-        \ for downloading the result (large payload).\n\nA 200 Ack confirms the callback\
+        \ for downloading the result (large payload). For a failed outcome, the error\
+        \ field MUST contain an AsyncError.\n\nA 200 Ack confirms the callback\
         \ was received and accepted by the DS. A 400 NackBadRequest is returned\
         \ when the payload is malformed or required fields are missing. A 401 NackUnauthorized\
         \ is returned when the Authorization header (callback) signature is invalid.\
@@ -1931,7 +2009,6 @@ paths:
               additionalProperties: false
               required:
               - context
-              - message
               properties:
                 context:
                   allOf:
@@ -1943,6 +2020,13 @@ paths:
                         const: catalog/on_pull
                 message:
                   $ref: '#/components/schemas/CatalogPullCallbackAction'
+                error:
+                  $ref: '#/components/schemas/AsyncError'
+              oneOf:
+              - required:
+                - message
+              - required:
+                - error
       responses:
         '200':
           $ref: '#/components/responses/Ack'
@@ -2699,15 +2783,10 @@ components:
         \ callback phase of any Beckn interaction where an error must be conveyed after\
         \ an initial ACK has already been returned. Both the PN and CN MAY produce\
         \ it when reporting failures in asynchronous processing to their counterpart.\n\
-        \nRelationship: Extends the base Error schema with JSON-LD type annotations,\
-        \ allowing linked-data consumers to interpret error codes using the Beckn error\
-        \ vocabulary. Additional properties are permitted to carry domain-specific\
-        \ error context."
+        \nRelationship: Specializes the base Error schema for asynchronous callbacks\
+        \ while preserving its canonical, closed property set."
       allOf:
       - $ref: '#/components/schemas/Error'
-      - type: object
-        properties: {}
-        additionalProperties: true
 
     Attributes:
       description: "A JSON-LD aware extensibility container that carries domain-specific\
@@ -3995,7 +4074,7 @@ components:
           - ANY
           - ALL
           - NONE
-          default: any
+          default: ANY
         srid:
           description: Coordinate Reference System identifier for `geometry`. Default is `"EPSG:4326"`. If provided, servers MAY reproject to EPSG:4326 internally.
           type: string
